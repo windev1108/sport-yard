@@ -12,11 +12,19 @@ const SocketHandler = (req : NextApiRequest, res : any) => {
   } else {
     console.log('Socket is initializing')
     const io = new Server(res.socket.server , {
-      allowEIO3 : true
+       cors: {
+        origin: "/",
+        methods: ["GET", "POST"]
+    }
     })
     res.socket.server.io = io
     io.on('connection', socket => {
-       console.log(`User ${socket.id} connected`)
+         console.log(`User ${socket.id} connected`)
+         const transport = socket.conn.transport.name; // in most cases, "polling"
+
+         socket.conn.on("upgrade", () => {
+        const upgradedTransport = socket.conn.transport.name; // in most cases, "websocket"
+    }); 
       socket.on('new-user', userId => {
         const isExistUser = users.some((u : UserServer) => u.userId === userId)
         !isExistUser && users.push({ socketId : socket.id , userId})

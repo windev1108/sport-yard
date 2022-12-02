@@ -99,6 +99,11 @@ const ChatBox = () => {
             transports: ["websocket"]
         })
         socket.on('connect', () => {
+            const transport = socket.io.engine.transport.name; // in most cases, "polling"
+
+            socket.io.engine.on("upgrade", () => {
+                const upgradedTransport = socket.io.engine.transport.name; // in most cases, "websocket"
+              });
             console.log("Socket connected");
             socket?.emit("new-user", id)
         })
