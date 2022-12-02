@@ -95,7 +95,9 @@ const ChatBox = () => {
     const socketInitializer = useCallback(async () => {
         const { id } = jwt.decode(token) as { [key: string]: string }
         await fetch('/api/socket')
-        socket = io()
+        socket = io("/", {
+            transports: ["websocket"]
+        })
         socket.on('connect', () => {
             console.log("Socket connected");
             socket?.emit("new-user", id)
