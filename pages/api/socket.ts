@@ -11,7 +11,9 @@ const SocketHandler = (req : NextApiRequest, res : any) => {
     console.log('Socket is already running')
   } else {
     console.log('Socket is initializing')
-    const io = new Server(res.socket.server)
+    const io = new Server(res.socket.server , {
+      allowEIO3 : true
+    })
     res.socket.server.io = io
     io.on('connection', socket => {
        console.log(`User ${socket.id} connected`)
