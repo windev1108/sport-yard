@@ -95,9 +95,7 @@ const ChatBox = () => {
     const socketInitializer = useCallback(async () => {
         const { id } = jwt.decode(token) as { [key: string]: string }
         await fetch('/api/socket')
-        socket = io("/", {
-            transports: ["websocket"]
-        })
+        socket = io()
         socket.on('connect', () => {
             const transport = socket.io.engine.transport.name; // in most cases, "polling"
 
