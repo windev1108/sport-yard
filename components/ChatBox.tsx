@@ -21,13 +21,11 @@ import LinearProgress from '@mui/material/LinearProgress';
 import useSWR from 'swr';
 import { setIdProfile } from '../redux/features/userSlice';
 import Link from 'next/link';
-import { io } from "socket.io-client";
 import { getCookie } from 'cookies-next';
 import jwt from "jsonwebtoken"
 
 
 
-let socket: any
 
 
 interface State {
@@ -92,22 +90,6 @@ const ChatBox = () => {
 
 
 
-    const socketInitializer = useCallback(async () => {
-        const { id } = jwt.decode(token) as { [key: string]: string }
-        await fetch('/api/socket')
-        socket = io()
-        socket.on('connect', () => {
-            const transport = socket.io.engine.transport.name; // in most cases, "polling"
-
-            socket.io.engine.on("upgrade", () => {
-                const upgradedTransport = socket.io.engine.transport.name; // in most cases, "websocket"
-              });
-            console.log("Socket connected");
-            socket?.emit("new-user", id)
-        })
-        socket?.on("list-users", (listUserOnline: SocketUser[]) => setState({ ...state, listUserOnline }))
-    }, [])
-
     const hideChatMessage = () => {
         setState({ ...state, isOpenChatMessage: false, isFadeDownChatBox: false })
         setTimeout(() => {
@@ -116,16 +98,16 @@ const ChatBox = () => {
     }
 
 
-    const fetcher = useCallback(async (url: string) => {
+    const fetcher = async (url: string) => {
         const res = await axios.get(url)
         return res.data.messages?.filter((m: Message) => m.receiverId === userSelected.id || m.receiverId === user.id && m.senderId === userSelected.id)
-    }, [userSelected.id])
+    }
 
 
     const { data, mutate } = useSWR(userSelected.id ? "/api/messages" : null, fetcher)
 
     useEffect(() => {
-        socketInitializer()
+
         return () => {
             dispatch(setOpenChatBox(false))
         }
@@ -188,7 +170,6 @@ const ChatBox = () => {
 
     const handleShowMessage = (userSelected: User) => {
         setState({ ...state, userSelected, isOpenChatMessage: true })
-        mutate()
     }
 
     useEffect(() => {
