@@ -101,6 +101,7 @@ const ChatBox = () => {
 
     const fetcher = async (url: string) => {
         const res = await axios.get(url)
+        messageEndRef.current && scrollToBottom()
         return res.data.messages?.filter((m: Message) => m.senderId === user.id && m.receiverId === userSelected.id || m.receiverId === user.id && m.senderId === userSelected.id)
     }
 
@@ -109,8 +110,11 @@ const ChatBox = () => {
 
 
     useEffect(() => {
-        setState({ ...state, isOpenOptionInfo: false })
         mutate()
+        setTimeout(() => {
+            scrollToBottom()
+        },300)
+        setState({ ...state, isOpenOptionInfo: false })
     }, [userSelected.id])
 
     useEffect(() => {
@@ -179,9 +183,6 @@ const ChatBox = () => {
 
     const handleShowMessage = (userSelected: User) => {
         setState({ ...state, userSelected, isOpenChatMessage: true })
-        setTimeout(() => {
-            messageEndRef.current && scrollToBottom()
-        },300)
     }
 
     useEffect(() => {
