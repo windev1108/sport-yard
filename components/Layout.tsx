@@ -10,10 +10,8 @@ import ProfileModal from "./Modals/ProfileModal";
 import FormEditUserModal from "./Modals/FormEditUserModal";
 import FormTransactionsModal from "./Modals/FormTransactionsModal";
 import TransactionDetail from "./Transactions/TransactionDetail";
-import NotificationDetail from "./Notifications/NotificationDetail";
 import BackdropModal from "./Modals/BackdropModal";
 import PaymentModal from "./Modals/PaymentModal";
-import OrderProductModal from "./Modals/OrderProductModal";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import dynamic from "next/dynamic";
@@ -30,7 +28,7 @@ const Layout: NextPage<LayoutProps> = ({ children }) => {
   const token = getCookie("token")
   const router = useRouter()
   const dispatch = useDispatch()
-  const { isOpenFormEditUser, isOpenNotificationDetail, isOpenSnackbar, isOpenFormTransaction, isOpenTransactionDetail, isOpenBackdropModal, isOpenProfileModal, isOpenPaymentModal, isOpenOrderProduct, isLoading }: any = useSelector<RootState>(state => state.is)
+  const { isOpenFormEditUser, isOpenSnackbar, isOpenFormTransaction, isOpenTransactionDetail, isOpenBackdropModal, isOpenProfileModal, isOpenPaymentModal, isLoading }: any = useSelector<RootState>(state => state.is)
   const { contentSnackBar }: any = useSelector<RootState>(state => state.user)
 
   return (

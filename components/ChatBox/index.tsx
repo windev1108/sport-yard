@@ -2,10 +2,10 @@ import { IconButton, Tooltip, Avatar } from '@mui/material';
 import axios from 'axios';
 import React, { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { Message, User } from '../Models';
-import { RootState } from '../redux/store';
+import { Message, User } from '../../Models';
+import { RootState } from '../../redux/store';
 import { deepOrange } from '@mui/material/colors';
-import { setOpenChatBox, setOpenProfileModal } from '../redux/features/isSlice';
+import { setOpenChatBox, setOpenProfileModal } from '../../redux/features/isSlice';
 import { IoMdCall, IoMdClose, IoMdSend } from 'react-icons/io'
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import { BsChevronCompactUp, BsEmojiSmile } from 'react-icons/bs';
@@ -19,11 +19,11 @@ import { AiFillPicture, AiOutlineCloseCircle, AiOutlineUpload } from 'react-icon
 // import EmojisPicker from './EmojisPicker';
 import LinearProgress from '@mui/material/LinearProgress';
 import useSWR from 'swr';
-import { setIdProfile } from '../redux/features/userSlice';
+import { setIdProfile } from '../../redux/features/userSlice';
 import Link from 'next/link';
 import { getCookie } from 'cookies-next';
 import jwt from "jsonwebtoken"
-import { updateUser } from '../firebase/hooks';
+import { updateUser } from '../../firebase/hooks';
 
 
 
@@ -159,8 +159,10 @@ const ChatBox = () => {
                 message,
                 type: "text"
             })
-            messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
             await mutate()
+            setTimeout(() => {
+                scrollToBottom()
+            }, 300)
             !checkIsExistConversations && axios.put(`/api/users/${userSelected.id}`, {
                 conversations: [...data.conversations, user.id]
             })
@@ -177,6 +179,7 @@ const ChatBox = () => {
 
     const handleShowMessage = (userSelected: User) => {
         setState({ ...state, userSelected, isOpenChatMessage: true })
+        scrollToBottom()
     }
 
     useEffect(() => {
@@ -190,8 +193,8 @@ const ChatBox = () => {
     }
 
     useEffect(() => {
-        scrollToBottom()
-    }, [messages]);
+        messageEndRef?.current && scrollToBottom()
+    }, [isOpenChatMessage, userSelected.id]);
 
     const scrollToBottom = () => {
         messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -333,8 +336,8 @@ const ChatBox = () => {
                                 <IoMdClose />
                             </IconButton>
                         </div>
-                        <div className="h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ">
-                            {data && typeof data !== "string" && data?.map((item: Message) => (
+                        <div className="h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thumb-gray-300 scrollbar-track-gray-100 ">
+                            {data && typeof data !== "string" && data?.map((item: Message, index: number) => (
                                 <div key={item.id} className="flex flex-col space-y-1 w-full p-2">
                                     <span className="text-center text-xs">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span>
                                     <div className={`${item.senderId === user.id ? "justify-end" : "justify-start"} flex w-full`}>
@@ -356,9 +359,9 @@ const ChatBox = () => {
                                             </div>
                                         }
                                     </div>
+                                    {index === data?.length - 1 && <div ref={messageEndRef} className="w-full"></div>}
                                 </div>
                             ))}
-                            <div ref={messageEndRef}></div>
                         </div>
                         <div className="h-[20%] relative items-center w-full border-t-[1px] border-gray-300">
                             {isLoading &&
