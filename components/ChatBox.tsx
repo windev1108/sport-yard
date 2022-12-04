@@ -24,7 +24,6 @@ import Link from 'next/link';
 import { getCookie } from 'cookies-next';
 import jwt from "jsonwebtoken"
 import { updateUser } from '../firebase/hooks';
-import { io } from "socket.io-client";
 
 
 
@@ -90,25 +89,7 @@ const ChatBox = () => {
     }
 
 
-    useEffect(() => {
-        const token: any = getCookie("token")
-        const data = jwt.decode(token) as { [key: string]: string }
-        socket.current = io("https://sport-yard-server.onrender.com/" , {
-            transports: ['websocket' , 'polling'],
-            pingTimeout: 60000,
-            reconnectionDelayMax: 10000,
-            auth: {
-                token
-              },
-        })
-        socket?.current.on("connect", () => {
-            console.log("Socket connected")
-            socket.current.emit("new-user" , data.id)
-            socket.current.on("list-users", (userSocket : any) => console.log("users from socket :",userSocket))
-            socket.current.on("user-disconnect" , (userSocket : any) => console.log("user after disconnected :",userSocket))
-        })
-        
-    }, [])
+
 
     const hideChatMessage = () => {
         setState({ ...state, isOpenChatMessage: false, isFadeDownChatBox: false })
