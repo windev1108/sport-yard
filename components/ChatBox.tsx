@@ -137,6 +137,7 @@ const ChatBox = () => {
 
         if (pictures.length) {
             if (urls.length === previewBlobs.length && isUploaded) {
+                setState({ ...state, pictures: [], previewBlobs: [] })
                 await axios.post("/api/messages", {
                     senderId: user.id,
                     receiverId: userSelected.id,
@@ -146,7 +147,6 @@ const ChatBox = () => {
                 !checkIsExistConversations && axios.put(`/api/users/${userSelected.id}`, {
                     conversations: [...data.conversations, user.id]
                 })
-                setState({ ...state, pictures: [], previewBlobs: [] })
             } else {
                 toast.info("Vui lòng thử lại sau", { autoClose: 3000, theme: "colored" })
             }
@@ -159,10 +159,11 @@ const ChatBox = () => {
                 message,
                 type: "text"
             })
+            messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            await mutate()
             !checkIsExistConversations && axios.put(`/api/users/${userSelected.id}`, {
                 conversations: [...data.conversations, user.id]
             })
-            await mutate()
         } else {
             toast.info("Vui lòng nhập tin nhắn", { autoClose: 3000, theme: "colored" })
         }
@@ -189,9 +190,12 @@ const ChatBox = () => {
     }
 
     useEffect(() => {
-        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        scrollToBottom()
     }, [messages]);
 
+    const scrollToBottom = () => {
+        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     const onFileChange = (e: any) => {
         const files = e.target.files
