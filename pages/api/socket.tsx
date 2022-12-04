@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
+import { createServer } from "http";
 const { Server } = require('socket.io')
 
 
@@ -6,9 +7,11 @@ const { Server } = require('socket.io')
 interface User {
   socketId?: string
   userId: string
-  receiverId? : string
+  receiverId?: string
   typing?: boolean
 }
+
+const httpServer = createServer();
 
 const SocketHandler = (req: NextApiRequest, res: any) => {
   let users: User[] = [];
@@ -17,8 +20,12 @@ const SocketHandler = (req: NextApiRequest, res: any) => {
     console.log('Socket is already running')
   } else {
     console.log('Socket is initializing')
-    const io = new Server(res.socket.server)
-    res.socket.server.io = io
+    const io = new Server(httpServer, {
+      cors: {
+        origin: "*",
+        method: ["GET", "POST"]
+      }
+    })
     io.on('connection', function (socket: any) {
       console.log('a user connected');
 

@@ -139,6 +139,10 @@ const ChatBox = () => {
         socket.on("users-online", (data: SocketUser[]) => {
             setUsersOnline(data)
         })
+        socket.on("connect_error", () => {
+            // revert to classic upgrade
+            socket.io.opts.transports = ["polling", "websocket"];
+          });
     }
 
 

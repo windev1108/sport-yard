@@ -37,6 +37,7 @@
         "emoji-mart": "^5.3.3",
         "firebase": "^9.10.0",
         "firebase-admin": "^11.1.0",
+        "http": "^0.0.1-security",
         "jsonwebtoken": "^8.5.1",
         "leaflet": "^1.9.2",
         "leaflet-defaulticon-compatibility": "^0.1.1",
