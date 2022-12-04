@@ -42,7 +42,9 @@ interface State {
 }
 
 
-const OrderDetail = () => {
+
+
+const OrderDetail = ({ mutate }: any) => {
     const dispatch = useDispatch()
     const { isUpdated, isOpenNotificationDetail }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
@@ -88,10 +90,10 @@ const OrderDetail = () => {
         setTimeout(() => {
             dispatch(setOpenBackdropModal(false))
             order.methodPay === 2 && axios.put(`/api/users/${user.id}`, {
-                balance: user.balance + order.total - (order.total / 100 * 5) + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
+                balance: user.balance + order.total - (order.total / 100 * 10) + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
             })
             order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
-                balance: data.balance + (order.total / 100 * 5)
+                balance: data.balance + (order.total / 100 * 10)
             })
 
             axios.put(`/api/orders/${idOrder}`, {
@@ -99,6 +101,7 @@ const OrderDetail = () => {
                 senderId: order.receiverId,
                 receiverId: order.senderId,
             })
+            mutate()
             dispatch(setIsUpdate(!isUpdated))
         }, 3000)
     }
@@ -114,6 +117,7 @@ const OrderDetail = () => {
         order.methodPay === 2 && axios.put(`/api/users/${order.senderId}`, {
             balance: order.type === "booking" ? data.balance + order.total : data.balance + order.total + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
         })
+        mutate()
         dispatch(setOpenNotificationDetail(false))
         dispatch(setIsUpdate(!isUpdated))
     }
@@ -268,15 +272,21 @@ const OrderDetail = () => {
         axios.put(`/api/orders/${idOrder}`, {
             status: 7
         })
+        mutate()
     }
 
 
     const handleRejectTakeGoods = () => {
-        axios.put(`/api/orders/${idOrder}`, {
-            status: 8,
-            message: reasonReject
-        })
+        if (!reasonReject) {
+            toast.info("Vui lòng nhập lý do từ nhận hàng", { autoClose: 3000, theme: "colored" })
+        } {
+            axios.put(`/api/orders/${idOrder}`, {
+                status: 8,
+                message: reasonReject
+            })
+        }
         setFormReasonRejectTakeGood(false)
+        mutate()
     }
 
     const handleRefundOrder = async () => {
@@ -317,8 +327,8 @@ const OrderDetail = () => {
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setFormReasonRejectTakeGood(false)}>Hủy</Button>
-                    <Button onClick={handleRejectTakeGoods}>Xác nhận</Button>
+                    <Button className="border-primary text-primary" variant="outlined" onClick={() => setFormReasonRejectTakeGood(false)}>Hủy</Button>
+                    <Button className="!bg-primary text-white" variant="contained" onClick={handleRejectTakeGoods}>Xác nhận</Button>
                 </DialogActions>
             </Dialog>
             <Dialog
@@ -531,9 +541,9 @@ const OrderDetail = () => {
                                         {`Phương thức thanh toán : `}
                                     </Typography>
                                     <Typography fontWeight={700} variant="body1" component="h1">
-                                        {order.methodPay === 1 && "Transfer"}
-                                        {order.methodPay === 2 && "Sport Pay Wallet"}
-                                        {order.methodPay === 3 && "Payment on delivery"}
+                                        {order.methodPay === 1 && "Chuyển khoản"}
+                                        {order.methodPay === 2 && "Ví Sport Pay"}
+                                        {order.methodPay === 3 && "Thanh toán khi nhận hàng"}
                                     </Typography>
                                 </div>
                             }
@@ -711,10 +721,10 @@ const OrderDetail = () => {
                                         {`Phí dịch vụ : `}
                                     </Typography>
                                     <Typography fontWeight={700} variant="body1" component="h1">
-                                        <Currency quantity={order.total / 100 * 5} currency="VND" pattern="##,### !" />
+                                        <Currency quantity={order.total / 100 * 10} currency="VND" pattern="##,### !" />
                                     </Typography>
                                     <Typography variant="body1" component="h1">
-                                        (5%)
+                                        (10%)
                                     </Typography>
                                 </div>
                             }
@@ -758,7 +768,7 @@ const OrderDetail = () => {
                                             {"Hoàn tiền đặt hàng"}
                                         </Typography>
                                         <Typography variant="body1" component="h1">
-                                            (+<Currency quantity={order.total - order.total / 100 * 5} currency="VND" pattern="##,###!" />)
+                                            (+<Currency quantity={order.total - order.total / 100 * 10} currency="VND" pattern="##,###!" />)
                                         </Typography>
                                     </div>
                                 </div>
@@ -776,7 +786,7 @@ const OrderDetail = () => {
                                     <Typography fontWeight={700} variant="body1" component="h1">
                                         {order.methodPay === 1 && "Chuyển khoản"}
                                         {order.methodPay === 2 && "Sport Pay Wallet"}
-                                        {order.methodPay === 3 && "Payment khi nhận hàng"}
+                                        {order.methodPay === 3 && "Thanh toán khi nhận hàng"}
                                     </Typography>
                                 </div>
                             }
@@ -859,52 +869,52 @@ const OrderDetail = () => {
                         </div>
                         <Divider />
                         <div className="flex-col space-y-2 w-full">
-                            {isLoading 
-                            ?
-                            <Skeleton variant="rectangular" className="w-full h-[30rem]" />
-                            :
-                            <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                    <tr>
-                                        <th scope="col" className="py-3 px-6">
-                                            Hình ảnh
-                                        </th>
-                                        <th scope="col" className="py-3 px-6">
-                                            Tên
-                                        </th>
-                                        <th scope="col" className="py-3 px-6">
-                                            Size
-                                        </th>
-                                        <th scope="col" className="py-3 px-6">
-                                            Số lượng
-                                        </th>
-                                        <th scope="col" className="py-3 px-6">
-                                            Giá
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {order.products?.map((p: Cart, index: number) => (
-                                        <tr key={index} className=" bg-white dark:bg-gray-800">
-                                            <th scope="row" className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                <img className="object-cover w-20 h-20" src={p.product?.mainPictures[0]} alt="" />
+                            {isLoading
+                                ?
+                                <Skeleton variant="rectangular" className="w-full h-[30rem]" />
+                                :
+                                <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                        <tr>
+                                            <th scope="col" className="py-3 px-6">
+                                                Hình ảnh
                                             </th>
-                                            <td className="py-4 px-6">
-                                                {p.product.name}
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                {p.size}
-                                            </td>
-                                            <td className="pl-12 py-4">
-                                                {p.amount}
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                <Currency quantity={(p.product.price - p.product.price / 100 * p.product.discount) * p.amount} currency="VND" pattern="##,###!" />
-                                            </td>
+                                            <th scope="col" className="py-3 px-6">
+                                                Tên
+                                            </th>
+                                            <th scope="col" className="py-3 px-6">
+                                                Size
+                                            </th>
+                                            <th scope="col" className="py-3 px-6">
+                                                Số lượng
+                                            </th>
+                                            <th scope="col" className="py-3 px-6">
+                                                Giá
+                                            </th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {order.products?.map((p: Cart, index: number) => (
+                                            <tr key={index} className=" bg-white dark:bg-gray-800">
+                                                <th scope="row" className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                    <img className="object-cover w-20 h-20" src={p.product?.mainPictures[0]} alt="" />
+                                                </th>
+                                                <td className="py-4 px-6">
+                                                    {p.product.name}
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    {p.size}
+                                                </td>
+                                                <td className="pl-12 py-4">
+                                                    {p.amount}
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <Currency quantity={(p.product.price - p.product.price / 100 * p.product.discount) * p.amount} currency="VND" pattern="##,###!" />
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             }
                         </div>
                     </DialogContent>
@@ -940,12 +950,12 @@ const OrderDetail = () => {
                             <div className="flex space-x-2">
                                 <Button
                                     onClick={() => setFormReasonRejectTakeGood(true)}
-                                    className="!bg-red-500" variant="contained">
+                                    className="!bg-red-500 text-white" variant="contained">
                                     Từ chối nhận hàng
                                 </Button>
                                 <Button
                                     onClick={handleConfirmTakeGoodSuccess}
-                                    className="!bg-primary" variant="contained">
+                                    className="!bg-primary text-white" variant="contained">
                                     Tôi đã nhận được hàng
                                 </Button>
                             </div>
@@ -953,13 +963,13 @@ const OrderDetail = () => {
                     </DialogActions>
                 }
 
-                {order.status === 8 && user.id === order.ownerId &&
+                {order.status === 8 &&  order.methodPay === 2  &&user.id === order.ownerId &&
                     <DialogActions className="flex items-center  bg-gray-100 w-full">
                         <div className="flex justify-end my-3">
                             <div className="flex space-x-2">
                                 <Button
                                     onClick={handleRefundOrder}
-                                    className="!bg-primary" variant="contained">
+                                    className="!bg-primary text-white" variant="contained">
                                     Hoàn tiền đặt hàng
                                 </Button>
                             </div>

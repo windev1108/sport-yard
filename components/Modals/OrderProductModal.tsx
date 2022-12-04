@@ -36,7 +36,6 @@ interface State {
     methodPay: number
     isLoading: boolean
     bankCode: string
-    bank: any,
     random: number
     transferContent: string
 }
@@ -48,7 +47,7 @@ interface Order {
     cart: Cart[]
 }
 
-const OrderProductModal: NextPage = () => {
+const OrderProductModal = ({ mutate }: any) => {
     const dispatch = useDispatch()
     const { isOpenOrderProduct }: any = useSelector<RootState>(state => state.is)
     const { order, totalPrice }: any = useSelector<RootState>(state => state.orders)
@@ -57,16 +56,17 @@ const OrderProductModal: NextPage = () => {
         users: [],
         methodPay: 0,
         bankCode: "",
-        bank: {},
         random: 0,
         transferContent: "",
         isLoading: true,
     })
-    const { isLoading, users, methodPay, bank, transferContent, bankCode, random } = state
+    const { isLoading, users, methodPay, transferContent, bankCode, random } = state
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
 
+
+    console.log("order ", order);
     useEffect(() => {
         axios.get("/api/users")
             .then(res => setState({ ...state, users: res.data.users, isLoading: false }))
@@ -74,20 +74,6 @@ const OrderProductModal: NextPage = () => {
 
 
 
-    useMemo(() => {
-        const bankFound = user.banks?.find((bank: Bank) => bank.bankCode === bankCode)
-        const randomId = Math.floor(Math.random() * 900000 + 10000)
-        setState({
-            ...state, bank: bankFound, transferContent: `ORDER_SPORTYARD_${randomId}`, random: randomId
-        })
-    }, [bankCode])
-
-
-    const handleCopyToClipboard = (value: string) => {
-        navigator.clipboard.writeText(value)
-        dispatch(setContentSnackBar("Coppy success"))
-        dispatch(setOpenSnackBar(true))
-    }
 
     const getUser = (id: string) => {
         const foundUser: any = users.find((u: User) => u.id === id)
@@ -113,8 +99,6 @@ const OrderProductModal: NextPage = () => {
     const handleSubmitOrder = () => {
         if (!methodPay) {
             toast.info("Vui lòng chọn phương thức thanh toán", { autoClose: 3000, theme: "colored" })
-        } else if (methodPay === 1 && !bank?.id) {
-            toast.info("Vui lòng chọn ngân hàng", { autoClose: 3000, theme: "colored" })
         } else if (!user.address) {
             toast.info("Vui lòng thêm địa chỉ nhận hàng", { autoClose: 3000, theme: "colored" })
         } else if (methodPay === 2 && user.balance < totalPrice + totalPrice / 100 * 5 + 38000) {
@@ -139,7 +123,6 @@ const OrderProductModal: NextPage = () => {
                     orderId: user.id,
                     address: user.address,
                     methodPay,
-                    bank,
                     transferContent,
                     bookingId: methodPay === 1 ? random : Math.floor(Math.random() * 900000 + 10000),
                     products: o.cart,
@@ -157,6 +140,7 @@ const OrderProductModal: NextPage = () => {
                 })
                 dispatch(setOpenBackdropModal(false))
                 dispatch(setOpenOrderProduct(false))
+                mutate()
                 toast.success("Đơn hàng đã tạo thành công", { autoClose: 3000, theme: "colored" })
             }, 3000)
         }
@@ -329,7 +313,6 @@ const OrderProductModal: NextPage = () => {
                                     onChange={e => setState({ ...state, methodPay: +e.target.value })}
                                     className="lg:w-[50%] w-full mt-6 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                                     <option selected value={0}>Chọn phương thức thanh toán</option>
-                                    <option value={1}>Chuyển khoản</option>
                                     <option value={2}>Ví Sport Pay</option>
                                     <option value={3}>Thanh toán khi nhận hàng</option>
                                 </select>
@@ -341,57 +324,7 @@ const OrderProductModal: NextPage = () => {
                                         </Typography>
                                     </div>
                                 }
-                                {methodPay === 1 &&
-                                    <select
-                                        value={bankCode}
-                                        defaultValue={0}
-                                        onChange={e => setState({ ...state, bankCode: e.target.value })}
-                                        className="w-[50%]  outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                                        <option selected value={0}>Chọn ngân hàng</option>
-                                        {user.banks?.map((b: Bank) => (
-                                            <option key={b.id} value={b.bankCode}>{`${b.bankCode} / ${b.bankName}`}</option>
-                                        ))}
-                                    </select>
-                                }
-                                {bank && methodPay === 1 &&
-                                    <>
-                                        <div className="flex items-center space-x-2">
-                                            <div className="flex space-x-2">
-                                                <Typography variant="body1" component="h1">
-                                                    {`Chủ tài khoản : `}
-                                                </Typography>
-                                                <Typography fontWeight={700} variant="body1" component="h1">
-                                                    {bank?.name}
-                                                </Typography>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <div className="flex space-x-2">
-                                                <Typography variant="body1" component="h1">
-                                                    {`Số tài khoản : `}
-                                                </Typography>
-                                                <Typography fontWeight={700} variant="body1" component="h1">
-                                                    {bank?.accountNumber}
-                                                </Typography>
-                                            </div>
-                                            <AiFillCopy onClick={() => handleCopyToClipboard(bank?.accountNumber)}
-                                                className="cursor-pointer text-yellow-400" size={18} />
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <div className="flex space-x-2">
-                                                <Typography variant="body1" component="h1">
-                                                    {`Nội dung chuyển khoản : `}
-                                                </Typography>
-                                                <Typography fontWeight={700} variant="body1" component="h1">
-                                                    {transferContent}
-                                                </Typography>
-                                            </div>
-                                            <AiFillCopy onClick={() => handleCopyToClipboard(transferContent
-                                            )}
-                                                className="cursor-pointer text-yellow-400" size={18} />
-                                        </div>
-                                    </>
-                                }
+
                             </div>
                         }
                         <Divider />
@@ -443,7 +376,7 @@ const OrderProductModal: NextPage = () => {
                                     <div className="flex justify-center">
                                         <Button
                                             onClick={handleSubmitOrder}
-                                            className="lg:w-[50%] w-full !bg-primary" variant='contained'>
+                                            className="lg:w-[50%] w-full text-white !bg-primary" variant='contained'>
                                             Đặt hàng
                                         </Button>
                                     </div>

@@ -129,7 +129,7 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer  }) => {
             onClick={() => handleOpenProfile(user.id)}
             >
               <ListItemIcon>
-                <Avatar sx={{ bgcolor: deepOrange[500] }}>{user?.firstName?.substring(0, 1)}</Avatar>
+                <Avatar src={user?.avatar} sx={{ bgcolor: deepOrange[500] }}>{user?.firstName?.substring(0, 1)}</Avatar>
               </ListItemIcon>
               <ListItemText primary={`${user?.firstName} ${user?.lastName}`} />
             </ListItemButton>

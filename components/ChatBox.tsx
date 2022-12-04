@@ -23,7 +23,8 @@ import { setIdProfile } from '../redux/features/userSlice';
 import Link from 'next/link';
 import { getCookie } from 'cookies-next';
 import jwt from "jsonwebtoken"
-
+import { updateUser } from '../firebase/hooks';
+import { io } from "socket.io-client";
 
 
 
@@ -57,7 +58,6 @@ interface TimeLine {
 }
 
 const ChatBox = () => {
-    const token: any = getCookie("token")
     const dispatch = useDispatch()
     const [state, setState] = useState<State>({
         conversations: [],
@@ -76,10 +76,11 @@ const ChatBox = () => {
     })
     const { isOpenChatBox }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { conversations, messages, message, previewBlobs, listUserOnline, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
+    const { conversations, users, messages, message, previewBlobs, listUserOnline, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
     const [showEmojis, setShowEmojis] = useState(false)
     const [urls, setUrls] = useState<string[]>([])
     const [emoji, setEmoji] = useState<{ native: string } | any>({})
+    const socket = useRef<any>()
     const messageEndRef = useRef<any>(null)
     const messageRef = useRef<any>()
 
@@ -89,6 +90,25 @@ const ChatBox = () => {
     }
 
 
+    useEffect(() => {
+        const token: any = getCookie("token")
+        const data = jwt.decode(token) as { [key: string]: string }
+        socket.current = io("https://sport-yard-server.onrender.com/" , {
+            transports: ['websocket' , 'polling'],
+            pingTimeout: 60000,
+            reconnectionDelayMax: 10000,
+            auth: {
+                token
+              },
+        })
+        socket?.current.on("connect", () => {
+            console.log("Socket connected")
+            socket.current.emit("new-user" , data.id)
+            socket.current.on("list-users", (userSocket : any) => console.log("users from socket :",userSocket))
+            socket.current.on("user-disconnect" , (userSocket : any) => console.log("user after disconnected :",userSocket))
+        })
+        
+    }, [])
 
     const hideChatMessage = () => {
         setState({ ...state, isOpenChatMessage: false, isFadeDownChatBox: false })
@@ -100,18 +120,17 @@ const ChatBox = () => {
 
     const fetcher = async (url: string) => {
         const res = await axios.get(url)
-        return res.data.messages?.filter((m: Message) => m.receiverId === userSelected.id || m.receiverId === user.id && m.senderId === userSelected.id)
+        return res.data.messages?.filter((m: Message) => m.senderId === user.id && m.receiverId === userSelected.id || m.receiverId === user.id && m.senderId === userSelected.id)
     }
 
 
     const { data, mutate } = useSWR(userSelected.id ? "/api/messages" : null, fetcher)
 
-    useEffect(() => {
 
-        return () => {
-            dispatch(setOpenChatBox(false))
-        }
-    }, [])
+    useEffect(() => {
+        setState({ ...state, isOpenOptionInfo: false })
+        mutate()
+    }, [userSelected.id])
 
     useEffect(() => {
         getConversations()
@@ -121,6 +140,7 @@ const ChatBox = () => {
         const resUsers = await axios.get('/api/users')
         setState({
             ...state,
+            users: resUsers.data.users,
             conversations:
                 user.conversations?.map((conversation: string) => {
                     return resUsers.data.users.find((u: User) => u.id === conversation)
@@ -167,6 +187,11 @@ const ChatBox = () => {
         }
     }
 
+
+    const getUser = (id: string) => {
+        const user = users.find((u: User) => u.id === id)
+        return user
+    }
 
     const handleShowMessage = (userSelected: User) => {
         setState({ ...state, userSelected, isOpenChatMessage: true })
@@ -223,7 +248,7 @@ const ChatBox = () => {
 
     return (
         <>
-            <div className={`${isOpenChatBox ? "translate-y-0" : "translate-y-[90%]"} z-20 origin-bottom-right w-[288px]  transition-all duration-700 ease-in-out fixed bottom-0 right-1  shadow-md h-[30rem]`}>
+            <div className={`${isOpenChatBox ? "translate-y-0" : "translate-y-[90%]"} z-[1002] origin-bottom-right w-[50vw] lg:w-[288px]  transition-all duration-700 ease-in-out fixed bottom-0 right-1  shadow-md h-[30rem]`}>
                 <div
                     onClick={toggleChatBox}
                     className={`${isOpenChatMessage ? "rounded-tr-lg" : "rounded-t-lg"} shadow-lg transition-all duration-700 ease-in-out border-[1px] border-gray-300 !bg-white flex items-center h-[47px]  !p-1 cursor-pointer`}>
@@ -267,8 +292,8 @@ const ChatBox = () => {
 
             {isOpenChatMessage &&
                 <div className={`
-            ${isFadeDownChatBox && "translate-y-[90%] !w-[250px]"} 
-            z-10 fixed right-[18.2rem] border-[1px] border-gray-300 w-[25rem] h-[30rem] bg-white bottom-0 origin-left transition-all duration-700 ease-in-out`}>
+            ${isFadeDownChatBox && "lg:translate-y-[90%] lg:!w-[250px]"} 
+            z-[1002] fixed lg:right-[18.2rem] left-0 lg:left-auto top-0 lg:top-auto border-[1px] border-gray-300 w-[25rem] h-screen  lg:h-[30rem] bg-white lg:bottom-0 bottom-0 origin-left transition-all duration-700 ease-in-out`}>
                     <div className="h-full">
                         <div
                             className="relative h-[10%] flex cursor-pointer px-2 items-center border-[1px]">
@@ -297,9 +322,9 @@ const ChatBox = () => {
                                 <IconButton
                                     onClick={() => setState({ ...state, isOpenOptionInfo: !isOpenOptionInfo })}
                                 >
-                                    <FiChevronDown className={`${isOpenOptionInfo && "rotate-[180deg] "} transition-all duration-700 ease-in-out`} />
+                                    <FiChevronDown className={`${isOpenOptionInfo && "lg:rotate-[180deg] rotate-[-180deg] "} transition-all duration-700 ease-in-out`} />
                                 </IconButton>
-                                <div className={`${isOpenOptionInfo ? "scale-100" : "scale-0"} origin-bottom-right absolute top-[-150%] -left-[0%] transition-all duration-700 ease-in-out bg-white shadow-md border-[1px] border-gray-300 w-[9rem]`}>
+                                <div className={`${isOpenOptionInfo ? "scale-100" : "scale-0"} ${userSelected.phone ? "lg:top-[-150%] bottom-[-100%] lg:bottom-auto" : "lg:top-[-80%] bottom-[-50%] lg:bottom-auto"} origin-bottom-right absolute -left-[0%] transition-all duration-700 ease-in-out bg-white shadow-md border-[1px] border-gray-300 w-[9rem]`}>
                                     <div onClick={() => handleOpenProfile(userSelected?.id!)} className="flex space-x-2 items-center px-3 py-1 hover:bg-gray-200">
                                         <CgProfile className="text-primary" size={20} />
                                         <span className="font-semibold">Xem hồ sơ</span>
@@ -327,9 +352,16 @@ const ChatBox = () => {
                             {data && typeof data !== "string" && data?.map((item: Message) => (
                                 <div key={item.id} className="flex flex-col space-y-1 w-full p-2">
                                     <span className="text-center text-xs">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span>
-                                    <div className={`${item.senderId === user.id ? "justify-end" : "justify-start"} flex`}>
+                                    <div className={`${item.senderId === user.id ? "justify-end" : "justify-start"} flex w-full`}>
                                         {item.type === "text" &&
-                                            <span className={`${item.senderId === user.id ? "bg-[#d7e4ff]" : "bg-gray-100"} p-3 text-sm rounded-md max-w-[50%]`}>{item.message}</span>
+                                            <div className={`flex max-w-[50%] space-x-2`}>
+                                                {item.senderId !== user.id
+                                                    &&
+                                                    <Avatar src={getUser(item.senderId)?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{getUser(item.senderId)?.firstName?.substring(0, 1)}
+                                                    </Avatar>
+                                                }
+                                                <span className={`${item.senderId === user.id ? "bg-[#d7e4ff]" : "bg-gray-100"} px-3  py-2 text-sm rounded-md max-w-[100%]`}>{item.message}</span>
+                                            </div>
                                         }
                                         {item.type === "images" &&
                                             <div className={`${item.pictures.length >= 3 ? "grid-cols-3" : `grid-cols-${item.pictures.length}`} max-w-[50%] gap-1 grid h-auto`}>

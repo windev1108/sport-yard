@@ -7,9 +7,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import { NextPage } from 'next';
 import { useDispatch, useSelector } from 'react-redux';
-import {  setOpenBackdropModal, setOpenFormTransaction } from '../../redux/features/isSlice';
+import { setOpenBackdropModal, setOpenFormTransaction } from '../../redux/features/isSlice';
 import { RootState } from '../../redux/store';
-import {  FormControl, InputLabel, Select, MenuItem, Grid, Typography, Snackbar, IconButton } from '@mui/material';
+import { FormControl, InputLabel, Select, MenuItem, Grid, Typography, Snackbar, IconButton } from '@mui/material';
 import { toast } from 'react-toastify';
 import FormHelperText from '@mui/material/FormHelperText';
 import axios from 'axios';
@@ -19,6 +19,7 @@ import { Bank, User } from '../../Models';
 import Currency from 'react-currency-formatter';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import { RiErrorWarningLine } from 'react-icons/ri';
 
 
 
@@ -38,7 +39,7 @@ interface State {
 
 const FormTransactionsModal: NextPage = () => {
     const dispatch = useDispatch()
-    const {  isOpenFormTransaction }: any = useSelector<RootState>(state => state.is)
+    const { isOpenFormTransaction }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>((state) => state.user)
     const { action }: any = useSelector<RootState>(state => state.transaction)
     const [state, setState] = useState<State>({
@@ -156,8 +157,8 @@ const FormTransactionsModal: NextPage = () => {
                 action={actionSnackbar}
             />
             <Dialog
-            fullScreen={fullScreen}
-            open={isOpenFormTransaction} onClose={handleClose} maxWidth="xl" >
+                fullScreen={fullScreen}
+                open={isOpenFormTransaction} onClose={handleClose} maxWidth="xl" >
                 <DialogTitle>{action === "withdraw" ? "Rút tiền" : "Nạp tiền"}</DialogTitle>
                 <DialogContent className="lg:w-[40rem] w-full flex-col space-y-2">
                     <FormControl className="w-full !my-3">
@@ -196,7 +197,7 @@ const FormTransactionsModal: NextPage = () => {
                             <div className="flex items-center space-x-2">
                                 <div className="flex space-x-2">
                                     <Typography variant="body1" component="h1">
-                                        {`Account name : `}
+                                        {`Tên tài khoản : `}
                                     </Typography>
                                     <Typography fontWeight={700} variant="body1" component="h1">
                                         {bank?.name}
@@ -207,7 +208,7 @@ const FormTransactionsModal: NextPage = () => {
                             <div className="flex items-center space-x-2">
                                 <div className="flex space-x-2">
                                     <Typography variant="body1" component="h1">
-                                        {`Account number : `}
+                                        {`Số tài khoản : `}
                                     </Typography>
                                     <Typography fontWeight={700} variant="body1" component="h1">
                                         {bank?.accountNumber}
@@ -219,7 +220,7 @@ const FormTransactionsModal: NextPage = () => {
                             <div className="flex items-center space-x-2">
                                 <div className="flex space-x-2">
                                     <Typography variant="body1" component="h1">
-                                        {`Transfer content: `}
+                                        {`Nội dung chuyển khoản: `}
                                     </Typography>
                                     <Typography fontWeight={700} variant="body1" component="h1">
                                         {transferContent
@@ -229,6 +230,14 @@ const FormTransactionsModal: NextPage = () => {
                                 <AiFillCopy onClick={() => handleCoppyToClipboard(transferContent
                                 )}
                                     className="cursor-pointer text-yellow-400" size={18} />
+                            </div>
+                            <div className="flex space-x-2 items-center">
+                                <RiErrorWarningLine 
+                                size={20}
+                                className="text-yellow-600" />
+                                <Typography variant="subtitle2" component="h1">
+                                    {`Sai nội dung chuyển khoản trừ 10% số lượng giao dịch`}
+                                </Typography>
                             </div>
                         </>
                     }

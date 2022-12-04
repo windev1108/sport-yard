@@ -19,33 +19,29 @@ import { toast } from 'react-toastify';
 import { MdClose } from 'react-icons/md';
 import moment from 'moment';
 import { getCookie } from 'cookies-next';
+import useSWR from 'swr';
+import NotificationDetail from './NotificationDetail'
+import OrderProductModal from '../Modals/OrderProductModal';
+
 const Dashboard = dynamic(() => import("../Dashboard"), { ssr: false })
 
 
-interface State {
-    notifications: Order[]
-}
+
 const Notifications = () => {
     const dispatch = useDispatch()
     const token: any = getCookie("token")
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { isUpdated }: any = useSelector<RootState>(state => state.is)
+    const { isOpenNotificationDetail, isOpenOrderProduct , isOpenDashboard }: any = useSelector<RootState>(state => state.is)
+    const [notifications, setNotifications] = useState<Order[]>([])
     const [notificationsEl, setNotificationsEl] = useState<null | HTMLElement>(null);
-    const [state, setState] = useState<State>({
-        notifications: [],
-    })
-
-    const { notifications } = state
 
 
-    useEffect(() => {
-        const q = query(collection(db, "orders"), orderBy("timestamp", "desc"))
-        const unsub = onSnapshot(q, (snapshot: any) => {
-            const results = snapshot.docs.map((doc: any) => ({ ...doc.data(), id: doc.id }))
-            setState({ ...state, notifications: results?.filter((order: Order) => user?.id === order.senderId || user?.id === order.receiverId) });
-        })
-        return unsub
-    }, [])
+    const fetcherNotifications = async (url: string) => {
+        console.log("call data")
+        const { data } = await axios.get(url)
+        setNotifications(data.orders.filter((order: Order) => user?.id === order.senderId || user?.id === order.receiverId))
+    }
+    const { mutate } = useSWR(user?.id ? "/api/orders" : null, fetcherNotifications)
 
 
 
@@ -87,7 +83,8 @@ const Notifications = () => {
 
     return (
         <>
-            <Dashboard orders={notifications} />
+            {isOpenNotificationDetail && <NotificationDetail mutate={mutate} />}
+            {isOpenOrderProduct && <OrderProductModal mutate={mutate} />}
 
             <Tooltip title="Notifications">
                 <IconButton
@@ -154,7 +151,7 @@ const Notifications = () => {
 
                         <Divider />
 
-                        <div className="relative lg:w-[30rem] w-full lg:max-h-[15rem] !overflow-y-scroll">
+                        <div className="relative lg:w-[30rem] w-full lg:max-h-[15rem] !overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                             {notifications.map(((item: Order, index: number) => (
                                 item.type === "booking" ?
                                     <div

@@ -71,7 +71,7 @@ const Yards = () => {
                       label="Chọn Quận"
                     >
                       <MenuItem value={""}>
-                        <em>None</em>
+                        Tất cả
                       </MenuItem>
                       <MenuItem value={"hải châu"}>Quận Hải châu</MenuItem>
                       <MenuItem value={"cẩm lệ"}>Quận Cẩm lệ</MenuItem>

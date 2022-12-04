@@ -41,8 +41,7 @@ const Layout: NextPage<LayoutProps> = ({ children }) => {
       {isOpenTransactionDetail && <TransactionDetail />}
       {isOpenBackdropModal && <BackdropModal />}
       {isOpenPaymentModal && <PaymentModal />}
-      {isOpenNotificationDetail && <NotificationDetail />}
-      {isOpenOrderProduct && <OrderProductModal />}
+      
       {token && !isLoading && router.asPath !== "/owner/manager" && router.asPath !== "/admin/manager" && <ChatBox />}
       <Snackbar open={isOpenSnackbar} autoHideDuration={500} onClose={() => dispatch(setOpenSnackBar(false))}>
         <Alert severity="success" sx={{ width: '100%' }}>

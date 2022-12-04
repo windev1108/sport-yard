@@ -19,6 +19,7 @@ import { FormLabel, Tooltip } from '@mui/material';
 import { storage } from '../../firebase/config';
 import { deepOrange } from '@mui/material/colors';
 import { banking, containsNumbers, hasEmpySpace } from '../../utils/helper';
+import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa'
 import { AiOutlineMinusCircle, AiOutlinePlus, AiOutlinePlusCircle } from 'react-icons/ai';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -39,6 +40,7 @@ interface State {
     avatar: any
     phone: string
     banks: any[]
+    isShowPassword: boolean
     isLoading: boolean
     isUploaded: boolean
 }
@@ -64,10 +66,11 @@ const FormEditUserModal: NextPage = () => {
         blobAvatar: "",
         avatarUrl: "",
         avatar: {},
+        isShowPassword: false,
         isLoading: false,
         isUploaded: false
     })
-    const { email, firstName, lastName, password, role, blobAvatar, avatar, avatarUrl, bankSlot, banks, phone, address, isLoading, isUploaded } = state
+    const { email, firstName, lastName, password, role, blobAvatar, avatar, avatarUrl, bankSlot, banks, phone, address, isLoading, isUploaded, isShowPassword } = state
 
     useEffect(() => {
         axios.get(`/api/users/${idEditing}`)
@@ -207,16 +210,28 @@ const FormEditUserModal: NextPage = () => {
                     fullWidth
                     variant="standard"
                 />
-                <TextField
-                    value={password}
-                    onChange={(e) => setState({ ...state, password: e.target.value })}
-                    focused={password ? true : false}
-                    autoFocus
-                    margin="dense"
-                    label="Password"
-                    fullWidth
-                    variant="standard"
-                />
+                <div className="relative flex w-full items-center">
+                    <TextField
+                        value={password}
+                        onChange={(e) => setState({ ...state, password: e.target.value })}
+                        focused={password ? true : false}
+                        autoFocus
+                        type={isShowPassword ? "text" : "password"}
+                        margin="dense"
+                        label="Password"
+                        fullWidth
+                        variant="standard"
+                    />
+                    <IconButton
+                        onClick={() => setState({ ...state, isShowPassword: !isShowPassword })}
+                        className="absolute right-0" >
+                        {isShowPassword ?
+                            <FaRegEye size={22} className="text-gray-700" />
+                            :
+                            <FaRegEyeSlash size={22} className="text-gray-700" />
+                        }
+                    </IconButton>
+                </div>
                 <TextField
                     value={address}
                     onChange={(e) => setState({ ...state, address: e.target.value })}
@@ -356,8 +371,8 @@ const FormEditUserModal: NextPage = () => {
                 </div>
             </DialogContent>
             <DialogActions className="flex  items-center  bg-gray-100 w-full">
-                <Button onClick={() => dispatch(setOpenFormEditUser(false))}>Cancel</Button>
-                <Button className="!bg-[#1976d2] !text-white" variant="contained" onClick={isUploaded || !blobAvatar ? handleSubmit : handleUploadFiles}>{isUploaded || !blobAvatar  ? "Submit" : "Upload"}</Button>
+                <Button variant="outlined"  className="hover:border-primary border-primary text-primary" onClick={() => dispatch(setOpenFormEditUser(false))}>Cancel</Button>
+                <Button className="!bg-primary !text-white" variant="contained" onClick={isUploaded || !blobAvatar ? handleSubmit : handleUploadFiles}>{isUploaded || !blobAvatar ? "Submit" : "Upload"}</Button>
             </DialogActions>
             {isLoading &&
                 <div className="absolute top-0 left-0 right-0 ">

@@ -55,7 +55,7 @@ const Dashboard: NextPage<Props> = ({ orders }) => {
     }
 
 
-    const data = orders.map((order: Order) => {
+    const data = orders?.map((order: Order) => {
         return {
             id: order.id,
             type: order.type === "booking" ? "Sân bóng đá" : "Sản phẩm",

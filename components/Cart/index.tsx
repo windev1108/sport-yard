@@ -175,7 +175,7 @@ const CartComponent = () => {
                                 <MdClose />
                             </IconButton>
                         </div>
-                        <div className="lg:w-[30rem] w-full lg:max-h-[25rem] overflow-y-scroll  pt-10">
+                        <div className="lg:w-[30rem] w-full lg:max-h-[25rem] !overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pt-10">
                             {cart?.map((c: Cart, index: number) => (
                                 <div key={index}>
                                     {index >= 1 && <Divider />}

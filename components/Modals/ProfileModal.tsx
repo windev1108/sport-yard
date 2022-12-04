@@ -20,7 +20,7 @@ import dynamic from 'next/dynamic';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { GrClose } from 'react-icons/gr';
-import { removeCookies } from 'cookies-next';
+import { removeCookies, getCookie } from 'cookies-next';
 const Balance = dynamic(() => import("../Balance"), { ssr: false })
 
 
@@ -32,6 +32,7 @@ interface State {
 
 
 const ProfileModal: NextPage = () => {
+    const token = getCookie("token")
     const dispatch = useDispatch()
     const { isUpdated, isOpenProfileModal }: any = useSelector<RootState>(state => state.is)
     const { idProfile, user }: any = useSelector<RootState>(state => state.user)
@@ -207,7 +208,7 @@ const ProfileModal: NextPage = () => {
                 </div>
             </DialogContent>
             <DialogActions className="flex w-full items-center  bg-gray-100">
-                {user.id === idProfile ?
+                {token && user.id === idProfile &&
                     <div className="flex  justify-between space-x-2 w-full">
                         <div className="flex space-x-2">
                             {isLoading
@@ -243,17 +244,18 @@ const ProfileModal: NextPage = () => {
                             }
                         </div>
                     </div>
-                    :
-                    <div>
-                        {isLoading
-                            ?
-                            <Skeleton variant="rounded" width={80} height={35} />
-                            :
-                            <Button
-                                onClick={handleSendMessage}
-                                className="!bg-primary !text-white">Nhắn tin</Button>
-                        }
-                    </div>
+                }
+                {token && user.id !== idProfile &&
+                <div>
+                    {isLoading
+                        ?
+                        <Skeleton variant="rounded" width={80} height={35} />
+                        :
+                        <Button
+                            onClick={handleSendMessage}
+                            className="!bg-primary !text-white">Nhắn tin</Button>
+                    }
+                </div>
                 }
             </DialogActions>
         </Dialog >
