@@ -127,7 +127,9 @@ const ChatBox = () => {
         const token: any = getCookie("token")
         const { id }: any = jwt.decode(token)
         await fetch('/api/socket')
-        socket = io()
+        socket = io("/", {
+            transports: ["websocket", "polling"]
+        })
 
         socket.on('connect', () => {
             console.log('connected')
@@ -371,7 +373,7 @@ const ChatBox = () => {
                         </div>
                         <div className="relative h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ">
                             {data && typeof data !== "string" && data?.map((item: Message, index: number) => (
-                                <div key={item.id} className="flex flex-col w-full p-1">
+                                <div key={item.id} className="flex flex-col w-full p-2">
                                     {/* <span className="text-center text-xs">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span> */}
                                     <div className={`${item.senderId === user.id ? "justify-end" : "justify-start"} flex w-full`}>
                                         {item.type === "text" &&
