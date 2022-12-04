@@ -179,7 +179,9 @@ const ChatBox = () => {
 
     const handleShowMessage = (userSelected: User) => {
         setState({ ...state, userSelected, isOpenChatMessage: true })
-        scrollToBottom()
+        setTimeout(() => {
+            messageEndRef.current && scrollToBottom()
+        },100)
     }
 
     useEffect(() => {
@@ -192,12 +194,8 @@ const ChatBox = () => {
         setState({ ...state, previewBlobs: previewBlobs?.filter(blob => blob.name !== name), pictures: Array.from(pictures)?.filter((pic: any) => pic.name !== name) })
     }
 
-    useEffect(() => {
-        messageEndRef?.current && scrollToBottom()
-    }, [isOpenChatMessage, userSelected.id]);
-
     const scrollToBottom = () => {
-        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
     const onFileChange = (e: any) => {
@@ -336,7 +334,7 @@ const ChatBox = () => {
                                 <IoMdClose />
                             </IconButton>
                         </div>
-                        <div className="h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thumb-gray-300 scrollbar-track-gray-100 ">
+                        <div className="h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ">
                             {data && typeof data !== "string" && data?.map((item: Message, index: number) => (
                                 <div key={item.id} className="flex flex-col space-y-1 w-full p-2">
                                     <span className="text-center text-xs">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span>
