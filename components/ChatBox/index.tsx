@@ -16,14 +16,14 @@ import moment from 'moment';
 import { CgProfile } from 'react-icons/cg'
 import { GrUserAdmin } from 'react-icons/gr';
 import { AiFillPicture, AiOutlineCloseCircle, AiOutlineUpload } from 'react-icons/ai';
-// import EmojisPicker from './EmojisPicker';
+import EmojisPicker from '../EmojisPicker';
 import LinearProgress from '@mui/material/LinearProgress';
 import useSWR from 'swr';
 import { setIdProfile } from '../../redux/features/userSlice';
 import Link from 'next/link';
 import { getCookie } from 'cookies-next';
 import jwt from "jsonwebtoken"
-import io from 'Socket.IO-client'
+import io from 'socket.io-client'
 
 
 
@@ -432,7 +432,7 @@ const ChatBox = () => {
                                 </div>
                             }
                             <div className="h-1/2 flex items-center justify-end space-x-2 px-3">
-                                {/* <div className="relative">
+                                <div className="relative">
                                     <IconButton
                                         onClick={() => setShowEmojis(!showEmojis)}
                                     >
@@ -441,7 +441,7 @@ const ChatBox = () => {
                                     {showEmojis &&
                                         <EmojisPicker setEmoji={setEmoji} setShowEmoji={setShowEmojis} />
                                     }
-                                </div> */}
+                                </div>
 
                                 <IconButton>
                                     <label
