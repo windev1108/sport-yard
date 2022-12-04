@@ -181,7 +181,7 @@ const ChatBox = () => {
         setState({ ...state, userSelected, isOpenChatMessage: true })
         setTimeout(() => {
             messageEndRef.current && scrollToBottom()
-        },100)
+        },300)
     }
 
     useEffect(() => {
