@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { getCookie } from 'cookies-next';
 import jwt from "jsonwebtoken"
 import { updateUser } from '../../firebase/hooks';
+import io from 'Socket.IO-client'
 
 
 
@@ -39,7 +40,6 @@ interface State {
         preview: string
     }[]
     pictures: {}[]
-    listUserOnline: SocketUser[]
     isOpenChatMessage: boolean
     isFadeDownChatBox: boolean
     isLoading: boolean
@@ -48,13 +48,17 @@ interface State {
 }
 
 interface SocketUser {
-    socketId: string
+    socketId?: string
     userId: string
+    typing?: boolean
+    receiverId: string
 }
 interface TimeLine {
     inTime: number
     messages?: Message[]
 }
+
+let socket: any
 
 const ChatBox = () => {
     const dispatch = useDispatch()
@@ -66,7 +70,6 @@ const ChatBox = () => {
         pictures: [],
         message: "",
         previewBlobs: [],
-        listUserOnline: [],
         isOpenChatMessage: false,
         isFadeDownChatBox: false,
         isUploaded: false,
@@ -75,11 +78,11 @@ const ChatBox = () => {
     })
     const { isOpenChatBox }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { conversations, users, messages, message, previewBlobs, listUserOnline, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
+    const { conversations, users, messages, message, previewBlobs, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
     const [showEmojis, setShowEmojis] = useState(false)
+    const [usersOnline, setUsersOnline] = useState<SocketUser[]>([])
     const [urls, setUrls] = useState<string[]>([])
     const [emoji, setEmoji] = useState<{ native: string } | any>({})
-    const socket = useRef<any>()
     const messageEndRef = useRef<any>(null)
     const messageRef = useRef<any>()
 
@@ -106,14 +109,43 @@ const ChatBox = () => {
     }
 
 
+
     const { data, mutate } = useSWR(userSelected.id ? "/api/messages" : null, fetcher)
+
+    useEffect(() => {
+
+        socketInitializer()
+
+
+        return () => {
+            socket.disconnect()
+        }
+
+    }, [])
+
+
+    const socketInitializer = async () => {
+        const token: any = getCookie("token")
+        const { id }: any = jwt.decode(token)
+        await fetch('/api/socket')
+        socket = io()
+
+        socket.on('connect', () => {
+            console.log('connected')
+            id && socket?.emit("user-connected", { userId: id })
+
+        })
+        socket.on("users-online", (data: SocketUser[]) => {
+            setUsersOnline(data)
+        })
+    }
 
 
     useEffect(() => {
         mutate()
         setTimeout(() => {
             scrollToBottom()
-        },300)
+        }, 300)
         setState({ ...state, isOpenOptionInfo: false })
     }, [userSelected.id])
 
@@ -226,6 +258,9 @@ const ChatBox = () => {
 
 
 
+    useEffect(() => {
+        socket?.emit("user-typing", { userId: user.id, receiverId: userSelected.id, typing: Boolean(message) })
+    }, [message])
 
     const handleOpenProfile = (id: string) => {
         dispatch(setOpenProfileModal(true))
@@ -235,7 +270,7 @@ const ChatBox = () => {
 
     return (
         <>
-            <div className={`${isOpenChatBox ? "translate-y-0" : "translate-y-[90%]"} z-[1002] origin-bottom-right w-[50vw] lg:w-[288px]  transition-all duration-700 ease-in-out fixed bottom-0 right-1  shadow-md h-[30rem]`}>
+            <div className={`${isOpenChatBox ? "translate-y-0" : "translate-y-[90%]"} z-[1002] origin-bottom-right w-[40vw] lg:w-[288px]  transition-all duration-700 ease-in-out fixed bottom-0 right-1  shadow-md h-[30rem]`}>
                 <div
                     onClick={toggleChatBox}
                     className={`${isOpenChatMessage ? "rounded-tr-lg" : "rounded-t-lg"} shadow-lg transition-all duration-700 ease-in-out border-[1px] border-gray-300 !bg-white flex items-center h-[47px]  !p-1 cursor-pointer`}>
@@ -254,7 +289,7 @@ const ChatBox = () => {
                     </div>
 
                 </div>
-                <div className="max-h-full border-l-[1px] bg-white h-full border-gray-300  w-full">
+                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-full border-gray-300  w-full">
                     {conversations?.map((conversation: User) => (
                         <div
                             onClick={() => handleShowMessage(conversation)}
@@ -262,7 +297,7 @@ const ChatBox = () => {
                             <div className="relative">
                                 <Avatar alt="" src={conversation.avatar} sx={{ bgcolor: deepOrange[500] }} >{conversation.firstName?.substring(0, 1)}
                                 </Avatar>
-                                <div className={`${listUserOnline.some((u: SocketUser) => u.userId === conversation.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute bottom-0 right-0 border-[3px] border-white w-[.90rem] h-[.90rem] rounded-full`}></div>
+                                <div className={`${usersOnline.some((u: SocketUser) => u.userId === conversation.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute bottom-0 right-0 border-[3px] border-white w-[.90rem] h-[.90rem] rounded-full`}></div>
                             </div>
                             <div>
                                 <div className="flex space-x-2 items-center">
@@ -280,7 +315,7 @@ const ChatBox = () => {
             {isOpenChatMessage &&
                 <div className={`
             ${isFadeDownChatBox && "lg:translate-y-[90%] lg:!w-[250px]"} 
-            z-[1002] fixed lg:right-[18.2rem] left-0 lg:left-auto top-0 lg:top-auto border-[1px] border-gray-300 w-[25rem] h-screen  lg:h-[30rem] bg-white lg:bottom-0 bottom-0 origin-left transition-all duration-700 ease-in-out`}>
+            z-[1002] fixed lg:right-[18.2rem] left-0 lg:left-auto top-0 lg:top-auto border-[1px] border-gray-300 lg:w-[25rem] w-screen h-screen  lg:h-[30rem] bg-white lg:bottom-0 bottom-0 origin-left transition-all duration-700 ease-in-out`}>
                     <div className="h-full">
                         <div
                             className="relative h-[10%] flex cursor-pointer px-2 items-center border-[1px]">
@@ -293,14 +328,14 @@ const ChatBox = () => {
                                 className="relative z-10 flex space-x-3 items-center">
                                 <div className="relative">
                                     <Avatar src={userSelected.avatar} sx={{ bgcolor: deepOrange[500] }} alt="Remy Sharp" className="w-8 h-8" >{userSelected.firstName?.substring(0, 1)}</Avatar>
-                                    <div className={`${listUserOnline.some((u: SocketUser) => u.userId === userSelected.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute -bottom-[2px] -right-[3px] w-[.90rem] h-[.90rem] rounded-full border-[3px] border-white`}></div>
+                                    <div className={`${usersOnline.some((u: SocketUser) => u.userId === userSelected.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute -bottom-[2px] -right-[3px] w-[.90rem] h-[.90rem] rounded-full border-[3px] border-white`}></div>
                                 </div>
                                 <div>
                                     <div className="flex items-center">
                                         <span className="font-semibold text-black">{`${userSelected.firstName} ${userSelected.lastName}`}</span>
 
                                     </div>
-                                    {listUserOnline.some((u: SocketUser) => u.userId === userSelected.id) &&
+                                    {usersOnline.some((u: SocketUser) => u.userId === userSelected.id) &&
                                         <span className="flex text-xs">Đang hoạt động</span>
                                     }
                                 </div>
@@ -335,10 +370,10 @@ const ChatBox = () => {
                                 <IoMdClose />
                             </IconButton>
                         </div>
-                        <div className="h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ">
+                        <div className="relative h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ">
                             {data && typeof data !== "string" && data?.map((item: Message, index: number) => (
-                                <div key={item.id} className="flex flex-col space-y-1 w-full p-2">
-                                    <span className="text-center text-xs">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span>
+                                <div key={item.id} className="flex flex-col w-full p-1">
+                                    {/* <span className="text-center text-xs">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span> */}
                                     <div className={`${item.senderId === user.id ? "justify-end" : "justify-start"} flex w-full`}>
                                         {item.type === "text" &&
                                             <div className={`flex max-w-[50%] space-x-2`}>
@@ -358,9 +393,24 @@ const ChatBox = () => {
                                             </div>
                                         }
                                     </div>
+                                    {index === data?.length - 1 && usersOnline.find((u: SocketUser) => u.userId === userSelected.id)?.receiverId === user.id && usersOnline.find((u: SocketUser) => u.userId === userSelected.id)?.typing &&
+                                        <div className="relative flex items-center space-x-6">
+                                            <Avatar src={getUser(userSelected.id)?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{getUser(item.receiverId)?.firstName?.substring(0, 1)}
+                                            </Avatar>
+
+                                            <Tooltip title={`${getUser(userSelected.id)?.firstName} ${getUser(userSelected.id)?.lastName} đang nhập tin nhắn`}>
+                                                <div className="snippet" data-title="dot-falling">
+                                                    <div className="stage">
+                                                        <div className="dot-falling"></div>
+                                                    </div>
+                                                </div>
+                                            </Tooltip>
+                                        </div>
+                                    }
                                     {index === data?.length - 1 && <div ref={messageEndRef} className="w-full"></div>}
                                 </div>
                             ))}
+
                         </div>
                         <div className="h-[20%] relative items-center w-full border-t-[1px] border-gray-300">
                             {isLoading &&
