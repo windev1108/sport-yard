@@ -152,6 +152,7 @@ const ChatBox = () => {
             }
             await mutate()
         } else if (message) {
+            setState({ ...state, message: "" })
             await axios.post("/api/messages", {
                 senderId: user.id,
                 receiverId: userSelected.id,
@@ -162,7 +163,6 @@ const ChatBox = () => {
                 conversations: [...data.conversations, user.id]
             })
             await mutate()
-            setState({ ...state, message: "" })
         } else {
             toast.info("Vui lòng nhập tin nhắn", { autoClose: 3000, theme: "colored" })
         }
@@ -198,7 +198,7 @@ const ChatBox = () => {
 
         const results = Array.from(files).map((file: any) => {
             return {
-                preview: URL.createObjectURL(file),
+                preview: URL?.createObjectURL(file),
                 name: file.name
             }
         })
@@ -291,7 +291,7 @@ const ChatBox = () => {
                                 </div>
                                 <div>
                                     <div className="flex items-center">
-                                        <span className="font-semibold">{`${userSelected.firstName} ${userSelected.lastName}`}</span>
+                                        <span className="font-semibold text-black">{`${userSelected.firstName} ${userSelected.lastName}`}</span>
 
                                     </div>
                                     {listUserOnline.some((u: SocketUser) => u.userId === userSelected.id) &&
@@ -341,7 +341,7 @@ const ChatBox = () => {
                                                     <Avatar src={getUser(item.senderId)?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{getUser(item.senderId)?.firstName?.substring(0, 1)}
                                                     </Avatar>
                                                 }
-                                                <span className={`${item.senderId === user.id ? "bg-[#d7e4ff]" : "bg-gray-100"} px-3  py-2 text-sm rounded-md max-w-[100%]`}>{item.message}</span>
+                                                <span className={`${item.senderId === user.id ? "bg-[#d7e4ff]" : "bg-gray-100"} px-3 text-black py-2 text-sm rounded-md max-w-[100%]`}>{item.message}</span>
                                             </div>
                                         }
                                         {item.type === "images" &&
@@ -416,7 +416,7 @@ const ChatBox = () => {
                                             onChange={(e) => setState({ ...state, message: e.target.value })}
                                             value={message}
                                             ref={messageRef}
-                                            className="px-4 text-sm outline-none bg-transparent placeholder:text-sm" type="text" placeholder="Gửi tin nhắn" />
+                                            className="px-4 text-black  text-sm outline-none bg-transparent placeholder:text-sm" type="text" placeholder="Gửi tin nhắn" />
                                     }
                                 </div>
                                 <Tooltip title="Send message">
