@@ -37,7 +37,6 @@ const Notifications = () => {
 
 
     const fetcherNotifications = async (url: string) => {
-        console.log("call data")
         const { data } = await axios.get(url)
         setNotifications(data.orders.filter((order: Order) => user?.id === order.senderId || user?.id === order.receiverId))
     }

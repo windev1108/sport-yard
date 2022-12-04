@@ -17,7 +17,7 @@ import Alert from "@mui/material/Alert";
 import dynamic from "next/dynamic";
 import { setOpenSnackBar } from "../redux/features/isSlice";
 import { getCookie } from "cookies-next";
-const ChatBox = dynamic(() => import("./ChatBox"), { ssr: false })
+import ChatBox from "./ChatBox"
 
 
 interface LayoutProps {
