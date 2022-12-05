@@ -9,11 +9,8 @@ import { NextPage } from 'next';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { ImageList, Tooltip, ImageListItem, FormControl, InputLabel, Select, MenuItem, Grid } from '@mui/material';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { GeoPoint } from "firebase/firestore";
-import { storage } from "../../firebase/config"
 import { toast } from 'react-toastify';
-import CircularProgressWithLabel from '../ProgessCirle';
 import Checkbox from '@mui/material/Checkbox/Checkbox';
 import FormGroup from '@mui/material/FormGroup/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
@@ -22,7 +19,6 @@ import axios from 'axios';
 import { RiImageAddFill } from 'react-icons/ri';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import Router from 'next/router';
 import LinearProgress from '@mui/material/LinearProgress';
 import { setIsUpdate } from '../../redux/features/isSlice';
 

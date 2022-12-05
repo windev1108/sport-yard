@@ -128,7 +128,8 @@ const ChatBox = () => {
         const { id }: any = jwt.decode(token)
         await fetch('/api/socket')
         socket = io("/", {
-            transports: ["websocket", "polling"]
+            transports: ["websocket", "polling"],
+            reconnectionDelayMax: 10000,
         })
 
         socket.on('connect', () => {
@@ -139,10 +140,6 @@ const ChatBox = () => {
         socket.on("users-online", (data: SocketUser[]) => {
             setUsersOnline(data)
         })
-        socket.on("connect_error", () => {
-            // revert to classic upgrade
-            socket.io.opts.transports = ["polling", "websocket"];
-          });
     }
 
 

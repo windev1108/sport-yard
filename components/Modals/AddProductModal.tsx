@@ -10,11 +10,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setIsUpdate } from '../../redux/features/isSlice';
 import { RootState } from '../../redux/store';
 import { BiImageAdd } from 'react-icons/bi';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "../../firebase/config"
 import { toast } from 'react-toastify';
 import { ImageList, Tooltip, ImageListItem } from '@mui/material';
-import CircularProgressWithLabel from '../ProgessCirle';
 import Checkbox from '@mui/material/Checkbox/Checkbox';
 import FormGroup from '@mui/material/FormGroup/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
@@ -22,7 +19,6 @@ import FormLabel from '@mui/material/FormLabel/FormLabel';
 import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useRouter } from 'next/router';
 import { RiImageAddFill } from 'react-icons/ri';
 import LinearProgress from '@mui/material/LinearProgress';
 
@@ -52,7 +48,6 @@ interface State {
 
 const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
     const dispatch = useDispatch()
-    const router = useRouter()
     const { user }: any = useSelector<RootState>(state => state.user)
     const { isUpdated }: any = useSelector<RootState>(state => state.is)
     const [state, setState] = useState<State>({

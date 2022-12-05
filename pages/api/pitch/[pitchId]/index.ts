@@ -13,7 +13,6 @@ export default async (req: any, res: NextApiResponse) => {
     if (req.method === 'PUT') {
       await db.collection('pitch').doc(pitchId).update({
         ...req.body,
-        timestamp: new Date().toUTCString()
       });
     } else if (req.method === 'GET') {
       const doc = await db.collection('pitch').doc(pitchId).get()

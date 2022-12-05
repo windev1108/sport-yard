@@ -7,7 +7,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import { NextPage } from 'next';
 import { GeoPoint } from 'firebase/firestore';
-import { ImageList, ImageListItem } from '@mui/material';
+import { ImageList, ImageListItem, LinearProgress } from '@mui/material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { User } from '../../Models';
@@ -42,7 +42,10 @@ interface State {
     blobPicture: string[]
     blobFont: string
     blobBackSide: string
-    percent: number
+    isLoading: boolean
+    isUploadedPictures: boolean
+    isUpdatedFontPicture: boolean
+    isUploadedBackPicture: boolean
 }
 
 
@@ -62,9 +65,12 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
         blobPicture: [],
         blobFont: "",
         blobBackSide: "",
-        percent: 0
+        isLoading: false,
+        isUploadedPictures: false,
+        isUpdatedFontPicture: false,
+        isUploadedBackPicture: false
     })
-    const { name, price, discount, size, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, percent } = state
+    const { name, price, discount, size, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading } = state
     const [urls, setUrls] = useState<string[]>([])
     const [fontUrl, setFontUrl] = useState<string>("")
     const [backSideUrl, setBackSideUrl] = useState<string>("")
@@ -79,16 +85,12 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
                 description: res.data.description,
                 price: res.data.price,
                 size: [],
-                percent: 0,
                 blobPicture: res.data?.pictures,
                 blobFont: res.data?.mainPictures?.[0],
                 blobBackSide: res.data?.mainPictures?.[1],
                 discount: res.data.discount,
             }))
 
-        return () => {
-            setState({ ...state, percent: 0 })
-        }
     }, [id])
 
 
@@ -108,7 +110,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
         let files = e.target.files
         let blobs: any = []
         for (let i = 0; i < files.length; i++) {
-            blobs.push(URL.createObjectURL(files[i]))
+            blobs.push(URL?.createObjectURL(files[i]))
         }
         setState({ ...state, blobPicture: blobs, pictures: files })
     }
@@ -116,314 +118,97 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
     const onFileBackSideChange = (e: any) => {
         let file = e.target.files[0]
         setState({
-            ...state, blobBackSide: URL.createObjectURL(file), backSidePicture: file
+            ...state, blobBackSide: URL?.createObjectURL(file), backSidePicture: file
         })
     }
 
     const onFileFontChange = (e: any) => {
         let file = e.target.files[0]
         setState({
-            ...state, blobFont: URL.createObjectURL(file), fontPicture: file
+            ...state, blobFont: URL?.createObjectURL(file), fontPicture: file
         })
     }
 
 
 
     const handleSubmit = () => {
+        console.log("pictures.length :",pictures.length);
+        console.log("fontPicture :",fontPicture.name);
+        console.log("backSidePicture :",backSidePicture.name);
 
-        if (!name || !price || !size.length || !discount || !description) {
+        if (!name || !price || !size.length || !discount) {
             toast.info("Please complete all information", {
                 autoClose: 3000,
                 theme: "colored",
             });
+        } else if (!pictures.length || !fontPicture.name || !backSidePicture.name) {
+            axios.put(`/api/products/${id}`, {
+                name,
+                description,
+                price,
+                size,
+                discount,
+                type: tab === 2 ? "clothes" : "sneakers",
+                owner: user.id,
+            })
+            setOpen(false)
+            dispatch(setIsUpdate(!isUpdated))
+            toast.success("Cập nhật thành công", { autoClose: 3000, theme: "colored" })
         } else {
-            const promise: any = [];
-            if (!pictures.length && !fontPicture.name && !backSidePicture.name) {
+            if (pictures.length === urls.length || fontUrl || backSideUrl) {
                 axios.put(`/api/products/${id}`, {
                     name,
                     description,
                     price,
                     size,
                     discount,
+                    mainPictures: [fontUrl ? fontUrl : blobFont, backSideUrl ? backSideUrl : blobBackSide],
+                    pictures: urls,
                     type: tab === 2 ? "clothes" : "sneakers",
                     owner: user.id,
                 })
                 setOpen(false)
-                setState({ ...state, percent: 0 })
                 dispatch(setIsUpdate(!isUpdated))
-                toast.success("Updated success", { autoClose: 3000, theme: "colored" })
-            } else if (pictures.length && fontPicture.name && !backSidePicture.name) {
-                Array.from(pictures).map((picture) => {
-                    const uploadTask = storage.ref(`file/${picture.name}`).put(picture);
-                    promise.push(uploadTask);
-                    uploadTask.on(
-                        "state_changed",
-                        (snapshot) => {
-                            const progress = Math.round(
-                                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                            );
-                        },
-                        (error) => {
-                            console.log(error);
-                        },
-                        async () => {
-                            await storage
-                                .ref("file")
-                                .child(picture.name)
-                                .getDownloadURL()
-                                .then((url) => {
-                                    setUrls((prevState: any) => [...prevState, url]);
-                                });
-                        }
-                    );
-                });
-                const storageRef = ref(storage, `/file/${fontPicture.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, fontPicture);
-                uploadTask.on(
-                    "state_changed",
-                    (snapshot) => {
-                        const percent = Math.round(
-                            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                        );
-                        setState({ ...state, percent })
-                    },
-                    (err) => console.log(err),
-                    () => {
-                        // download url
-                        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-                            setFontUrl(url)
-                        });
-                    }
-                );
-                if (urls.length === promise.length && fontUrl) {
-                    axios.put(`/api/products/${id}`, {
-                        name,
-                        description,
-                        price,
-                        size,
-                        mainPictures: [fontUrl, blobBackSide],
-                        pictures: urls,
-                        owner: user.id,
-                        discount,
-                        type: tab === 2 ? "clothes" : "sneakers",
-                    })
-                }
-                dispatch(setIsUpdate(!isUpdated))
-                setOpen(false)
-                setState({ ...state, percent: 0 })
-                toast.success("Updated success", { autoClose: 3000, theme: "colored" })
-            } else if (pictures.length && backSidePicture.name && !fontPicture.name) {
-                Array.from(pictures).map((picture) => {
-                    const uploadTask = storage.ref(`file/${picture.name}`).put(picture);
-                    promise.push(uploadTask);
-                    uploadTask.on(
-                        "state_changed",
-                        (snapshot) => {
-                            const progress = Math.round(
-                                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                            );
-                        },
-                        (error) => {
-                            console.log(error);
-                        },
-                        async () => {
-                            await storage
-                                .ref("file")
-                                .child(picture.name)
-                                .getDownloadURL()
-                                .then((url) => {
-                                    setUrls((prevState: any) => [...prevState, url]);
-                                });
-                        }
-                    );
-                });
-                const storageRef = ref(storage, `/file/${backSidePicture.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, backSidePicture);
-                uploadTask.on(
-                    "state_changed",
-                    (snapshot) => {
-                        const percent = Math.round(
-                            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                        );
-                    },
-                    (err) => console.log(err),
-                    () => {
-                        // download url
-                        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-                            setBackSideUrl(url)
-                        });
-                    }
-                );
-                Promise.all(promise)
-                    .then(() => {
-                        if (urls.length === promise.length && backSideUrl) {
-                            axios.put(`/api/products/${id}`, {
-                                name,
-                                description,
-                                price,
-                                size,
-                                mainPictures: [blobFont, backSideUrl],
-                                pictures: urls,
-                                owner: user.id,
-                                discount,
-                                type: tab === 2 ? "clothes" : "sneakers",
-                            })
-                        }
-                    })
-                setOpen(false)
-                setState({ ...state, percent: 0 })
-                dispatch(setIsUpdate(!isUpdated))
-                toast.success("Updated success", { autoClose: 3000, theme: "colored" })
-            } else if (!pictures.length && fontPicture.name && !backSidePicture.name) {
-                const storageRef = ref(storage, `/file/${fontPicture.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, fontPicture);
-                uploadTask.on(
-                    "state_changed",
-                    (snapshot) => {
-                        const percent = Math.round(
-                            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                        );
-                        setState({ ...state, percent })
-                    },
-                    (err) => console.log(err),
-                    () => {
-                        // download url
-                        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-                            setFontUrl(url)
-                        });
-                    }
-                );
-                if (urls.length === promise.length && fontUrl) {
-                    axios.put(`/api/products/${id}`, {
-                        name,
-                        description,
-                        price,
-                        size,
-                        mainPictures: [fontUrl, blobBackSide],
-                        owner: user.id,
-                        discount,
-                        type: tab === 2 ? "clothes" : "sneakers",
-                    })
-                }
-                dispatch(setIsUpdate(!isUpdated))
-                setOpen(false)
-                setState({ ...state, percent: 0 })
-                toast.success("Updated success", { autoClose: 3000, theme: "colored" })
-            } else if (!pictures.length && backSidePicture.name && !fontPicture.name) {
-                const storageRef = ref(storage, `/file/${backSidePicture.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, backSidePicture);
-                uploadTask.on(
-                    "state_changed",
-                    (snapshot) => {
-                        const percent = Math.round(
-                            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                        );
-                        setState({ ...state, percent })
-                    },
-                    (err) => console.log(err),
-                    () => {
-                        // download url
-                        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-                            setBackSideUrl(url)
-                        });
-                    }
-                );
-                if (urls.length === promise.length && backSideUrl) {
-                    axios.put(`/api/products/${id}`, {
-                        name,
-                        description,
-                        price,
-                        size,
-                        mainPictures: [blobFont, backSideUrl],
-                        owner: user.id,
-                        discount,
-                        type: tab === 2 ? "clothes" : "sneakers",
-                    })
-                }
-                setOpen(false)
-                setState({ ...state, percent: 0 })
-                dispatch(setIsUpdate(!isUpdated))
-                toast.success("Updated success", { autoClose: 3000, theme: "colored" })
-            } else {
-                Array.from(pictures).map((picture) => {
-                    const uploadTask = storage.ref(`file/${picture.name}`).put(picture);
-                    promise.push(uploadTask);
-                    uploadTask.on(
-                        "state_changed",
-                        (snapshot) => {
-                            const progress = Math.round(
-                                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                            );
-                        },
-                        (error) => {
-                            console.log(error);
-                        },
-                        async () => {
-                            await storage
-                                .ref("file")
-                                .child(picture.name)
-                                .getDownloadURL()
-                                .then((url) => {
-                                    setUrls((prevState: any) => [...prevState, url]);
-                                });
-                        }
-                    );
-                });
-                const storageRef1 = ref(storage, `/file/${fontPicture.name}`);
-                const storageRef2 = ref(storage, `/file/${backSidePicture.name}`);
-                const uploadTask1 = uploadBytesResumable(storageRef1, fontPicture);
-                const uploadTask2 = uploadBytesResumable(storageRef2, backSidePicture);
-
-                uploadTask1.on(
-                    "state_changed",
-                    (snapshot) => {
-                        const percent = Math.round(
-                            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                        );
-                    },
-                    (err) => console.log(err),
-                    () => {
-                        // download url
-                        getDownloadURL(uploadTask1.snapshot.ref).then((url) => {
-                            setFontUrl(url)
-                        });
-                    }
-                );
-                uploadTask2.on(
-                    "state_changed",
-                    (snapshot) => {
-                        const percent = Math.round(
-                            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                        );
-                        setState({ ...state, percent })
-                    },
-                    (err) => console.log(err),
-                    () => {
-                        // download url
-                        getDownloadURL(uploadTask2.snapshot.ref).then((url) => {
-                            setBackSideUrl(url)
-                        });
-                    }
-                );
-
-                if (urls.length === promise.length && fontUrl && backSideUrl) {
-                    axios.put(`/api/products/${id}`, {
-                        name,
-                        description,
-                        price,
-                        size,
-                        pictures: urls,
-                        mainPictures: [fontPicture, backSidePicture],
-                        owner: user.id,
-                        type: tab === 2 ? "clothes" : "sneakers",
-                    })
-                }
-                setOpen(false)
-                setState({ ...state, percent: 0 })
-                dispatch(setIsUpdate(!isUpdated))
-                toast.success("Updated success", { autoClose: 3000, theme: "colored" })
+                toast.success("Cập nhật thành công", { autoClose: 3000, theme: "colored" })
             }
+            else {
+                toast.info("Vui lòng thử lại sau", { autoClose: 3000, theme: "colored" })
+            }
+
         }
+    }
+
+
+    const handleUploadFiles = async () => {
+        setState({ ...state, isLoading: true })
+        if (fontPicture?.name) {
+            const formData = new FormData()
+            formData.append("file", fontPicture)
+            formData.append('upload_preset', 'my-uploads');
+            const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
+            setFontUrl(data.url)
+            setState({ ...state, isUpdatedFontPicture: true })
+        }
+        if (backSidePicture?.name) {
+            const formData = new FormData()
+            formData.append("file", backSidePicture)
+            formData.append('upload_preset', 'my-uploads');
+            const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
+            setBackSideUrl(data.url)
+            setState({ ...state, isUploadedBackPicture: true })
+        }
+        if (pictures.length) {
+            Array.from(pictures).map(async (picture) => {
+                setState({ ...state, isLoading: true })
+                const formData = new FormData()
+                formData.append("file", picture)
+                formData.append('upload_preset', 'my-uploads');
+                const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
+                setUrls((prev: string[]) => [...prev, data.url])
+            });
+            setState({ ...state, isUploadedPictures: true })
+        }
+        setState({ ...state, isLoading: false })
     }
 
 
@@ -612,14 +397,17 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
 
             </DialogContent>
             <DialogActions className="flex items-center  bg-gray-100 w-full">
-                {percent > 0 &&
-                    <CircularProgressWithLabel className="flex-1" value={percent} />
-                }
-                <div className="">
-                    <Button onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button onClick={handleSubmit}>Submit</Button>
+
+                <div className="flex space-x-2">
+                    <Button className="!border-primary text-primary" variant="outlined" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button className="!bg-primary" variant="contained" onClick={pictures.length || fontPicture.name || backSidePicture.name ? handleUploadFiles : handleSubmit}>{pictures.length || fontPicture.name || backSidePicture.name ? "Upload" : "Submit"}</Button>
                 </div>
             </DialogActions>
+            {isLoading &&
+                <div className="absolute top-0 left-0 right-0 ">
+                    <LinearProgress />
+                </div>
+            }
         </Dialog >
     )
 }

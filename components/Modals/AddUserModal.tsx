@@ -13,13 +13,8 @@ import { NextPage } from 'next';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { User } from '../../Models';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../redux/store';
 import { Avatar, FormLabel, LinearProgress, Tooltip } from '@mui/material';
 import { BiImageAdd } from 'react-icons/bi';
-import { uploadBytesResumable, ref, getDownloadURL } from 'firebase/storage'
-import { storage } from '../../firebase/config';
-import CircularProgressWithLabel from '../ProgessCirle';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 

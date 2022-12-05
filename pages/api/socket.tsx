@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { createServer } from "http";
 const { Server } = require('socket.io')
 
 
@@ -7,11 +6,10 @@ const { Server } = require('socket.io')
 interface User {
   socketId?: string
   userId: string
-  receiverId?: string
+  receiverId? : string
   typing?: boolean
 }
 
-const httpServer = createServer();
 
 const SocketHandler = (req: NextApiRequest, res: any) => {
   let users: User[] = [];
@@ -20,12 +18,13 @@ const SocketHandler = (req: NextApiRequest, res: any) => {
     console.log('Socket is already running')
   } else {
     console.log('Socket is initializing')
-    const io = new Server(httpServer, {
+    const io = new Server(res.socket.server, {
       cors: {
         origin: "*",
         method: ["GET", "POST"]
       }
     })
+    res.socket.server.io = io
     io.on('connection', function (socket: any) {
       console.log('a user connected');
 
@@ -33,9 +32,8 @@ const SocketHandler = (req: NextApiRequest, res: any) => {
         console.log('a user ' + data.userId + ' connected');
         // saving userId to object with socket ID
         if (!users.some((u: User) => u.userId === data.userId)) {
-          users = [...users, { socketId: socket.id, userId: data.userId, typing: false }]
+          users = [...users, { socketId: socket.id, userId: data.userId }]
         }
-
         console.log("users :", users);
         io.emit("users-online", users)
       });

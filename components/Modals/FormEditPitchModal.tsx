@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import { NextPage } from 'next';
@@ -140,8 +139,20 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
                 autoClose: 3000,
                 theme: "colored",
             });
-        }else if (!isValidStartTime && !isValidEndTime && !isValidPrice) {
+        } else if (!isValidStartTime && !isValidEndTime && !isValidPrice) {
             toast.info("Please fill out the information for the slot table", { autoClose: 3000, theme: "colored" })
+        } else if (!isUploadedPictures || !isUploadedMainPicture) {
+            axios.put(`/api/pitch/${id}`, {
+                name,
+                location,
+                size,
+                slots,
+                owner: user.id,
+                coordinates: new GeoPoint(+latitude, +longitude),
+            },)
+            dispatch(setIsUpdate(!isUpdated))
+            setOpen(false)
+            toast.success("Cập nhật sân bóng thành công", { autoClose: 3000, theme: "colored" })
         } else {
             if (isUploadedPictures || isUploadedMainPicture) {
                 axios.put(`/api/pitch/${id}`, {
@@ -150,7 +161,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
                     size,
                     slots,
                     pictures: urls,
-                    mainPicture  : url,
+                    mainPicture: url,
                     owner: user.id,
                     coordinates: new GeoPoint(+latitude, +longitude),
                 },)
