@@ -153,7 +153,7 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [isOpenChatBox])
+    }, [isOpenChatBox , user])
 
     const getConversations = async () => {
         const resUsers = await axios.get('/api/users')
@@ -396,14 +396,14 @@ const ChatBox = () => {
                                         }
                                     </div>
                                     {index === data?.length - 1 && usersOnline.find((u: SocketUser) => u.userId === userSelected.id)?.receiverId === user.id && usersOnline.find((u: SocketUser) => u.userId === userSelected.id)?.typing &&
-                                        <div className="relative flex items-center py-2 space-x-6">
-                                            <Avatar src={getUser(userSelected.id)?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{getUser(item.receiverId)?.firstName?.substring(0, 1)}
+                                        <div className="relative flex items-center py-2 space-x-12">
+                                            <Avatar src={getUser(userSelected.id)?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{getUser(userSelected.id)?.firstName?.substring(0, 1)}
                                             </Avatar>
 
                                             <Tooltip title={`${getUser(userSelected.id)?.firstName} ${getUser(userSelected.id)?.lastName} đang nhập tin nhắn`}>
-                                                <div className="!bg-gray-100" data-title="dot-falling">
-                                                    <div className="stage">
-                                                        <div className="dot-falling"></div>
+                                                <div className="!ml-2 px-4 rounded-lg bg-gray-100" data-title="dot-typing">
+                                                    <div className="flex items-center justify-center px-3 py-3 stage">
+                                                        <div className="dot-typing"></div>
                                                     </div>
                                                 </div>
                                             </Tooltip>

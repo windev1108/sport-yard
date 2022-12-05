@@ -176,7 +176,7 @@ const FormTransactionsModal: NextPage = () => {
                                 banks?.map(b => (
                                     <MenuItem key={b.id} value={b.bankCode}>
                                         <Typography variant="body1" component="h1">
-                                            {`${b.bankCode} / ${b.bankName}`}
+                                            {`${b.bankCode} / Ngân hàng ${b.bankName}`}
                                         </Typography>
                                     </MenuItem>
                                 ))

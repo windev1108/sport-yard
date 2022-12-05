@@ -92,9 +92,9 @@ const OrderDetail = ({ mutate }: any) => {
             order.methodPay === 2 && axios.put(`/api/users/${user.id}`, {
                 balance: user.balance + order.total - (order.total / 100 * 10) + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
             })
-            order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
-                balance: data.balance + (order.total / 100 * 10)
-            })
+            // order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
+            //     balance: data.balance + (order.total / 100 * 10)
+            // })
 
             axios.put(`/api/orders/${idOrder}`, {
                 status: 3,

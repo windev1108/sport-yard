@@ -106,7 +106,7 @@ const TransactionDetail: NextPage = () => {
                         :
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Transaction : `}
+                                {`Loại Giao dịch : `}
                             </Typography>
                             <Typography fontWeight={700} variant="body1" component="h1">
                                 {`${transaction?.action?.charAt(0).toUpperCase() + transaction?.action?.slice(1)}`}
@@ -118,7 +118,7 @@ const TransactionDetail: NextPage = () => {
                         :
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Status : `}
+                                {`Trạng thái : `}
                             </Typography>
                             <Typography className={`${transaction.status === "pending" && "text-yellow-500"} ${transaction.status === "fulfilled" && "text-primary"} ${transaction.status === "rejected" && "text-red-500"}`} fontWeight={700} variant="body1" component="h1">
                                 {`${transaction?.status?.charAt(0).toUpperCase() + transaction?.status?.substring(1)}`}
@@ -131,7 +131,7 @@ const TransactionDetail: NextPage = () => {
                         :
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Sender : `}
+                                {`Người gửi : `}
                             </Typography>
                             <Typography fontWeight={700} variant="body1" component="h1">
                                 {`${transaction?.sender}`}
@@ -144,7 +144,7 @@ const TransactionDetail: NextPage = () => {
                         :
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Receiver : `}
+                                {`Người nhận : `}
                             </Typography>
                             <Typography fontWeight={700} variant="body1" component="h1">
                                 {transaction?.receiver}
@@ -154,7 +154,7 @@ const TransactionDetail: NextPage = () => {
                     {user.role === 'admin' &&
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Bank name : `}
+                                {`Tên ngân hàng : `}
                             </Typography>
                             <Typography fontWeight={700} variant="body1" component="h1">
                                 {` ${transaction?.bankCode} / Ngân hàng ${transaction?.bankName}`}
@@ -164,7 +164,7 @@ const TransactionDetail: NextPage = () => {
                     {user.role === 'admin' &&
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Account number : `}
+                                {`Số tài khoản : `}
                             </Typography>
                             <Typography fontWeight={700} variant="body1" component="h1">
                                 {` ${transaction.bankAccountNumber}`}
@@ -177,7 +177,7 @@ const TransactionDetail: NextPage = () => {
                         :
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Amount :`}
+                                {`Giao dịch :`}
                             </Typography>
                             {transaction.status === "pending" &&
                                 <Typography fontWeight={700} variant="body1" component="h1">
@@ -207,7 +207,7 @@ const TransactionDetail: NextPage = () => {
                         transaction.status !== "pending" &&
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Current Balance : `}
+                                {`Số dư hiện tại : `}
                             </Typography>
                             <Typography fontWeight={700} variant="body1" component="h1">
                                 <Currency quantity={transaction.balance || 0} currency="VND" pattern="##,### !" />
@@ -218,7 +218,7 @@ const TransactionDetail: NextPage = () => {
                     {transaction.action === "deposit" &&
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Transfer content  : `}
+                                {`Nội dung chuyển khoản  : `}
                             </Typography>
                             <Typography fontWeight={700} variant="body1" component="h1">
                                 {transaction.transferContent}
@@ -243,7 +243,7 @@ const TransactionDetail: NextPage = () => {
                         :
                         <div className="flex space-x-2">
                             <Typography variant="body1" component="h1">
-                                {`Time : `}
+                                {`Thời gian : `}
                             </Typography>
                             <Typography fontWeight={700} variant="body1" component="h1">
                                 {new Date(transaction.timestamp).toLocaleString()}
