@@ -14,7 +14,6 @@ import BackdropModal from "./Modals/BackdropModal";
 import PaymentModal from "./Modals/PaymentModal";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import dynamic from "next/dynamic";
 import { setOpenSnackBar } from "../redux/features/isSlice";
 import { getCookie } from "cookies-next";
 import ChatBox from "./ChatBox"

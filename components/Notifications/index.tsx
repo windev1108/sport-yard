@@ -22,23 +22,25 @@ import { getCookie } from 'cookies-next';
 import useSWR from 'swr';
 import NotificationDetail from './NotificationDetail'
 import OrderProductModal from '../Modals/OrderProductModal';
-
-const Dashboard = dynamic(() => import("../Dashboard"), { ssr: false })
+import jwt from 'jsonwebtoken'
+import Dashboard from '../Dashboard'
 
 
 
 const Notifications = () => {
     const dispatch = useDispatch()
-    const token: any = getCookie("token")
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { isOpenNotificationDetail, isOpenOrderProduct , isOpenDashboard }: any = useSelector<RootState>(state => state.is)
+    const { isOpenNotificationDetail, isOpenOrderProduct }: any = useSelector<RootState>(state => state.is)
+    const [isOpenDashboard, setIsOpenDashboard] = useState(false)
     const [notifications, setNotifications] = useState<Order[]>([])
     const [notificationsEl, setNotificationsEl] = useState<null | HTMLElement>(null);
 
 
     const fetcherNotifications = async (url: string) => {
+        const token: any = getCookie("token")
+        const { id }: any = jwt.decode(token)
         const { data } = await axios.get(url)
-        setNotifications(data.orders.filter((order: Order) => user?.id === order.senderId || user?.id === order.receiverId))
+        setNotifications(data.orders.filter((order: Order) => id === order.senderId || id === order.receiverId))
     }
     const { mutate } = useSWR(user?.id ? "/api/orders" : null, fetcherNotifications)
 
@@ -77,13 +79,14 @@ const Notifications = () => {
 
     const handleOpenDashboard = () => {
         handleCloseNotifications()
-        dispatch(setOpenDashboard(true))
+        setIsOpenDashboard(true)
     }
 
     return (
         <>
             {isOpenNotificationDetail && <NotificationDetail mutate={mutate} />}
             {isOpenOrderProduct && <OrderProductModal mutate={mutate} />}
+            {isOpenDashboard && <Dashboard setOpen={setIsOpenDashboard} isOpenDashboard={isOpenDashboard} orders={notifications} />}
 
             <Tooltip title="Notifications">
                 <IconButton

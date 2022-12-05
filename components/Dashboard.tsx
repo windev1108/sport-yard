@@ -30,28 +30,21 @@ import { setIdOrder } from '../redux/features/ordersSlice';
 
 
 interface Props {
+    setOpen: (a: boolean) => void
+    isOpenDashboard: boolean
     orders: Order[]
 }
 
 
-interface Data {
-    type: string
-    total: number;
-    tradeCode: number
-    orderer: string
-    owner: string
-    createdAt: string;
-}
 
 
-const Dashboard: NextPage<Props> = ({ orders }) => {
+const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
     const dispatch = useDispatch()
-    const { isOpenDashboard }: any = useSelector<RootState>(state => state.is)
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
     const handleClose = () => {
-        dispatch(setOpenDashboard(false))
+        setOpen(false)
     }
 
 
@@ -119,7 +112,6 @@ const Dashboard: NextPage<Props> = ({ orders }) => {
                     </Table>
                 </TableContainer>
             </DialogContent>
-
             <Divider />
             <DialogActions>
                 <DialogContentText className="flex py-3 justify-end space-x-2 px-3">

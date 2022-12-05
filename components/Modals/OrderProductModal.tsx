@@ -97,7 +97,9 @@ const OrderProductModal = ({ mutate }: any) => {
 
 
     const handleSubmitOrder = () => {
-        if (!methodPay) {
+        if (order.some((o: Order) => o.owner === user.id)) {
+            toast.info("Không thể tự đặt hàng của chính mình", { autoClose: 3000, theme: "colored" })
+        } else if (!methodPay) {
             toast.info("Vui lòng chọn phương thức thanh toán", { autoClose: 3000, theme: "colored" })
         } else if (!user.address) {
             toast.info("Vui lòng thêm địa chỉ nhận hàng", { autoClose: 3000, theme: "colored" })
