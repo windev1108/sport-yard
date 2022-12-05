@@ -51,9 +51,10 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
     const data = orders?.map((order: Order) => {
         return {
             id: order.id,
-            type: order.type === "booking" ? "Sân bóng đá" : "Sản phẩm",
+            type: order.type,
             orderer: order.ordererName,
             owner: order.ownerName,
+            status: order.status,
             total: currencyFormatter.format(order.total, { code: 'VND' }),
             createdAt: dayjs(order.date).format("DD-MM-YYYY")
         }
@@ -86,6 +87,7 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
                                 <TableCell align="right">Loại đơn hàng</TableCell>
                                 <TableCell align="right">Người đặt hàng</TableCell>
                                 <TableCell align="right">Chủ sản phẩm</TableCell>
+                                <TableCell align="center">Trạng thái</TableCell>
                                 <TableCell align="right">Đơn giá</TableCell>
                                 <TableCell align="right">Ngày đặt hàng</TableCell>
                             </TableRow>
@@ -101,9 +103,24 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
                                     <TableCell component="th" scope="item">
                                         {index + 1}
                                     </TableCell>
-                                    <TableCell align="right">{item.type}</TableCell>
+                                    <TableCell align="right">{item.type === "booking" ? "Sân bóng đá" : "Sản phẩm"}</TableCell>
                                     <TableCell align="right">{item.orderer}</TableCell>
                                     <TableCell align="right">{item.owner}</TableCell>
+                                    {item.type === "booking" && item.status === 0 &&  <TableCell className="text-blue-500" align="right">{"Chưa thanh toán"}</TableCell>}
+                                    {item.type === "booking" && item.status === 3 &&  <TableCell className="text-primary" align="right">{"Xác nhận đặt sân thành công"}</TableCell>}
+                                    {item.type === "booking" && item.status === 4 &&  <TableCell className="text-red-500" align="right">{"Từ chối đặt sân"}</TableCell>}
+                                    {item.status === 2 &&  <TableCell align="right">{"Chờ xác nhận"}</TableCell>}
+
+                                    {item.type === "order" && item.status === 3 &&  <TableCell className="text-primary" align="right">{"Xác nhận đơn hàng thành công"}</TableCell>}
+                                    {item.type === "order" && item.status === 4 &&  <TableCell className="text-red-500" align="right">{"Từ chối đơn hàng"}</TableCell>}
+                                    {item.type === "order" && item.status === 5 &&  <TableCell className="text-yellow-500" align="right">{"Chờ lấy hàng"}</TableCell>}
+                                    {item.type === "order" && item.status === 6 &&  <TableCell className="text-yellow-500" align="right">{"Đang giao"}</TableCell>}
+                                    {item.type === "order" && item.status === 7 &&  <TableCell className="text-primary" align="right">{"Giao hàng thành công"}</TableCell>}
+                                    {item.type === "order" && item.status === 8 &&  <TableCell className="text-red-500" align="right">{"Từ chối nhận hàng"}</TableCell>}
+                                    {item.type === "order" && item.status === 9 &&  <TableCell className="text-primary" align="right">{"Đã hoàn tiền đặt hàng"}</TableCell>}
+
+
+                                   
                                     <TableCell align="right">{item.total}</TableCell>
                                     <TableCell align="right">{item.createdAt}</TableCell>
                                 </TableRow>

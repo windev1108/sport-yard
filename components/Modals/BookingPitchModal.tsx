@@ -91,8 +91,10 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
             setState({ ...state, total: Math.round(+slotFound?.price! / 60 * duration - +slotFound?.price! / 60 * duration / 100 * 50) })
         } else if (size === 7) {
             setState({ ...state, total: Math.round(+slotFound?.price! / 60 * duration - +slotFound?.price! / 60 * duration / 100 * 25) })
-        } else {
+        } else if(size === 11) {
             setState({ ...state, total: Math.round(+slotFound?.price! / 60 * duration) })
+        }else{
+            return
         }
     }, [duration, slot, size])
 

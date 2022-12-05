@@ -29,6 +29,7 @@ import { SiBitcoincash } from 'react-icons/si';
 const Map = dynamic(() => import("../Map"), { ssr: false })
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import emailjs from '@emailjs/browser';
 
 
 interface State {
@@ -36,7 +37,6 @@ interface State {
     methodPay: number
     isLoading: boolean
     bankCode: string
-    random: number
     transferContent: string
 }
 
@@ -56,13 +56,16 @@ const OrderProductModal = ({ mutate }: any) => {
         users: [],
         methodPay: 0,
         bankCode: "",
-        random: 0,
         transferContent: "",
         isLoading: true,
     })
-    const { isLoading, users, methodPay, transferContent, bankCode, random } = state
+    const { isLoading, users, methodPay, transferContent } = state
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+    const SERVICE_ID: string | any = process.env.NEXT_PUBLIC_SERVICE_ID
+    const TEMPLATE_ID: string | any = process.env.NEXT_PUBLIC_TEMPLATE_ID1
+    const PUBLIC_KEY: string | any = process.env.NEXT_PUBLIC_PUBLIC_KEY
+
 
 
 
@@ -107,8 +110,8 @@ const OrderProductModal = ({ mutate }: any) => {
             toast.info("Số dư của bạn không đủ", { autoClose: 3000, theme: "colored" })
         } else {
             dispatch(setOpenBackdropModal(true))
-
             order.forEach((o: Order) => {
+                const traceCode = Math.floor(Math.random() * 900000 + 10000)
                 let sum = 0
                 o.cart.forEach((c: Cart) => {
                     const total = c.product.price - c.product.price / 100 * c.product.discount
@@ -126,14 +129,26 @@ const OrderProductModal = ({ mutate }: any) => {
                     address: user.address,
                     methodPay,
                     transferContent,
-                    bookingId: methodPay === 1 ? random : Math.floor(Math.random() * 900000 + 10000),
+                    bookingId: traceCode,
                     products: o.cart,
                     total: sum,
                     ownerName: `${getUser(o.owner).firstName} ${getUser(o.owner).lastName} `,
                     ordererName: `${user.firstName} ${user.lastName}`,
                     status: 2,
                 }
+                const templateParams = {
+                    to_name: `${getUser(o.owner).firstName} ${getUser(o.owner).lastName}`,
+                    to_email: getUser(o.owner).email,
+                    from_name: `${user.firstName} ${user.lastName}`,
+                    from_email: user.email,
+                    amount_product: o.cart.length,
+                    total_price: `${order.total}đ`,
+                    method_pay: methodPay === 2 ? "Ví Sport Pay" : "Thanh toán khi nhận hàng",
+                    trace_code: traceCode,
+                    order_date: dayjs(order.date).format("dddd DD-MM-YYYY")
+                }
                 axios.post('/api/orders', formData)
+                emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
             })
             setTimeout(async () => {
                 const totalPay = totalPrice + order.length * +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
