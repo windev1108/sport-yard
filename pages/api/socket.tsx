@@ -6,7 +6,7 @@ const { Server } = require('socket.io')
 interface User {
   socketId?: string
   userId: string
-  receiverId? : string
+  receiverId?: string
   typing?: boolean
 }
 
@@ -19,15 +19,17 @@ const SocketHandler = (req: NextApiRequest, res: any) => {
   } else {
     console.log('Socket is initializing')
     const io = new Server(res.socket.server, {
-      cors: {
-        origin: "*",
-        method: ["GET", "POST"]
+      transports: ['polling', 'websocket'],
+      transportOptions: {
+        polling: {
+          extraHeaders: {
+            'X-Custom-Header-For-My-Project': 'will be used'
+          }
+        }
       }
     })
     res.socket.server.io = io
     io.on('connection', function (socket: any) {
-      console.log('a user connected');
-
       socket.on('user-connected', (data: User) => {
         console.log('a user ' + data.userId + ' connected');
         // saving userId to object with socket ID
