@@ -127,10 +127,7 @@ const ChatBox = () => {
         const token: any = getCookie("token")
         const { id }: any = jwt.decode(token)
         await fetch('/api/socket')
-        socket = io("/", {
-            transports: ["websocket", "polling"],
-            reconnectionDelayMax: 10000,
-        })
+        socket = io("/api/socket")
 
         socket.on('connect', () => {
             console.log('connected')

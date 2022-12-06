@@ -136,7 +136,7 @@ const OrderProductModal = ({ mutate }: any) => {
                     ordererName: `${user.firstName} ${user.lastName}`,
                     status: 2,
                 }
-                const templateParams = {
+                const templateParams : any = {
                     to_name: `${getUser(o.owner).firstName} ${getUser(o.owner).lastName}`,
                     to_email: getUser(o.owner).email,
                     from_name: `${user.firstName} ${user.lastName}`,
