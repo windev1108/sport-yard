@@ -7,8 +7,8 @@ import { RootState } from '../../redux/store';
 import { deepOrange } from '@mui/material/colors';
 import { setOpenChatBox, setOpenProfileModal } from '../../redux/features/isSlice';
 import { IoMdCall, IoMdClose, IoMdSend } from 'react-icons/io'
-import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
-import { BsChevronCompactUp, BsEmojiSmile } from 'react-icons/bs';
+import { FiChevronDown } from 'react-icons/fi';
+import { BsChevronCompactUp, BsDash, BsPlus, BsEmojiSmile } from 'react-icons/bs';
 import { RiVideoLine } from 'react-icons/ri';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
@@ -126,8 +126,7 @@ const ChatBox = () => {
     const socketInitializer = async () => {
         const token: any = getCookie("token")
         const { id }: any = jwt.decode(token)
-        await fetch('/api/socket')
-        socket = io("/")
+        socket = io(process.env.NEXT_PUBLIC_SERVER || "/")
 
         socket.on('connect', () => {
             console.log('connected')
@@ -150,7 +149,7 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [isOpenChatBox , user])
+    }, [isOpenChatBox, user])
 
     const getConversations = async () => {
         const resUsers = await axios.get('/api/users')
@@ -317,62 +316,65 @@ const ChatBox = () => {
             z-[1002] fixed lg:right-[18.2rem] left-0 lg:left-auto top-0 lg:top-auto border-[1px] border-gray-300 lg:w-[25rem] w-screen h-screen  lg:h-[30rem] bg-white lg:bottom-0 bottom-0 origin-left transition-all duration-700 ease-in-out`}>
                     <div className="h-full">
                         <div
-                            className="relative h-[10%] flex cursor-pointer px-2 items-center border-[1px]">
+                            className="relative h-[10%] flex cursor-pointer items-center border-[1px]">
                             <div
-                                onClick={() => setState({ ...state, isFadeDownChatBox: !isFadeDownChatBox })}
-                                className="absolute  z-20 top-0 left-0 right-0 bottom-0">
-
-                            </div>
-                            <div
-                                className="relative z-10 flex space-x-3 items-center">
+                                onClick={() => setState({ ...state, isOpenOptionInfo: !isOpenOptionInfo })}
+                                className="relative z-10 flex hover:bg-gray-100  rounded-lg px-2 py-1 space-x-3 items-center">
                                 <div className="relative">
                                     <Avatar src={userSelected.avatar} sx={{ bgcolor: deepOrange[500] }} alt="Remy Sharp" className="w-8 h-8" >{userSelected.firstName?.substring(0, 1)}</Avatar>
                                     <div className={`${usersOnline.some((u: SocketUser) => u.userId === userSelected.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute -bottom-[2px] -right-[3px] w-[.90rem] h-[.90rem] rounded-full border-[3px] border-white`}></div>
                                 </div>
-                                <div>
-                                    <div className="flex items-center">
-                                        <span className="font-semibold text-black">{`${userSelected.firstName} ${userSelected.lastName}`}</span>
+                                <div className="flex items-center">
+                                    <span className="font-semibold text-black">{`${userSelected.firstName} ${userSelected.lastName}`}</span>
 
-                                    </div>
-                                    {usersOnline.some((u: SocketUser) => u.userId === userSelected.id) &&
-                                        <span className="flex text-xs">Đang hoạt động</span>
-                                    }
                                 </div>
-                            </div>
-                            <div className="z-30">
-                                <IconButton
-                                    onClick={() => setState({ ...state, isOpenOptionInfo: !isOpenOptionInfo })}
-                                >
+                                {usersOnline.some((u: SocketUser) => u.userId === userSelected.id) &&
+                                    <span className="flex text-xs">Đang hoạt động</span>
+                                }
+                                {!isFadeDownChatBox &&
                                     <FiChevronDown className={`${isOpenOptionInfo && "lg:rotate-[180deg] rotate-[-180deg] "} transition-all duration-700 ease-in-out`} />
-                                </IconButton>
-                                <div className={`${isOpenOptionInfo ? "scale-100" : "scale-0"} ${userSelected.phone ? "lg:top-[-150%] bottom-[-100%] lg:bottom-auto" : "lg:top-[-80%] bottom-[-50%] lg:bottom-auto"} origin-bottom-right absolute -left-[0%] transition-all duration-700 ease-in-out bg-white shadow-md border-[1px] border-gray-300 w-[9rem]`}>
-                                    <div onClick={() => handleOpenProfile(userSelected?.id!)} className="flex space-x-2 items-center px-3 py-1 hover:bg-gray-200">
-                                        <CgProfile className="text-primary" size={20} />
-                                        <span className="font-semibold">Xem hồ sơ</span>
-                                    </div>
-                                    {userSelected.phone &&
-                                        <div className="flex items-center px-3 py-1 space-x-2 w-full hover:bg-gray-200">
-                                            <IoMdCall size={20} className="text-primary" />
-                                            <Link href={`tel:${userSelected.phone}`} >
-                                                <a className="font-semibold">
-                                                    Gọi
-                                                </a>
-                                            </Link>
-                                        </div>
-                                    }
-                                </div>
+                                }
                             </div>
-                            <IconButton
-                                className="z-30 absolute right-1"
-                                onClick={hideChatMessage}
-                            >
-                                <IoMdClose />
-                            </IconButton>
+
+
+                            <div className={`${isOpenOptionInfo ? "scale-100" : "scale-0"} ${userSelected.phone ? "lg:top-[-150%] bottom-[-100%] lg:bottom-auto" : "lg:top-[-80%] bottom-[-50%] lg:bottom-auto"} origin-bottom-right absolute -left-[0%] transition-all duration-700 ease-in-out bg-white shadow-md border-[1px] border-gray-300 w-[9rem]`}>
+                                <div onClick={() => handleOpenProfile(userSelected?.id!)} className="flex space-x-2 items-center px-3 py-1 hover:bg-gray-200">
+                                    <CgProfile className="text-primary" size={20} />
+                                    <span className="font-semibold">Xem hồ sơ</span>
+                                </div>
+                                {userSelected.phone &&
+                                    <div className="flex items-center px-3 py-1 space-x-2 w-full hover:bg-gray-200">
+                                        <IoMdCall size={20} className="text-primary" />
+                                        <Link href={`tel:${userSelected.phone}`} >
+                                            <a className="font-semibold">
+                                                Gọi
+                                            </a>
+                                        </Link>
+                                    </div>
+                                }
+                            </div>
+                            <div className="flex z-30 absolute right-2">
+                                <IconButton
+                                    onClick={() => setState({ ...state, isFadeDownChatBox: !isFadeDownChatBox })}
+                                >
+                                    {isFadeDownChatBox ?
+                                        <BsPlus />
+                                        :
+                                        <BsDash />
+                                    }
+                                </IconButton>
+                                <IconButton
+
+                                    onClick={hideChatMessage}
+                                >
+                                    <IoMdClose />
+                                </IconButton>
+                            </div>
                         </div>
                         <div className="relative h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ">
                             {data && typeof data !== "string" && data?.map((item: Message, index: number) => (
                                 <div key={item.id} className="flex flex-col w-full p-2">
-                                    {/* <span className="text-center text-xs">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span> */}
+                                    <span className="text-center text-xs">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span>
                                     <div className={`${item.senderId === user.id ? "justify-end" : "justify-start"} flex w-full`}>
                                         {item.type === "text" &&
                                             <div className={`flex max-w-[50%] space-x-2`}>
