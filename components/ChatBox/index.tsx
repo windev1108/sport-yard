@@ -54,7 +54,7 @@ interface SocketUser {
 }
 
 
-let socket: any = io(process.env.NEXT_PUBLIC_SERVER || "/")
+let socket: any
 
 const ChatBox = () => {
     const dispatch = useDispatch()
@@ -114,6 +114,7 @@ const ChatBox = () => {
 
 
     const socketInitializer = async () => {
+        socket = io(process.env.NEXT_PUBLIC_SERVER || "/")
         const token: any = getCookie("token")
         const { id }: any = jwt.decode(token)
         socket.on('connect', () => {
