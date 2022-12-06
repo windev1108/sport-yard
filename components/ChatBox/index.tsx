@@ -115,11 +115,11 @@ const ChatBox = () => {
 
         socketInitializer()
 
-
         return () => {
-            socket.disconnect()
-        }
-
+            if (socket.readyState === 1) { // <-- This is important
+                socket.close();
+            }
+        };
     }, [])
 
 
