@@ -52,12 +52,9 @@ interface SocketUser {
     typing?: boolean
     receiverId?: string
 }
-interface TimeLine {
-    inTime: number
-    messages?: Message[]
-}
 
-let socket: any
+
+let socket: any = io(process.env.NEXT_PUBLIC_SERVER || "/")
 
 const ChatBox = () => {
     const dispatch = useDispatch()
@@ -119,9 +116,8 @@ const ChatBox = () => {
     const socketInitializer = async () => {
         const token: any = getCookie("token")
         const { id }: any = jwt.decode(token)
-        socket = io(process.env.NEXT_PUBLIC_SERVER || "/")
         socket.on('connect', () => {
-            console.log('connected')
+            console.log('Socket connected')
             id && socket?.emit("user-connected", { userId: id })
 
         })
