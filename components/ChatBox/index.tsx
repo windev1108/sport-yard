@@ -288,7 +288,12 @@ const ChatBox = () => {
                             </div>
                             <div>
                                 <div className="flex space-x-2 items-center">
-                                    <span className="flex text-sm font-semibold text-black">{`${conversation?.firstName} ${conversation?.lastName}`}</span>
+                                    <div className="flex-col">
+                                        <span className="flex text-sm font-semibold text-black">{`${conversation?.firstName} ${conversation?.lastName}`}</span>
+                                        {usersOnline.some((u: SocketUser) => u.userId === conversation.id) &&
+                                            <span className="flex text-xs">Đang hoạt động</span>
+                                        }
+                                    </div>
                                     {conversation?.id === process.env.NEXT_PUBLIC_ADMIN_ID &&
                                         <GrUserAdmin className="text-primary" />
                                     }
@@ -308,18 +313,17 @@ const ChatBox = () => {
                             className="relative h-[10%] flex cursor-pointer items-center border-[1px]">
                             <div
                                 onClick={() => setState({ ...state, isOpenOptionInfo: !isOpenOptionInfo })}
-                                className="relative z-10 flex hover:bg-gray-100  rounded-lg px-2 py-1 space-x-3 items-center">
+                                className="relative z-10 flex hover:bg-gray-100 rounded-lg px-2 py-1 space-x-3 items-center">
                                 <div className="relative">
                                     <Avatar src={userSelected.avatar} sx={{ bgcolor: deepOrange[500] }} alt="Remy Sharp" className="w-8 h-8" >{userSelected.firstName?.substring(0, 1)}</Avatar>
                                     <div className={`${usersOnline.some((u: SocketUser) => u.userId === userSelected.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute -bottom-[2px] -right-[3px] w-[.90rem] h-[.90rem] rounded-full border-[3px] border-white`}></div>
                                 </div>
-                                <div className="flex items-center">
+                                <div className="flex-col items-center">
                                     <span className="font-semibold text-black">{`${userSelected.firstName} ${userSelected.lastName}`}</span>
-
+                                    {usersOnline.some((u: SocketUser) => u.userId === userSelected.id) &&
+                                        <span className="flex text-xs">Đang hoạt động</span>
+                                    }
                                 </div>
-                                {usersOnline.some((u: SocketUser) => u.userId === userSelected.id) &&
-                                    <span className="flex text-xs">Đang hoạt động</span>
-                                }
                                 {!isFadeDownChatBox &&
                                     <FiChevronDown className={`${isOpenOptionInfo && "lg:rotate-[180deg] rotate-[-180deg] "} transition-all duration-700 ease-in-out`} />
                                 }
