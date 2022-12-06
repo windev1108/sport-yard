@@ -16,9 +16,9 @@ import Router from 'next/router';
 import { AiFillHome } from 'react-icons/ai';
 import Image from 'next/image';
 import { setOpenProfileModal } from '../redux/features/isSlice';
-import {  getCookie , CookieValueTypes , removeCookies } from 'cookies-next';
-import jwt from 'jsonwebtoken';
+import { getCookie, CookieValueTypes, removeCookies } from 'cookies-next';
 import { RootState } from '../redux/store';
+import { toast } from 'react-toastify';
 
 type Props = {
   anchor: string;
@@ -27,10 +27,10 @@ type Props = {
 
 
 
-const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer  }) => {
-  const token : CookieValueTypes | any = getCookie("token");
+const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer }) => {
+  const token: CookieValueTypes | any = getCookie("token");
   const dispatch = useDispatch()
-  const { user } : any = useSelector<RootState>(state => state.user)
+  const { user }: any = useSelector<RootState>(state => state.user)
 
 
   const handleSignout = () => {
@@ -42,6 +42,15 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer  }) => {
   const handleOpenProfile = (id: string) => {
     dispatch(setOpenProfileModal(true))
     dispatch(setIdProfile(id))
+  }
+
+
+  const handleRedirectToManager = () => {
+    if (!user?.isOwner) {
+      toast.info("Vui lòng nạp tối thiểu 500.000đ để kích hoạt tài khoản", { autoClose: 3000, theme: "colored" })
+    }else{
+      Router.push("/owner/manager")
+    }
   }
 
   return (
@@ -126,7 +135,7 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer  }) => {
         {token &&
           <ListItem disablePadding>
             <ListItemButton
-            onClick={() => handleOpenProfile(user.id)}
+              onClick={() => handleOpenProfile(user.id)}
             >
               <ListItemIcon>
                 <Avatar src={user?.avatar} sx={{ bgcolor: deepOrange[500] }}>{user?.firstName?.substring(0, 1)}</Avatar>
@@ -137,16 +146,14 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer  }) => {
         }
         {token && user?.role === "owner" &&
           <ListItem disablePadding>
-            <Link href={"/owner/manager"}>
-              <a className="w-full">
-                <ListItemButton>
-                  <ListItemIcon>
-                    <MdDashboardCustomize className="text-2xl text-primary" />
-                  </ListItemIcon>
-                  <ListItemText primary={"Manager"} />
-                </ListItemButton>
-              </a>
-            </Link>
+            <ListItemButton
+              onClick={handleRedirectToManager}
+            >
+              <ListItemIcon>
+                <MdDashboardCustomize className="text-2xl text-primary" />
+              </ListItemIcon>
+              <ListItemText primary={"Manager"} />
+            </ListItemButton>
           </ListItem>
         }
 

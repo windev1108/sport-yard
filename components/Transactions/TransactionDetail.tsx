@@ -43,14 +43,21 @@ const TransactionDetail: NextPage = () => {
 
     }, [user])
 
-    console.log("user", user)
 
     const handleAcceptRequest = async () => {
         const { data }: { data: User } = await axios.get(`/api/users/${transaction.senderId}`)
 
-        axios.put(`/api/users/${transaction.senderId}`, {
-            balance: transaction.action === "deposit" ? data.balance + transaction.amount : data.balance - transaction.amount
-        })
+        if (data?.role === "owner" && !data.isOwner && transaction.amount >= 500000 && transaction.action === "deposit") {
+            axios.put(`/api/users/${transaction.senderId}`, {
+                balance: data.balance + transaction.amount,
+                isOwner: true
+            })
+        } else {
+            axios.put(`/api/users/${transaction.senderId}`, {
+                balance: transaction.action === "deposit" ? data.balance + transaction.amount : data.balance - transaction.amount,
+            })
+        }
+
         axios.put(`/api/transactions/${idTransaction}`, {
             receiverId: transaction.senderId,
             senderId: transaction.receiverId,
