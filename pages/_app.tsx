@@ -13,6 +13,7 @@ import 'react-calendar/dist/Calendar.css';
 import NextNProgress from "nextjs-progressbar";
 import { SessionProvider } from "next-auth/react";
 import { Session } from "next-auth";
+import  { Toaster } from 'react-hot-toast';
 
 
 function MyApp({ Component, pageProps }: AppProps<{
@@ -25,6 +26,7 @@ function MyApp({ Component, pageProps }: AppProps<{
       <Provider store={store}>
           <ToastContainer />
           <NextNProgress />
+          <Toaster />
           <Component className="overflow-hidden" {...pageProps} />
       </Provider>
     </SessionProvider>

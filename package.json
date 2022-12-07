@@ -50,6 +50,7 @@
         "react-clamp-lines": "^3.0.3",
         "react-currency-formatter": "^1.1.0",
         "react-dom": "^18.2.0",
+        "react-hot-toast": "^2.4.0",
         "react-icons": "^4.4.0",
         "react-leaflet": "^4.1.0",
         "react-lines-ellipsis": "^0.15.3",
