@@ -147,7 +147,7 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [isOpenChatMessage , user])
+    }, [isOpenChatMessage, user])
 
     const getConversations = async () => {
         const resUsers = await axios.get('/api/users')
@@ -210,8 +210,12 @@ const ChatBox = () => {
 
 
 
-    const handleShowMessage = (userSelected: User) => {
-        setState({ ...state, userSelected, isOpenChatMessage: true })
+    const handleShowMessage = (userSelect: User) => {
+        if (userSelected.id === userSelect.id) {
+            setState({ ...state, userSelected: {}, isOpenChatMessage: false })
+        } else {
+            setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
+        }
     }
 
     useEffect(() => {
