@@ -85,13 +85,6 @@ const ProfileModal: NextPage = () => {
     }
 
     const handleSendMessage = async () => {
-        const checkIsExistConversation = user.conversations.some((conversation: string) => conversation === idProfile)
-        if (!checkIsExistConversation) {
-            axios.put(`/api/users/${user.id}`, {
-                conversations: [...user.conversations, idProfile]
-            })
-        }
-
         dispatch(setOpenProfileModal(false))
         dispatch(setOpenChatBox(true))
     }
@@ -246,16 +239,16 @@ const ProfileModal: NextPage = () => {
                     </div>
                 }
                 {token && user.id !== idProfile &&
-                <div>
-                    {isLoading
-                        ?
-                        <Skeleton variant="rounded" width={80} height={35} />
-                        :
-                        <Button
-                            onClick={handleSendMessage}
-                            className="!bg-primary !text-white">Nhắn tin</Button>
-                    }
-                </div>
+                    <div>
+                        {isLoading
+                            ?
+                            <Skeleton variant="rounded" width={80} height={35} />
+                            :
+                            <Button
+                                onClick={handleSendMessage}
+                                className="!bg-primary !text-white">Nhắn tin</Button>
+                        }
+                    </div>
                 }
             </DialogActions>
         </Dialog >

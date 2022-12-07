@@ -8,7 +8,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method === "GET") {
       const entries = await db
         .collection("pitch")
-        .orderBy("timestamp", "desc")
+        .orderBy("timestamp", "asc")
         .get();
       const pitch = entries.docs.map((entry) => ({
         id: entry.id,

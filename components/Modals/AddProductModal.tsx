@@ -65,7 +65,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
         isUploaded: false,
         isLoading: false
     })
-    const { name, price, discount, size, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading , isUploaded } = state
+    const { name, price, discount, size, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading, isUploaded } = state
     const [urls, setUrls] = useState<string[]>([])
     const [fontUrl, setFontUrl] = useState<string>("")
     const [backSideUrl, setBackSideUrl] = useState<string>("")
@@ -141,7 +141,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                 setOpen(false)
                 dispatch(setIsUpdate(!isUpdated))
                 toast.success("Thêm sản phẩm thành công ", { autoClose: 3000, theme: "colored" })
-            }else{
+            } else {
                 toast.info("Vui lòng thử lại sau ", { autoClose: 3000, theme: "colored" })
             }
         }
@@ -149,7 +149,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
 
 
     const handleUploadFiles = async () => {
-        setState({...state , isLoading: true})
+        setState({ ...state, isLoading: true })
         Array.from(pictures).map(async (picture) => {
             const formData = new FormData()
             formData.append("file", picture)
@@ -167,7 +167,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
         const res2 = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData2)
         setBackSideUrl(res1.data.url)
         setFontUrl(res2.data.url)
-        setState({...state , isLoading: false , isUploaded: true})
+        setState({ ...state, isLoading: false, isUploaded: true })
     }
 
     const handleSelect = (e: any) => {
@@ -341,9 +341,9 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                         </Tooltip>
                     </div>
                 </div>
-               <div className="flex justify-between">
-                <FormLabel className="mt-4" component="legend">Hình ảnh phụ</FormLabel>
-                <Tooltip title="Thêm hình ảnh">
+                <div className="flex justify-between">
+                    <FormLabel className="mt-4" component="legend">Hình ảnh phụ</FormLabel>
+                    <Tooltip title="Thêm hình ảnh">
                         <label
                             onChange={onFileChange}
                             htmlFor="upload"
@@ -362,7 +362,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                             />
                         </label>
                     </Tooltip>
-               </div>
+                </div>
                 <div className="flex items-center">
                     <div className="flex-1" title="Main picture">
                         <ImageList cols={blobPicture?.length >= 3 ? 3 : 2}>

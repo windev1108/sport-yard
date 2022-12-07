@@ -177,7 +177,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
 
     const handleUploadFiles = async () => {
         setState({ ...state, isLoading: true })
-        if (mainPicture) {
+        if (mainPicture.name) {
             const formData = new FormData()
             formData.append("file", mainPicture)
             formData.append('upload_preset', 'my-uploads');
