@@ -49,7 +49,7 @@ const Signup = () => {
         theme: "colored",
       });
     } else {
-      axios.post("api/users", { email, password, firstName, lastName, role, balance: 0, conversations: [process.env.NEXT_PUBLIC_ADMIN_ID], banks: [], cart: [] })
+      axios.post("api/users", { email, password, firstName, lastName, role, balance: 0, banks: [], cart: [] })
       toast.success("Đăng ký thành công", {
         autoClose: 3000,
         theme: "colored",

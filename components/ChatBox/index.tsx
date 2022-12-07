@@ -29,7 +29,6 @@ import { toast } from 'react-toastify'
 
 
 interface State {
-    conversations: User[]
     messages: Message[]
     users: User[],
     userSelected: any
@@ -60,7 +59,6 @@ let socket: any
 const ChatBox = () => {
     const dispatch = useDispatch()
     const [state, setState] = useState<State>({
-        conversations: [],
         messages: [],
         users: [],
         userSelected: {},
@@ -75,7 +73,7 @@ const ChatBox = () => {
     })
     const { isOpenChatBox }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { conversations, users, messages, message, previewBlobs, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
+    const { users, messages, message, previewBlobs, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
     const [showEmojis, setShowEmojis] = useState(false)
     const [usersOnline, setUsersOnline] = useState<SocketUser[]>([])
     const [urls, setUrls] = useState<string[]>([])
@@ -154,10 +152,6 @@ const ChatBox = () => {
         setState({
             ...state,
             users: resUsers.data.users,
-            conversations:
-                user.conversations?.map((conversation: string) => {
-                    return resUsers.data.users.find((u: User) => u.id === conversation)
-                })
         })
     }
 
@@ -211,12 +205,17 @@ const ChatBox = () => {
 
 
     const handleShowMessage = (userSelect: User) => {
-        if (userSelected.id === userSelect.id) {
-            setState({ ...state, userSelected: {}, isOpenChatMessage: false })
-        } else {
-            setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
+        try {
+            if (userSelected.id === userSelect.id || isOpenChatMessage) {
+                setState({ ...state, userSelected: {}, isOpenChatMessage: false })
+            } else {
+                setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
+            }
+        } catch (e) {
+            console.log("err", e);
         }
     }
+
 
     useEffect(() => {
         emoji?.native && setState({ ...state, message: `${message} ${emoji?.native}` })
@@ -291,7 +290,7 @@ const ChatBox = () => {
 
                 </div>
                 <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-full border-gray-300  w-full">
-                    {conversations?.map((conversation: User) => (
+                    {users?.filter((u: User) => u.id !== user.id).map((conversation: User) => (
                         <div
                             onClick={() => handleShowMessage(conversation)}
                             key={conversation?.id} className={`${conversation?.id === userSelected?.id && "bg-gray-200"} flex p-2 hover:bg-gray-100 cursor-pointer items-center px-5 space-x-2`}>
