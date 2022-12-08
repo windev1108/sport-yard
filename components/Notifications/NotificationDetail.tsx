@@ -6,7 +6,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
-import { Divider, Skeleton, Stack, Step, StepIconProps, StepLabel, Stepper, Typography, Tooltip, DialogContentText, TextField } from '@mui/material';
+import { Divider, Skeleton, Stack, Step, StepIconProps, StepLabel, Stepper, Typography, Tooltip, TextField } from '@mui/material';
 import axios from 'axios';
 import { Cart, Order, Pitch, Product, User } from '../../Models';
 import Currency from 'react-currency-formatter';
@@ -26,12 +26,13 @@ import Link from 'next/link';
 import { MdPayments, MdOutlineDoneOutline } from 'react-icons/md';
 import { AiOutlineClose, AiOutlineInbox } from 'react-icons/ai';
 import { BsTruck } from 'react-icons/bs';
-import { GrDropbox, GrNext, GrPrevious } from 'react-icons/gr';
+import { GrDropbox, GrNext, GrNotes, GrPrevious } from 'react-icons/gr';
 import IconButton from '@mui/material/IconButton';
 const Map = dynamic(() => import("../Map"), { ssr: false })
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { RiRefund2Fill } from 'react-icons/ri';
+import currencyFormatter from 'currency-formatter'
 
 
 interface State {
@@ -85,25 +86,28 @@ const OrderDetail = ({ mutate }: any) => {
 
 
     const handleAcceptRequest = async () => {
-        const { data }: { data: User } = await axios.get(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`)
-        dispatch(setOpenBackdropModal(true))
-        setTimeout(() => {
-            dispatch(setOpenBackdropModal(false))
-            order.methodPay === 2 && axios.put(`/api/users/${user.id}`, {
-                balance: user.balance + order.total - (order.total / 100 * 10) + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
-            })
-            // order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
-            //     balance: data.balance + (order.total / 100 * 10)
-            // })
-
-            axios.put(`/api/orders/${idOrder}`, {
-                status: 3,
-                senderId: order.receiverId,
-                receiverId: order.senderId,
-            })
-            mutate()
-            dispatch(setIsUpdate(!isUpdated))
-        }, 3000)
+        if (order.methodPay === 1 && user.balance < order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)) {
+            toast.info(`Số dư của bạn không đủ ${currencyFormatter.format(order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!, { code: 'VND' })} phí dịch vụ , vui lòng nạp thêm `, { autoClose: 3000, theme: "colored" })
+        } else {
+            const { data }: { data: User } = await axios.get(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`)
+            dispatch(setOpenBackdropModal(true))
+            setTimeout(() => {
+                dispatch(setOpenBackdropModal(false))
+                order.methodPay === 2 && axios.put(`/api/users/${user.id}`, {
+                    balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!) + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
+                })
+                order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
+                    balance: data.balance + (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
+                })
+                axios.put(`/api/orders/${idOrder}`, {
+                    status: 3,
+                    senderId: order.receiverId,
+                    receiverId: order.senderId,
+                })
+                mutate()
+                dispatch(setIsUpdate(!isUpdated))
+            }, 3000)
+        }
     }
 
 
@@ -118,8 +122,8 @@ const OrderDetail = ({ mutate }: any) => {
             balance: order.type === "booking" ? data.balance + order.total : data.balance + order.total + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
         })
         mutate()
-        dispatch(setOpenNotificationDetail(false))
         dispatch(setIsUpdate(!isUpdated))
+        dispatch(setOpenNotificationDetail(false))
     }
 
 
@@ -532,6 +536,29 @@ const OrderDetail = ({ mutate }: any) => {
                                 </div>
                             }
 
+
+                            {user.id === order.ownerId &&
+                                <div className="flex space-x-2 items-center">
+                                    <Typography variant="body1" component="h1">
+                                        {`Phí dịch vụ : `}
+                                    </Typography>
+                                    <div className="flex space-x-2 items-center">
+                                        <Typography fontWeight={700} variant="body1" component="h1">
+                                            -
+                                            <Currency quantity={order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!} currency="VND" pattern="##,### !" />
+                                        </Typography>
+                                        <Typography fontWeight={500} variant="body1" component="h1">
+                                            {"(10%)"}
+                                        </Typography>
+                                        <Tooltip title="Owner chịu phí dịch vụ trên 10% giá trị đơn hàng">
+                                            <IconButton>
+                                                <GrNotes className="!text-yellow-500" size={12} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </div>
+                                </div>
+                            }
+
                             {isLoading ?
                                 <Skeleton variant="text" className="!p-0" width={220} height={25} />
                                 :
@@ -768,7 +795,7 @@ const OrderDetail = ({ mutate }: any) => {
                                             {"Hoàn tiền đặt hàng"}
                                         </Typography>
                                         <Typography variant="body1" component="h1">
-                                            (+<Currency quantity={order.total - order.total / 100 * 10} currency="VND" pattern="##,###!" />)
+                                            (+<Currency quantity={order.total - order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!} currency="VND" pattern="##,###!" />)
                                         </Typography>
                                     </div>
                                 </div>
@@ -936,7 +963,9 @@ const OrderDetail = ({ mutate }: any) => {
                         <div className="flex space-x-2">
                             <Button
                                 onClick={() => dispatch(setOpenNotificationDetail(false))}
-                                variant='outlined'>Thoát</Button>
+                                variant='outlined'
+                                className="!border-primary text-primary bg-white"
+                            >Thoát</Button>
                             <Button
                                 onClick={handleOpenPayment}
                                 className="!bg-primary !text-white">Thanh toán</Button>
@@ -963,7 +992,7 @@ const OrderDetail = ({ mutate }: any) => {
                     </DialogActions>
                 }
 
-                {order.status === 8 &&  order.methodPay === 2  &&user.id === order.ownerId &&
+                {order.status === 8 && order.methodPay === 2 && user.id === order.ownerId &&
                     <DialogActions className="flex items-center  bg-gray-100 w-full">
                         <div className="flex justify-end my-3">
                             <div className="flex space-x-2">

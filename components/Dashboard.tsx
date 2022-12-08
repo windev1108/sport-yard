@@ -109,7 +109,7 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
                                     {item.type === "booking" && item.status === 0 &&  <TableCell className="text-blue-500" align="right">{"Chưa thanh toán"}</TableCell>}
                                     {item.type === "booking" && item.status === 3 &&  <TableCell className="text-primary" align="right">{"Xác nhận đặt sân thành công"}</TableCell>}
                                     {item.type === "booking" && item.status === 4 &&  <TableCell className="text-red-500" align="right">{"Từ chối đặt sân"}</TableCell>}
-                                    {item.status === 2 &&  <TableCell align="right">{"Chờ xác nhận"}</TableCell>}
+                                    {item.status === 2 &&  <TableCell className="text-yellow-500" align="right">{"Chờ xác nhận"}</TableCell>}
 
                                     {item.type === "order" && item.status === 3 &&  <TableCell className="text-primary" align="right">{"Xác nhận đơn hàng thành công"}</TableCell>}
                                     {item.type === "order" && item.status === 4 &&  <TableCell className="text-red-500" align="right">{"Từ chối đơn hàng"}</TableCell>}

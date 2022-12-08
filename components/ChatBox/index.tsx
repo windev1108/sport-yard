@@ -1,6 +1,6 @@
 import { IconButton, Tooltip, Avatar } from '@mui/material';
 import axios from 'axios';
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Message, User } from '../../Models';
 import { RootState } from '../../redux/store';
@@ -159,8 +159,6 @@ const ChatBox = () => {
     const handleSendMessage = async (e: any) => {
         e.preventDefault();
         const { data }: any = await axios.get(`/api/users/${userSelected?.id}`)
-        const checkIsExistConversations = data?.conversations.some((conversation: string) => conversation === user.id)
-
         if (pictures.length) {
             if (urls.length === previewBlobs.length && isUploaded) {
                 setState({ ...state, pictures: [], previewBlobs: [] })
@@ -169,9 +167,6 @@ const ChatBox = () => {
                     receiverId: userSelected?.id,
                     pictures: urls,
                     type: "images"
-                })
-                !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
-                    conversations: [...data.conversations, user.id]
                 })
             } else {
                 toast.info("Vui thử lại sau ", { autoClose: 3000, theme: "colored" })
@@ -193,9 +188,7 @@ const ChatBox = () => {
             setTimeout(() => {
                 scrollToBottom()
             }, 300)
-            !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
-                conversations: [...data.conversations, user.id]
-            })
+          
         } else {
             toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })
         }
@@ -205,14 +198,14 @@ const ChatBox = () => {
 
 
     const handleShowMessage = (userSelect: User) => {
-        try {
-            if (userSelected.id === userSelect.id || isOpenChatMessage) {
+        if (userSelected.id === userSelect.id) {
+            setTimeout(() => {
                 setState({ ...state, userSelected: {}, isOpenChatMessage: false })
-            } else {
+            }, 300)
+        }  else {
+            setTimeout(() => {
                 setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
-            }
-        } catch (e) {
-            console.log("err", e);
+            }, 300)
         }
     }
 

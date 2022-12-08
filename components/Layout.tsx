@@ -27,7 +27,7 @@ const Layout: NextPage<LayoutProps> = ({ children }) => {
   const token = getCookie("token")
   const router = useRouter()
   const dispatch = useDispatch()
-  const { isOpenFormEditUser, isOpenSnackbar, isOpenFormTransaction, isOpenTransactionDetail, isOpenBackdropModal, isOpenProfileModal, isOpenPaymentModal, isLoading }: any = useSelector<RootState>(state => state.is)
+  const { isOpenFormEditUser, isOpenSnackbar, isOpenFormTransaction, isOpenTransactionDetail, isOpenBackdropModal, isOpenProfileModal, isLoading }: any = useSelector<RootState>(state => state.is)
   const { contentSnackBar }: any = useSelector<RootState>(state => state.user)
 
   return (
@@ -37,7 +37,6 @@ const Layout: NextPage<LayoutProps> = ({ children }) => {
       {isOpenFormTransaction && <FormTransactionsModal />}
       {isOpenTransactionDetail && <TransactionDetail />}
       {isOpenBackdropModal && <BackdropModal />}
-      {isOpenPaymentModal && <PaymentModal />}
 
 
       {/* before */}

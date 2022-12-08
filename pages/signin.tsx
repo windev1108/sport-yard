@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import Router, { useRouter } from "next/router";
 import { signIn, useSession } from "next-auth/react";
 import { NextPage } from "next";
-import { setCookies  } from 'cookies-next';
+import { setCookies } from 'cookies-next';
 import jwt from 'jsonwebtoken'
 
 interface State {
@@ -55,7 +55,7 @@ const Signin: NextPage = (): JSX.Element => {
     } else if (user && user.password !== password) {
       toast.info("Password không chính xác", { autoClose: 3000, theme: "colored" })
     } else {
-      const { data } = await axios.post('/api/login', { id : user.id})
+      const { data } = await axios.post('/api/login', { id: user.id })
       setCookies('token', data.token, { maxAge: 60 * 6 * 24 });
       Router.push("/")
     }
@@ -85,7 +85,7 @@ const Signin: NextPage = (): JSX.Element => {
                 <Link href="/" passHref>
                   <Grid className="group cursor-pointer" container justifyContent={"center"} alignItems={"center"}>
                     <Grid className="lg:block hidden" item xs={0} md={0} lg={3}>
-                     <Image src={require("../assets/images/goal.png")} />
+                      <Image src={require("../assets/images/goal.png")} />
                     </Grid>
                     <Grid item xs={0} md={12} lg={6}>
                       <Typography fontSize={30} className="  text-primary" variant="body2" component="main">
@@ -105,7 +105,7 @@ const Signin: NextPage = (): JSX.Element => {
                   component="h1" variant="h5">
                   Sign in
                 </Typography>
-                <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+                <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
                       <TextField
@@ -114,6 +114,7 @@ const Signin: NextPage = (): JSX.Element => {
                         onChange={e => setState({ ...state, email: e.target.value })}
                         fullWidth
                         id="email"
+                        type="email"
                         label="Email Address"
                         name="email"
                         autoComplete="email"

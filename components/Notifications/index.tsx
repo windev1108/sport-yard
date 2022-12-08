@@ -24,13 +24,14 @@ import NotificationDetail from './NotificationDetail'
 import OrderProductModal from '../Modals/OrderProductModal';
 import jwt from 'jsonwebtoken'
 import Dashboard from '../Dashboard'
+import PaymentModal from '../Modals/PaymentModal';
 
 
 
 const Notifications = () => {
     const dispatch = useDispatch()
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { isOpenNotificationDetail, isOpenOrderProduct }: any = useSelector<RootState>(state => state.is)
+    const { isOpenNotificationDetail, isOpenOrderProduct, isOpenPaymentModal }: any = useSelector<RootState>(state => state.is)
     const [isOpenDashboard, setIsOpenDashboard] = useState(false)
     const [notifications, setNotifications] = useState<Order[]>([])
     const [notificationsEl, setNotificationsEl] = useState<null | HTMLElement>(null);
@@ -40,7 +41,7 @@ const Notifications = () => {
         const token: any = getCookie("token")
         const { id }: any = jwt.decode(token)
         const { data } = await axios.get(url)
-        setNotifications(data.orders.filter((order: Order) => id === order.senderId || id === order.receiverId))
+        setNotifications(user.role !== "admin" ? data.orders.filter((order: Order) => id === order.senderId || id === order.receiverId) : data.orders)
     }
     const { mutate } = useSWR(user?.id ? "/api/orders" : null, fetcherNotifications)
 
@@ -86,6 +87,7 @@ const Notifications = () => {
         <>
             {isOpenNotificationDetail && <NotificationDetail mutate={mutate} />}
             {isOpenOrderProduct && <OrderProductModal mutate={mutate} />}
+            {isOpenPaymentModal && <PaymentModal mutate={mutate} />}
             {isOpenDashboard && <Dashboard setOpen={setIsOpenDashboard} isOpenDashboard={isOpenDashboard} orders={notifications} />}
 
             <Tooltip title="Notifications">
@@ -168,25 +170,6 @@ const Notifications = () => {
                                             </Typography>
                                             <div className="flex space-x-2 items-center">
                                                 <div className="w-full relative">
-                                                    {item.status === 2 ?
-                                                        <div className="flex space-x-2">
-                                                            <Typography fontSize={14} fontWeight={item.senderId === user?.id ? 500 : 700} variant="body1" component="h1">
-                                                                {`${item.senderId === user?.id ? "Bạn đã gửi một yêu cầu đến" : item.ordererName}`}
-                                                            </Typography>
-                                                            <Typography fontSize={14} fontWeight={item.senderId === user?.id ? 700 : 500} variant="body1" component="h1">
-                                                                {item.senderId === user?.id ? `${item.ownerName}` : "đã gửi bạn một yêu cầu"}
-                                                            </Typography>
-                                                        </div>
-                                                        :
-                                                        <div className="flex space-x-2">
-                                                            <Typography fontSize={14} fontWeight={item.senderId === user?.id ? 500 : 700} variant="body1" component="h1">
-                                                                {`${item.senderId === user?.id ? "Bạn đã gửi một yêu cầu đến" : item.ownerName}`}
-                                                            </Typography>
-                                                            <Typography fontSize={14} fontWeight={item.senderId === user?.id ? 700 : 500} variant="body1" component="h1">
-                                                                {item.senderId === user?.id ? `${item.ordererName}` : "đã gửi bạn một yêu cầu"}
-                                                            </Typography>
-                                                        </div>
-                                                    }
 
                                                     <div className="flex   space-x-2">
                                                         <Typography fontSize={14} variant="body1" component="h1">

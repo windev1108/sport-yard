@@ -26,6 +26,7 @@ import { BsCalendarDate, BsFillTelephoneFill } from 'react-icons/bs';
 import emailjs from '@emailjs/browser';
 import { toast } from 'react-toastify';
 import { MdOutlineDoneOutline, MdPayments } from 'react-icons/md';
+import { RiErrorWarningLine } from 'react-icons/ri';
 const Map = dynamic(() => import("../Map"), { ssr: false })
 
 
@@ -42,8 +43,11 @@ interface State {
     order: Order | any
 }
 
+interface Props {
+    mutate: () => void
+}
 
-const PaymentModal: NextPage = () => {
+const PaymentModal: NextPage<Props> = ({ mutate }) => {
     const dispatch = useDispatch()
     const { isOpenPaymentModal }: any = useSelector<RootState>(state => state.is)
     const { idOrder }: any = useSelector<RootState>(state => state.orders)
@@ -61,9 +65,9 @@ const PaymentModal: NextPage = () => {
     })
     const { isLoading, pitch, owner, methodPay, bank, transferContent, bankCode, random, order } = state
     const [openSnackbar, setOpenSnackbar] = useState(false);
-    const SERVICE_ID : string  | any = process.env.NEXT_PUBLIC_SERVICE_ID
-    const TEMPLATE_ID : string  | any = process.env.NEXT_PUBLIC_TEMPLATE_ID
-    const PUBLIC_KEY : string | any = process.env.NEXT_PUBLIC_PUBLIC_KEY
+    const SERVICE_ID: string | any = process.env.NEXT_PUBLIC_SERVICE_ID
+    const TEMPLATE_ID: string | any = process.env.NEXT_PUBLIC_TEMPLATE_ID
+    const PUBLIC_KEY: string | any = process.env.NEXT_PUBLIC_PUBLIC_KEY
 
 
 
@@ -125,20 +129,21 @@ const PaymentModal: NextPage = () => {
     );
 
 
-    const handleSubmitPayment = () => {
+    const handleSubmitPayment = async () => {
         if (methodPay === 0) {
             toast.info("Vui lòng chọn phương thức thanh toán", { autoClose: 3000, theme: "colored" })
         } else if (methodPay === 1 && !bank) {
             toast.info("Vui lòng chọn ngân hàng để thanh toán", { autoClose: 3000, theme: "colored" })
         } else if (methodPay === 2 && user.balance < order.total) {
             toast.info("Số dư của bạn không đủ", { autoClose: 3000, theme: "colored" })
-        } else {
+        }else {
             dispatch(setOpenBackdropModal(true))
+            mutate()
             setTimeout(() => {
                 const traceCode = Math.floor(Math.random() * 900000 + 10000)
                 methodPay === 2 && axios.put(`/api/users/${user.id}`, {
                     balance: user.balance - order.total
-                }) 
+                })
                 axios.put(`/api/orders/${idOrder}`, {
                     methodPay: methodPay,
                     receiverId: owner.id,
@@ -150,12 +155,12 @@ const PaymentModal: NextPage = () => {
                 })
                 const templateParams = {
                     to_name: `${owner.firstName} ${owner.lastName}`,
-                    to_email : owner.email ,
+                    to_email: owner.email,
                     from_name: `${user.firstName} ${user.lastName}`,
                     from_email: user.email,
                     name_product: order.nameProduct,
                     total_price: `${order.total}đ`,
-                    method_pay : methodPay === 1 ? "Chuyển khoản" : "Ví Sport Pay",
+                    method_pay: methodPay === 1 ? "Chuyển khoản" : "Ví Sport Pay",
                     trace_code: methodPay === 1 ? random : traceCode,
                     order_date: dayjs(order.date).format("dddd DD-MM-YYYY")
                 }
@@ -298,21 +303,21 @@ const PaymentModal: NextPage = () => {
                             <Skeleton variant="text" className="!p-0" width={380} height={25} />
                             :
                             <div className="flex space-x-6 pr-3">
-                                <div className="flex space-x-2 items-center">
+                                <div className="flex space-x-1 items-center">
                                     <TimelapseIcon className="rotate-[-15deg] text-primary" />
-                                    <Typography fontWeight={700} variant="body1" component="h1">
+                                    <Typography className="whitespace-nowrap" fontWeight={700} variant="body1" component="h1">
                                         {`${order.duration} míns`}
                                     </Typography>
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-1">
                                     <TbSoccerField size={25} className="text-primary" />
-                                    <Typography fontWeight={700} variant="body1" component="h1">
+                                    <Typography className="whitespace-nowrap" fontWeight={700} variant="body1" component="h1">
                                         {`${order.size} V ${order.size}`}
                                     </Typography>
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-1">
                                     <BiTime size={25} className="text-primary" />
-                                    <Typography fontWeight={700} variant="body1" component="h1">
+                                    <Typography className="whitespace-nowrap" fontWeight={700} variant="body1" component="h1">
                                         {`Slot ${order.slot} (${order.time})`}
                                     </Typography>
                                 </div>
@@ -470,6 +475,14 @@ const PaymentModal: NextPage = () => {
                                     )}
                                         className="cursor-pointer text-yellow-400" size={18} />
                                 </div>
+                                <div className="flex space-x-2 items-center">
+                                    <RiErrorWarningLine
+                                        size={20}
+                                        className="text-yellow-600" />
+                                    <Typography variant="subtitle2" component="h1">
+                                        {`Vui lòng nhập đúng nội dung chuyển khoản`}
+                                    </Typography>
+                                </div>
                             </>
                         }
                     </div>
@@ -491,14 +504,15 @@ const PaymentModal: NextPage = () => {
                             <Skeleton variant="rounded" width={80} height={35} />
                             :
                             <Button
-                                variant='outlined'
+                                variant="outlined"
                                 onClick={handleClose}
-                                className=" !text-[#1976d2]">Thoát</Button>
+                                className="bg-white !border-primary !text-primary">Thoát</Button>
                         }
                         {isLoading ?
                             <Skeleton variant="rounded" width={90} height={35} />
                             :
                             <Button
+                                variant="contained"
                                 onClick={handleSubmitPayment}
                                 className="!bg-primary !text-white">Thanh toán</Button>
                         }

@@ -99,7 +99,7 @@ const Signup = () => {
                 <Typography component="h1" variant="h5">
                   Sign up
                 </Typography>
-                <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+                <Box component="form"  onSubmit={handleSubmit} sx={{ mt: 3 }}>
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                       <TextField
@@ -132,6 +132,7 @@ const Signup = () => {
                         onChange={e => setState({ ...state, email: e.target.value })}
                         required
                         fullWidth
+                        type="email"
                         id="email"
                         label="Email Address"
                         name="email"
