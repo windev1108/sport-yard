@@ -85,6 +85,10 @@ const ProfileModal: NextPage = () => {
     }
 
     const handleSendMessage = async () => {
+        const isExistConversation = user.conversations.some((c: string) => c === idProfile)
+        !isExistConversation && axios.put(`/api/users/${user.id}`, {
+            conversations : [...user.conversations , idProfile]
+        })
         dispatch(setOpenProfileModal(false))
         dispatch(setOpenChatBox(true))
     }
