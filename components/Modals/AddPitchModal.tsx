@@ -92,7 +92,7 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
             blobMainPicture: "",
             mainPicture: {},
             isLoading: false,
-            isUploaded: false
+            isUploaded: true
         })
         setUrls([])
     }, [])
@@ -128,9 +128,10 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
         const isValidEndTime = slots.every(s => s.end !== "")
         const isValidPrice = slots.every(s => s.price !== "")
 
-        if (!pictures.length || !blobMainPicture) {
-            toast.info("Vui lòng chọn những bức ảnh", { autoClose: 3000, theme: "colored" })
-        } else if (!name || !location || !longitude || !latitude || !size.length) {
+        // if (!pictures.length || !mainPicture.name) {
+        //     toast.info("Vui lòng chọn những bức ảnh", { autoClose: 3000, theme: "colored" })
+        // } else 
+        if (!name || !location || !longitude || !latitude || !size.length) {
             toast.info("Vui lòng điền đầy đủ thông tin", {
                 autoClose: 3000,
                 theme: "colored",
@@ -162,7 +163,7 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
                 setOpen(false)
                 dispatch(setIsUpdate(!isUpdated))
                 toast.success("Thêm sân thành công ", { autoClose: 3000, theme: "colored" })
-            }else{
+            } else {
                 toast.info("Vui lòng thử lại sau ", { autoClose: 3000, theme: "colored" })
             }
 
@@ -188,9 +189,6 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
         setUrl(data.url)
         setState({ ...state, isLoading: false, isUploaded: true })
     }
-
-    console.log("Urls :",urls)
-    console.log("Url :",url)
 
 
     const handleSelect = (e: any) => {
@@ -379,8 +377,8 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
             </DialogContent>
             <DialogActions className="flex items-center  bg-gray-100 w-full">
                 <div className="flex space-x-2">
-                    <Button className="!bg-[#1976d2] !text-white" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button className="!bg-[#1976d2] !text-white" variant="contained" onClick={isUploaded ? handleSubmit : handleUploadFiles}>{isUploaded ? "Submit" : "Upload"}</Button>
+                    <Button className="!border-[1px] !border-primary text-primary" variant="outlined" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button className="!bg-primary !text-white" variant="contained" onClick={isUploaded ? handleSubmit : handleUploadFiles}>{isUploaded ? "Submit" : "Upload"}</Button>
                 </div>
             </DialogActions>
             {isLoading &&

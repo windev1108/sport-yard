@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, memo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, memo, useCallback } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import axios from 'axios';
@@ -64,23 +64,14 @@ const OwnerManager = () => {
     const [openFormEditPitchModal, setFormEditPitchModal] = useState(false);
     const { tabData, tab, idDeleting, idEditing, typeProduct, isLoading } = state
 
-  useEffect(() => {
-      return () => {
-        dispatch(setIsLoading(false));
-      }
-  },[])
 
     useLayoutEffect(() => {
-        if (!token) {
+        if (!token || user.role !== "admin") {
             Router.push("/")
-        }else if(user.role && user.role !== "admin"){
-            Router.push("/")
-        }else{
-           
         }
+
     }, [token])
 
-    console.log("token ", token)
 
     useLayoutEffect(() => {
         switch (tab) {
@@ -117,9 +108,9 @@ const OwnerManager = () => {
     }, [tab])
 
 
-    const handleChange = (e: React.SyntheticEvent, newValue: number) => {
+    const handleChange = useCallback((e: React.SyntheticEvent, newValue: number) => {
         setState({ ...state, tab: newValue, isLoading: true });
-    };
+    }, [])
 
     const handleDelete = (id: any) => {
         setState({ ...state, idDeleting: id })
@@ -150,14 +141,13 @@ const OwnerManager = () => {
     }
 
 
-
-
     return (
         <Layout>
             <SpeedDial
+                className="group after:absolute after:bottom-0 after:left-0 after:right-0 after:bg-white after:h-14 after:rounded-full"
                 ariaLabel="SpeedDial basic example"
                 sx={{ position: 'fixed', bottom: 16, right: 16 }}
-                icon={<SpeedDialIcon className="text-primary" />}
+                icon={<SpeedDialIcon className="group-hover:text-white text-primary" />}
             >
                 <SpeedDialAction
                     onClick={() => setModalAddUser(true)}
