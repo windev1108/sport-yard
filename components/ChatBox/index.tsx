@@ -148,12 +148,10 @@ const ChatBox = () => {
 
     const getConversations = async () => {
         const resUsers = await axios.get('/api/users')
-        const usersIsNotAdmin = resUsers.data.users.filter((u: User) => u.role !== "admin")
-        const userIsAdmin = resUsers.data.users.find((u: User) => u.role === "admin")
         setState({
             ...state,
             users: resUsers.data.users,
-            conversations: user.role === "admin" ? [userIsAdmin, ...usersIsNotAdmin] : user?.conversations?.map((c: string) => {
+            conversations: user.role === "admin" ? resUsers.data.users.filter((u: User) => u.role !== "admin") : user?.conversations?.map((c: string) => {
                 return resUsers.data.users.find((u: User) => u.id === c)
             })
 
