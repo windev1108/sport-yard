@@ -205,15 +205,9 @@ const ChatBox = () => {
     }
 
 
-    const handleShowMessage = (userSelect: User) => {
-        if (userSelect?.id === userSelected?.id) {
-            setState({ ...state, userSelected: {}, isOpenChatMessage: false })
-        } else {
-            setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
-
-        }
-    }
-
+    const handleShowMessage = useCallback((userSelect: User) => {
+        setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
+    }, [])
 
 
     useEffect(() => {
