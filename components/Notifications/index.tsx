@@ -119,7 +119,7 @@ const Notifications = () => {
                 >
                     <div className="lg:relative fixed top-0 left-0 right-0 bottom-0 bg-white">
                         <div className="flex justify-between">
-                            {user.role === "owner" &&
+                            {user.role === "owner" || user.role === "admin" &&
                                 <div className="flex items-center px-4">
                                     <Typography fontWeight={700} variant="body1" component="h1">
                                         Dashboard

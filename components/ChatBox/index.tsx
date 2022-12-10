@@ -144,7 +144,7 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [isOpenChatMessage, user])
+    }, [user])
 
     const getConversations = async () => {
         const resUsers = await axios.get('/api/users')
@@ -162,6 +162,7 @@ const ChatBox = () => {
     const handleSendMessage = async (e: any) => {
         e.preventDefault();
         const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user.id)
+        const { data } = await axios.get(`/api/users/${userSelected?.id}`)
 
         if (pictures.length) {
             if (urls.length === previewBlobs.length && isUploaded) {
@@ -180,7 +181,6 @@ const ChatBox = () => {
             }
             await mutate()
         } else if (message) {
-            console.log("send message")
             socket.emit("send_message", {
                 sender: user,
                 receiverId: userSelected?.id,
@@ -196,8 +196,8 @@ const ChatBox = () => {
             setTimeout(() => {
                 scrollToBottom()
             }, 300)
-            !checkIsExistConversations && userSelected?.conversations && axios.put(`/api/users/${userSelected?.id}`, {
-                conversations: [...userSelected?.conversations, user.id]
+            !checkIsExistConversations && data.role !== "admin" && axios.put(`/api/users/${userSelected?.id}`, {
+                conversations: [...data?.conversations, user.id]
             })
         } else {
             toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })

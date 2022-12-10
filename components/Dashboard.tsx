@@ -39,6 +39,7 @@ interface Props {
 
 
 const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
+    const { user }: any = useSelector<RootState>(state => state.user)
     const dispatch = useDispatch()
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -55,7 +56,7 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
             orderer: order.ordererName,
             owner: order.ownerName,
             status: order.status,
-            total: currencyFormatter.format(order.total, { code: 'VND' }),
+            total: user.role === "owner" ? currencyFormatter.format(order.total, { code: 'VND' }) : currencyFormatter.format((order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!), { code: 'VND' }),
             createdAt: dayjs(order.date).format("DD-MM-YYYY")
         }
     })
@@ -106,21 +107,21 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
                                     <TableCell align="right">{item.type === "booking" ? "Sân bóng đá" : "Sản phẩm"}</TableCell>
                                     <TableCell align="right">{item.orderer}</TableCell>
                                     <TableCell align="right">{item.owner}</TableCell>
-                                    {item.type === "booking" && item.status === 0 &&  <TableCell className="text-blue-500" align="right">{"Chưa thanh toán"}</TableCell>}
-                                    {item.type === "booking" && item.status === 3 &&  <TableCell className="text-primary" align="right">{"Xác nhận đặt sân thành công"}</TableCell>}
-                                    {item.type === "booking" && item.status === 4 &&  <TableCell className="text-red-500" align="right">{"Từ chối đặt sân"}</TableCell>}
-                                    {item.status === 2 &&  <TableCell className="text-yellow-500" align="right">{"Chờ xác nhận"}</TableCell>}
+                                    {item.type === "booking" && item.status === 0 && <TableCell className="text-blue-500" align="right">{"Chưa thanh toán"}</TableCell>}
+                                    {item.type === "booking" && item.status === 3 && <TableCell className="text-primary" align="right">{"Xác nhận đặt sân thành công"}</TableCell>}
+                                    {item.type === "booking" && item.status === 4 && <TableCell className="text-red-500" align="right">{"Từ chối đặt sân"}</TableCell>}
+                                    {item.status === 2 && <TableCell className="text-yellow-500" align="right">{"Chờ xác nhận"}</TableCell>}
 
-                                    {item.type === "order" && item.status === 3 &&  <TableCell className="text-primary" align="right">{"Xác nhận đơn hàng thành công"}</TableCell>}
-                                    {item.type === "order" && item.status === 4 &&  <TableCell className="text-red-500" align="right">{"Từ chối đơn hàng"}</TableCell>}
-                                    {item.type === "order" && item.status === 5 &&  <TableCell className="text-yellow-500" align="right">{"Chờ lấy hàng"}</TableCell>}
-                                    {item.type === "order" && item.status === 6 &&  <TableCell className="text-yellow-500" align="right">{"Đang giao"}</TableCell>}
-                                    {item.type === "order" && item.status === 7 &&  <TableCell className="text-primary" align="right">{"Giao hàng thành công"}</TableCell>}
-                                    {item.type === "order" && item.status === 8 &&  <TableCell className="text-red-500" align="right">{"Từ chối nhận hàng"}</TableCell>}
-                                    {item.type === "order" && item.status === 9 &&  <TableCell className="text-primary" align="right">{"Đã hoàn tiền đặt hàng"}</TableCell>}
+                                    {item.type === "order" && item.status === 3 && <TableCell className="text-primary" align="right">{"Xác nhận đơn hàng thành công"}</TableCell>}
+                                    {item.type === "order" && item.status === 4 && <TableCell className="text-red-500" align="right">{"Từ chối đơn hàng"}</TableCell>}
+                                    {item.type === "order" && item.status === 5 && <TableCell className="text-yellow-500" align="right">{"Chờ lấy hàng"}</TableCell>}
+                                    {item.type === "order" && item.status === 6 && <TableCell className="text-yellow-500" align="right">{"Đang giao"}</TableCell>}
+                                    {item.type === "order" && item.status === 7 && <TableCell className="text-primary" align="right">{"Giao hàng thành công"}</TableCell>}
+                                    {item.type === "order" && item.status === 8 && <TableCell className="text-red-500" align="right">{"Từ chối nhận hàng"}</TableCell>}
+                                    {item.type === "order" && item.status === 9 && <TableCell className="text-primary" align="right">{"Đã hoàn tiền đặt hàng"}</TableCell>}
 
 
-                                   
+
                                     <TableCell align="right">{item.total}</TableCell>
                                     <TableCell align="right">{item.createdAt}</TableCell>
                                 </TableRow>
@@ -139,7 +140,7 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
                         <Currency quantity={+orders.filter((order: Order) => order.status === 3 || order.status === 7).reduce(
                             (previousValue, currentValue) => previousValue + currentValue.total,
                             0
-                        )} currency="VND" pattern="##,### !" />
+                        ) / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!} currency="VND" pattern="##,### !" />
                     </Typography>
                 </DialogContentText>
             </DialogActions>
