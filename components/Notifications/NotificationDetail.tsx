@@ -545,7 +545,7 @@ const OrderDetail = ({ mutate }: any) => {
                                     <div className="flex space-x-2 items-center">
                                         <Typography fontWeight={700} variant="body1" component="h1">
                                             -
-                                            <Currency quantity={order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!} currency="VND" pattern="##,### !" />
+                                            <Currency quantity={+order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!} currency="VND" pattern="##,### !" />
                                         </Typography>
                                         <Typography fontWeight={500} variant="body1" component="h1">
                                             {"(10%)"}

@@ -161,8 +161,7 @@ const ChatBox = () => {
 
     const handleSendMessage = async (e: any) => {
         e.preventDefault();
-        const { data }: any = await axios.get(`/api/users/${userSelected?.id}`)
-        const checkIsExistConversations = data?.conversations.some((conversation: string) => conversation === user.id)
+        const checkIsExistConversations = data?.conversations?.some((conversation: string) => conversation === user.id)
 
         if (pictures.length) {
             if (urls.length === previewBlobs.length && isUploaded) {
@@ -181,6 +180,7 @@ const ChatBox = () => {
             }
             await mutate()
         } else if (message) {
+            console.log("send message")
             socket.emit("send_message", {
                 sender: user,
                 receiverId: userSelected?.id,
@@ -196,8 +196,8 @@ const ChatBox = () => {
             setTimeout(() => {
                 scrollToBottom()
             }, 300)
-            !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
-                conversations: [...data.conversations, user.id]
+            !checkIsExistConversations && userSelected?.conversations && axios.put(`/api/users/${userSelected?.id}`, {
+                conversations: [...userSelected?.conversations, user.id]
             })
         } else {
             toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })
@@ -296,13 +296,13 @@ const ChatBox = () => {
                             <div className="relative">
                                 <Avatar alt="" src={conversation?.avatar} sx={{ bgcolor: deepOrange[500] }} >{conversation?.firstName?.substring(0, 1)}
                                 </Avatar>
-                                <div className={`${usersOnline.some((u: SocketUser) => u.userId === conversation?.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute bottom-0 right-0 border-[3px] border-white w-[.90rem] h-[.90rem] rounded-full`}></div>
+                                <div className={`${usersOnline?.some((u: SocketUser) => u.userId === conversation?.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute bottom-0 right-0 border-[3px] border-white w-[.90rem] h-[.90rem] rounded-full`}></div>
                             </div>
                             <div>
                                 <div className="flex space-x-2 items-center">
                                     <div className="flex-col">
                                         <span className="flex text-sm font-semibold text-black">{`${conversation?.firstName} ${conversation?.lastName}`}</span>
-                                        {usersOnline.some((u: SocketUser) => u.userId === conversation?.id) &&
+                                        {usersOnline?.some((u: SocketUser) => u.userId === conversation?.id) &&
                                             <span className="flex text-xs">Đang hoạt động</span>
                                         }
                                     </div>
@@ -328,11 +328,11 @@ const ChatBox = () => {
                                 className="relative z-10 flex hover:bg-gray-100 rounded-lg px-2 py-1 space-x-3 items-center">
                                 <div className="relative">
                                     <Avatar src={userSelected?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="Remy Sharp" className="w-8 h-8" >{userSelected?.firstName?.substring(0, 1)}</Avatar>
-                                    <div className={`${usersOnline.some((u: SocketUser) => u.userId === userSelected?.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute -bottom-[2px] -right-[3px] w-[.90rem] h-[.90rem] rounded-full border-[3px] border-white`}></div>
+                                    <div className={`${usersOnline?.some((u: SocketUser) => u.userId === userSelected?.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute -bottom-[2px] -right-[3px] w-[.90rem] h-[.90rem] rounded-full border-[3px] border-white`}></div>
                                 </div>
                                 <div className="flex-col items-center">
                                     <span className="font-semibold text-black">{`${userSelected?.firstName} ${userSelected?.lastName}`}</span>
-                                    {usersOnline.some((u: SocketUser) => u.userId === userSelected?.id) &&
+                                    {usersOnline?.some((u: SocketUser) => u.userId === userSelected?.id) &&
                                         <span className="flex text-xs">Đang hoạt động</span>
                                     }
                                 </div>
