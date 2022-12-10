@@ -144,9 +144,9 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [user])
+    }, [user, isOpenChatBox])
 
-    const getConversations = async () => {
+    const getConversations = useCallback(async () => {
         const resUsers = await axios.get('/api/users')
         setState({
             ...state,
@@ -156,10 +156,10 @@ const ChatBox = () => {
             })
 
         })
-    }
+    }, [])
 
 
-    const handleSendMessage = async (e: any) => {
+    const handleSendMessage = useCallback(async (e: any) => {
         e.preventDefault();
         const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user.id)
         const { data } = await axios.get(`/api/users/${userSelected?.id}`)
@@ -202,11 +202,16 @@ const ChatBox = () => {
         } else {
             toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })
         }
-    }
+    }, [])
 
 
     const handleShowMessage = useCallback((userSelect: User) => {
-        setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
+        if (isOpenChatMessage) {
+            setState({ ...state, userSelected: {}, isOpenChatMessage: false })
+        } else {
+            setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
+
+        }
     }, [])
 
 
