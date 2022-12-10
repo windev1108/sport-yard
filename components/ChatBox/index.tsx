@@ -161,7 +161,7 @@ const ChatBox = () => {
 
     const handleSendMessage = async (e: any) => {
         e.preventDefault();
-        const checkIsExistConversations = data?.conversations?.some((conversation: string) => conversation === user.id)
+        const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user.id)
 
         if (pictures.length) {
             if (urls.length === previewBlobs.length && isUploaded) {
