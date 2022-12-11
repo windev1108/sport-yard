@@ -9,6 +9,7 @@ export interface User {
   isOwner? : boolean;
   balance: number
   phone: number;
+  conversations? : string[]
   address : string,
   bank: {
         bankCode: string,

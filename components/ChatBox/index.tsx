@@ -144,14 +144,17 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [user, isOpenChatBox])
+    }, [user])
 
     const getConversations = useCallback(async () => {
+        const token: any = getCookie("token")
+        const { id } = jwt.decode(token) as { [key: string]: string }
         const resUsers = await axios.get('/api/users')
+        const { data }: { data: User } = await axios.get(`/api/users/${id}`)
         setState({
             ...state,
             users: resUsers.data.users,
-            conversations: user.role === "admin" ? resUsers.data.users.filter((u: User) => u.role !== "admin") : user?.conversations?.map((c: string) => {
+            conversations: data?.role === "admin" ? resUsers.data.users.filter((u: User) => u?.id !== data.id) : data?.conversations?.map((c: string) => {
                 return resUsers.data.users.find((u: User) => u.id === c)
             })
 
@@ -206,14 +209,10 @@ const ChatBox = () => {
 
 
     const handleShowMessage = useCallback((userSelect: User) => {
-        if (isOpenChatMessage) {
-            setState({ ...state, userSelected: {}, isOpenChatMessage: false })
-        } else {
+        if (isOpenChatBox) {
             setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
-
         }
     }, [])
-
 
     useEffect(() => {
         emoji?.native && setState({ ...state, message: `${message} ${emoji?.native}` })
