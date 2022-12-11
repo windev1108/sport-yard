@@ -144,7 +144,7 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [user])
+    }, [])
 
     const getConversations = useCallback(async () => {
         const token: any = getCookie("token")
