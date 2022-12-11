@@ -21,8 +21,8 @@ import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import { MdPayment, MdPayments } from 'react-icons/md';
 import { FaUserTie } from 'react-icons/fa';
-import { setContentSnackBar, setIdEditing, setIdProfile } from '../../redux/features/userSlice';
-import { GiSoccerBall } from 'react-icons/gi';
+import { setIdEditing, setIdProfile } from '../../redux/features/userSlice';
+import currencyFormatter from 'currency-formatter'
 import { AiFillCopy, AiOutlineClose } from 'react-icons/ai';
 import { GrFormAdd } from 'react-icons/gr';
 import { SiBitcoincash } from 'react-icons/si';
@@ -136,13 +136,13 @@ const OrderProductModal = ({ mutate }: any) => {
                     ordererName: `${user.firstName} ${user.lastName}`,
                     status: 2,
                 }
-                const templateParams : any = {
+                const templateParams: any = {
                     to_name: `${getUser(o.owner).firstName} ${getUser(o.owner).lastName}`,
-                    to_email: getUser(o.owner).email,
+                    to_email: getUser(o.owner)?.email,
                     from_name: `${user.firstName} ${user.lastName}`,
                     from_email: user.email,
                     amount_product: o.cart.length,
-                    total_price: `${order.total}đ`,
+                    total_price: currencyFormatter.format(+sum, { code: 'VND' }),
                     method_pay: methodPay === 2 ? "Ví Sport Pay" : "Thanh toán khi nhận hàng",
                     trace_code: traceCode,
                     order_date: dayjs(order.date).format("dddd DD-MM-YYYY")

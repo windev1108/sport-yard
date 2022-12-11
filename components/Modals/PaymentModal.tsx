@@ -136,14 +136,11 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
             toast.info("Vui lòng chọn ngân hàng để thanh toán", { autoClose: 3000, theme: "colored" })
         } else if (methodPay === 2 && user.balance < order.total) {
             toast.info("Số dư của bạn không đủ", { autoClose: 3000, theme: "colored" })
-        }else {
+        } else {
             dispatch(setOpenBackdropModal(true))
             mutate()
             setTimeout(() => {
                 const traceCode = Math.floor(Math.random() * 900000 + 10000)
-                methodPay === 2 && axios.put(`/api/users/${user.id}`, {
-                    balance: user.balance - order.total
-                })
                 axios.put(`/api/orders/${idOrder}`, {
                     methodPay: methodPay,
                     receiverId: owner.id,

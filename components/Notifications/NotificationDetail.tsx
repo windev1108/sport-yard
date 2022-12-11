@@ -91,11 +91,28 @@ const OrderDetail = ({ mutate }: any) => {
         } else {
             const { data }: { data: User } = await axios.get(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`)
             dispatch(setOpenBackdropModal(true))
-            setTimeout(() => {
+            setTimeout(async () => {
                 dispatch(setOpenBackdropModal(false))
-                order.methodPay === 2 && axios.put(`/api/users/${user.id}`, {
-                    balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!) + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
-                })
+
+                // if order === booking thi tru tien va + phi van chuyen
+                if (order.methodPay === 2 && order.type === "order") {
+                    const { data } = await axios.get(`/api/users/${order.orderId}`)
+                    axios.put(`/api/users/${order.orderId}`, {
+                        balance: data.balance - (order.total + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!)
+                    })
+                    axios.put(`/api/users/${user.id}`, {
+                        balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!) + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
+                    })
+                } else {
+                    const { data } = await axios.get(`/api/users/${order.orderId}`)
+                    axios.put(`/api/users/${data.orderId}`, {
+                        balance: data.balance - (order.total)
+                    })
+                    axios.put(`/api/users/${user.id}`, {
+                        balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
+                    })
+                }
+
                 order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
                     balance: data.balance + (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
                 })
@@ -117,9 +134,6 @@ const OrderDetail = ({ mutate }: any) => {
             status: 4,
             senderId: order.receiverId,
             receiverId: order.senderId,
-        })
-        order.methodPay === 2 && axios.put(`/api/users/${order.senderId}`, {
-            balance: order.type === "booking" ? data.balance + order.total : data.balance + order.total + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
         })
         mutate()
         dispatch(setIsUpdate(!isUpdated))
