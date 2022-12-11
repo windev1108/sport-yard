@@ -113,9 +113,10 @@ const OrderDetail = ({ mutate }: any) => {
                     })
                 }
 
-                order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
-                    balance: data.balance + (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
-                })
+                // order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
+                //     balance: data.balance + (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
+                // })
+
                 axios.put(`/api/orders/${idOrder}`, {
                     status: 3,
                     senderId: order.receiverId,
@@ -129,7 +130,6 @@ const OrderDetail = ({ mutate }: any) => {
 
 
     const handleRejectRequest = async () => {
-        const { data }: { data: User } = await axios.get(`/api/users/${order.senderId}`)
         axios.put(`/api/orders/${idOrder}`, {
             status: 4,
             senderId: order.receiverId,

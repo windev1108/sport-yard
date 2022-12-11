@@ -142,19 +142,15 @@ const OrderProductModal = ({ mutate }: any) => {
                     from_name: `${user.firstName} ${user.lastName}`,
                     from_email: user.email,
                     amount_product: o.cart.length,
-                    total_price: currencyFormatter.format(+sum, { code: 'VND' }),
+                    total_price:  currencyFormatter.format(+sum, { code: 'VND' }),
                     method_pay: methodPay === 2 ? "Ví Sport Pay" : "Thanh toán khi nhận hàng",
                     trace_code: traceCode,
                     order_date: dayjs(order.date).format("dddd DD-MM-YYYY")
                 }
                 axios.post('/api/orders', formData)
-                emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
+                sum && emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
             })
             setTimeout(async () => {
-                const totalPay = totalPrice + order.length * +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
-                methodPay === 2 && axios.put(`/api/users/${user.id}`, {
-                    balance: user.balance - totalPay
-                })
                 dispatch(setOpenBackdropModal(false))
                 dispatch(setOpenOrderProduct(false))
                 mutate()
