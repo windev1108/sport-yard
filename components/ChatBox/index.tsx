@@ -165,7 +165,7 @@ const ChatBox = () => {
     const handleSendMessage = useCallback(async (e: any) => {
         e.preventDefault();
         const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user.id)
-        const { data } = await axios.get(`/api/users/${userSelected?.id}`)
+        const { data } = userSelected?.id && await axios.get(`/api/users/${userSelected?.id}`)
 
         if (pictures.length) {
             if (urls.length === previewBlobs.length && isUploaded) {
@@ -184,16 +184,16 @@ const ChatBox = () => {
             }
             await mutate()
         } else if (message) {
-            socket.emit("send_message", {
-                sender: user,
-                receiverId: userSelected?.id,
-            })
             setState({ ...state, message: "" })
             await axios.post("/api/messages", {
                 senderId: user.id,
                 receiverId: userSelected?.id,
                 message,
                 type: "text"
+            })
+            socket.emit("send_message", {
+                sender: user,
+                receiverId: userSelected?.id,
             })
             await mutate()
             setTimeout(() => {
