@@ -13,21 +13,21 @@ import 'react-calendar/dist/Calendar.css';
 import NextNProgress from "nextjs-progressbar";
 import { SessionProvider } from "next-auth/react";
 import { Session } from "next-auth";
-import  { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 
-function MyApp({ Component, pageProps }: AppProps<{
+function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps<{
   session: Session;
 }>) {
 
-  
+
   return (
-    <SessionProvider session={pageProps.session}>
+    <SessionProvider session={session}>
       <Provider store={store}>
-          <ToastContainer />
-          <NextNProgress />
-          <Toaster />
-          <Component className="overflow-hidden" {...pageProps} />
+        <ToastContainer />
+        <NextNProgress />
+        <Toaster />
+        <Component className="overflow-hidden" {...pageProps} />
       </Provider>
     </SessionProvider>
   );

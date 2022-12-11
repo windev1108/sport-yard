@@ -1,4 +1,4 @@
-import React, {  useEffect } from 'react';
+import React, { useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import Drawer from '@mui/material/Drawer';
 import NavBar from './NavBar';
-import { Avatar, Grid, Skeleton, Tooltip, Divider , NoSsr } from '@mui/material';
+import { Avatar, Grid, Skeleton, Tooltip, Divider, NoSsr } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { FaUserCircle } from 'react-icons/fa';
@@ -20,7 +20,7 @@ import { deepOrange } from '@mui/material/colors';
 import dynamic from 'next/dynamic'
 import { BiLogOut } from 'react-icons/bi';
 import { FiLogIn } from 'react-icons/fi';
-import { setOpenProfileModal  } from '../redux/features/isSlice'
+import { setOpenProfileModal } from '../redux/features/isSlice'
 import { setIdProfile } from '../redux/features/userSlice';
 import Cart from './Cart';
 import Image from 'next/image';
@@ -42,7 +42,7 @@ const theme = createTheme({
 
 
 
-function Header( ) {
+function Header() {
   const token: CookieValueTypes | any = getCookie("token");
   const { user }: any = useSelector<RootState>(state => state.user)
   const dispatch = useDispatch()
@@ -50,9 +50,9 @@ function Header( ) {
   const [state, setState] = React.useState({
     isShowDrawer: false,
     height: 0,
-    isLoading : true
+    isLoading: true
   });
-  const { isShowDrawer , isLoading} = state
+  const { isShowDrawer, isLoading } = state
 
 
   const [accountAnchorEl, setAccountAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -92,8 +92,8 @@ function Header( ) {
 
 
   useEffect(() => {
-    setState({...state , isLoading : false})
-},[])
+    setState({ ...state, isLoading: false })
+  }, [])
 
 
   return (
@@ -113,9 +113,7 @@ function Header( ) {
           <AppBar position="static">
             <Toolbar>
               {isLoading ?
-              <NoSsr>
                 <Skeleton variant="circular" className="translate-x-[-8px]" width={40} height={40} />
-              </NoSsr>
                 :
                 <IconButton
                   onClick={toggleDrawer("left", true)}
@@ -129,9 +127,7 @@ function Header( ) {
                 </IconButton>
               }
               {isLoading ?
-              <NoSsr>
                 <Skeleton variant="rounded" width={210} height={40} />
-              </NoSsr>
                 :
                 <Link className="lg:block hidden" href="/" passHref>
                   <a className="group flex space-x-2 items-center">
@@ -161,9 +157,7 @@ function Header( ) {
                   <Tooltip
                     title="Your cash">
                     {isLoading ?
-                    <NoSsr>
                       <Skeleton variant="rounded" width={120} height={20} />
-                    </NoSsr>
                       :
                       <Grid className=" cursor-pointer" container spacing={1}>
                         <Grid item>
@@ -177,33 +171,25 @@ function Header( ) {
                   </Tooltip>
                 }
                 {isLoading ?
-                <NoSsr>
                   <Skeleton variant="circular" width={40} height={40} />
-                </NoSsr>
                   :
                   token &&
                   <Transactions />
                 }
                 {isLoading ?
-                <NoSsr>
                   <Skeleton variant="circular" width={40} height={40} />
-                </NoSsr>
                   :
                   token &&
                   <Notifications />
                 }
                 {isLoading ?
-                <NoSsr>
                   <Skeleton variant="circular" width={40} height={40} />
-                </NoSsr>
                   :
                   token &&
                   <Cart />
                 }
                 {isLoading ?
-                <NoSsr>
                   <Skeleton variant="circular" width={40} height={40} />
-                </NoSsr>
                   :
                   <Tooltip title="Profile">
                     {token
@@ -291,33 +277,25 @@ function Header( ) {
 
               <Box className="lg:hidden flex items-center space-x-1">
                 {isLoading ?
-                <NoSsr>
-                  <Skeleton variant="circular" width={40} height={40} />
-                </NoSsr>
+                    <Skeleton variant="circular" width={40} height={40} />
                   :
                   token &&
                   <Transactions />
                 }
                 {isLoading ?
-                <NoSsr>
-                  <Skeleton variant="circular" width={40} height={40} />
-                </NoSsr>
+                    <Skeleton variant="circular" width={40} height={40} />
                   :
                   token &&
                   <Notifications />
                 }
                 {isLoading ?
-                <NoSsr>
-                  <Skeleton variant="circular" width={40} height={40} />
-                </NoSsr>
+                    <Skeleton variant="circular" width={40} height={40} />
                   :
                   token &&
                   <Cart />
                 }
                 {isLoading ?
-                  <NoSsr>
-                  <Skeleton variant="circular" width={40} height={40} />
-                </NoSsr>
+                    <Skeleton variant="circular" width={40} height={40} />
                   :
                   <Tooltip title="Profile">
                     {token

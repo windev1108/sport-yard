@@ -144,7 +144,7 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [])
+    }, [user])
 
     const getConversations = useCallback(async () => {
         const token: any = getCookie("token")
@@ -208,11 +208,14 @@ const ChatBox = () => {
     }, [])
 
 
-    const handleShowMessage = useCallback((userSelect: User) => {
-        if (isOpenChatBox) {
+    const handleShowMessage = (userSelect: User) => {
+        if (userSelected.id === userSelect.id) {
+            setState({ ...state, userSelected: {}, isOpenChatMessage: false })
+        } else {
             setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
         }
-    }, [])
+    }
+
 
     useEffect(() => {
         emoji?.native && setState({ ...state, message: `${message} ${emoji?.native}` })
