@@ -26,7 +26,7 @@ import { BsCalendarDate, BsFillTelephoneFill } from 'react-icons/bs';
 import emailjs from '@emailjs/browser';
 import { toast } from 'react-toastify';
 import { MdOutlineDoneOutline, MdPayments } from 'react-icons/md';
-import { RiErrorWarningLine } from 'react-icons/ri';
+import io from 'socket.io-client'
 const Map = dynamic(() => import("../Map"), { ssr: false })
 
 
@@ -38,14 +38,14 @@ interface State {
     methodPay: number
     bank: any
     bankCode: string
-    transferContent: string
-    random: number
     order: Order | any
 }
 
 interface Props {
     mutate: () => void
 }
+
+let socket: any
 
 const PaymentModal: NextPage<Props> = ({ mutate }) => {
     const dispatch = useDispatch()
@@ -60,45 +60,51 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
         bankCode: "",
         bank: {},
         order: {},
-        random: 0,
-        transferContent: ""
     })
-    const { isLoading, pitch, owner, methodPay, bank, transferContent, bankCode, random, order } = state
+    const { isLoading, pitch, owner, methodPay, bank, order } = state
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const SERVICE_ID: string | any = process.env.NEXT_PUBLIC_SERVICE_ID
     const TEMPLATE_ID: string | any = process.env.NEXT_PUBLIC_TEMPLATE_ID
     const PUBLIC_KEY: string | any = process.env.NEXT_PUBLIC_PUBLIC_KEY
 
 
+    const socketInitializer = async () => {
+        socket = io(process.env.NEXT_PUBLIC_SERVER || "http://localhost:5000")
+        socket.on('connect', () => {
+            console.log('Socket connected')
+        })
+    }
 
     useEffect(() => {
         axios.get(`/api/orders/${idOrder}`)
             .then(resOrder => {
                 axios.get(`/api/users/${resOrder.data.ownerId}`)
                     .then(resUsers => {
-                        axios.get(`/api/pitch/${resOrder.data.productId}`)
+                        axios.get(`/api/pitch/${resOrder.data?.productId}`)
                             .then(resPitch => {
                                 setState({ ...state, pitch: resPitch.data, owner: resUsers.data, order: resOrder.data, isLoading: false })
                             })
                     })
             })
 
+        socketInitializer()
     }, [])
 
 
 
-    useMemo(() => {
-        const bankFound = owner.banks?.find((bank: Bank) => bank.bankCode === bankCode)
-        const randomId = Math.floor(Math.random() * 900000 + 10000)
-        setState({
-            ...state, bank: bankFound, transferContent: `BOOKING_SPORTYARD_${randomId}`, random: randomId
-        })
-    }, [bankCode])
 
-    const handleCoppyToClipboard = (value: string) => {
-        navigator.clipboard.writeText(value)
-        setOpenSnackbar(true)
-    }
+    // useMemo(() => {
+    //     const bankFound = owner.banks?.find((bank: Bank) => bank.bankCode === bankCode)
+    //     const randomId = Math.floor(Math.random() * 900000 + 10000)
+    //     setState({
+    //         ...state, bank: bankFound, transferContent: `BOOKING_SPORTYARD_${randomId}`, random: randomId
+    //     })
+    // }, [bankCode])
+
+    // const handleCoppyToClipboard = (value: string) => {
+    //     navigator.clipboard.writeText(value)
+    //     setOpenSnackbar(true)
+    // }
 
     const handleCloseSnackbar = (event: React.SyntheticEvent | Event, reason?: string) => {
         if (reason === 'clickaway') {
@@ -138,17 +144,15 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
             toast.info("Số dư của bạn không đủ", { autoClose: 3000, theme: "colored" })
         } else {
             dispatch(setOpenBackdropModal(true))
-            mutate()
             setTimeout(() => {
                 const traceCode = Math.floor(Math.random() * 900000 + 10000)
                 axios.put(`/api/orders/${idOrder}`, {
-                    methodPay: methodPay,
+                    methodPay,
                     receiverId: owner.id,
                     ownerId: owner.id,
+                    orderId: user.id,
                     status: 2,
-                    bank: methodPay === 1 ? bank : {},
-                    bookingId: methodPay === 1 ? random : traceCode,
-                    transferContent: methodPay === 1 ? transferContent : "",
+                    bookingId: traceCode,
                 })
                 const templateParams = {
                     to_name: `${owner.firstName} ${owner.lastName}`,
@@ -157,18 +161,30 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
                     from_email: user.email,
                     name_product: order.nameProduct,
                     total_price: `${order.total}đ`,
-                    method_pay: methodPay === 1 ? "Chuyển khoản" : "Ví Sport Pay",
-                    trace_code: methodPay === 1 ? random : traceCode,
+                    method_pay: "Ví Sport Pay",
+                    trace_code: traceCode,
                     order_date: dayjs(order.date).format("dddd DD-MM-YYYY")
                 }
                 emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
                 dispatch(setOpenPaymentModal(false))
                 dispatch(setOpenNotificationDetail(false))
                 dispatch(setOpenBackdropModal(false))
+                mutate()
                 toast.success("Đặt sân thành công", { autoClose: 3000, theme: "colored" })
                 handleClose()
+                socket.emit("send_order", {
+                    orderId: idOrder,
+                    createdAt: new Date()
+                })
             }, 3000)
         }
+
+    }
+
+    const deleteOrder = () => {
+        socket.emit("delete_order", {
+            orderId: idOrder,
+        })
     }
 
 
@@ -407,7 +423,7 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
                                 onChange={e => setState({ ...state, methodPay: +e.target.value })}
                                 className="mt-6 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                                 <option selected value={0}>Chọn phương thức thanh toán</option>
-                                <option value={1}>Chuyển khoản</option>
+                                {/* <option value={1}>Chuyển khoản</option> */}
                                 <option value={2}>Ví Sport Pay</option>
                             </select>
                         }
@@ -422,7 +438,7 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
                                 </Typography>
                             </div>
                         }
-                        {methodPay === 1 &&
+                        {/* {methodPay === 1 &&
                             <select
                                 value={bankCode}
                                 defaultValue={bankCode || 0}
@@ -433,8 +449,8 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
                                     <option key={b.id} value={b.bankCode}>{`${b.bankCode} / ${b.bankName}`}</option>
                                 ))}
                             </select>
-                        }
-                        {bank && methodPay === 1 &&
+                        } */}
+                        {/* {bank && methodPay === 1 &&
                             <>
                                 <div className="flex items-center space-x-2">
                                     <div className="flex space-x-2">
@@ -481,7 +497,7 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
                                     </Typography>
                                 </div>
                             </>
-                        }
+                        } */}
                     </div>
                     <div className="col-span-5">
                         <div className="h-[30rem]">
@@ -502,7 +518,8 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
                             :
                             <Button
                                 variant="outlined"
-                                onClick={handleClose}
+                                // onClick={handleClose}
+                                onClick={deleteOrder}
                                 className="bg-white !border-primary !text-primary">Thoát</Button>
                         }
                         {isLoading ?

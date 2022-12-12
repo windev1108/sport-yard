@@ -134,6 +134,8 @@ const ChatBox = () => {
 
     }
 
+    console.log("Date", new Date("Wed, 07 Dec 2022 17:42:12 GMT").getHours());
+
     useEffect(() => {
         mutate()
         setTimeout(() => {

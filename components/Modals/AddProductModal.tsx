@@ -118,9 +118,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
 
 
     const handleSubmit = async () => {
-        if (!blobPicture || !blobFont || !blobBackSide) {
-            toast.info("Please choose pictures", { autoClose: 3000, theme: "colored" })
-        } else if (!name || !price || !size.length || !discount) {
+        if (!name || !price || !size.length || !discount) {
             toast.info("Please complete all information", {
                 autoClose: 3000,
                 theme: "colored",
@@ -149,25 +147,29 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
 
 
     const handleUploadFiles = async () => {
-        setState({ ...state, isLoading: true })
-        Array.from(pictures).map(async (picture) => {
-            const formData = new FormData()
-            formData.append("file", picture)
-            formData.append('upload_preset', 'my-uploads');
-            const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-            setUrls((prev: string[]) => [...prev, data.url])
-        });
-        const formData1 = new FormData()
-        formData1.append("file", backSidePicture)
-        formData1.append('upload_preset', 'my-uploads');
-        const res1 = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData1)
-        const formData2 = new FormData()
-        formData2.append("file", fontPicture)
-        formData2.append('upload_preset', 'my-uploads');
-        const res2 = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData2)
-        setBackSideUrl(res1.data.url)
-        setFontUrl(res2.data.url)
-        setState({ ...state, isLoading: false, isUploaded: true })
+        if (!blobPicture || !blobFont || !blobBackSide) {
+            toast.info("Vui lòng chọn những bức ảnh", { autoClose: 3000, theme: "colored" })
+        } else {
+            setState({ ...state, isLoading: true })
+            Array.from(pictures).map(async (picture) => {
+                const formData = new FormData()
+                formData.append("file", picture)
+                formData.append('upload_preset', 'my-uploads');
+                const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
+                setUrls((prev: string[]) => [...prev, data.url])
+            });
+            const formData1 = new FormData()
+            formData1.append("file", backSidePicture)
+            formData1.append('upload_preset', 'my-uploads');
+            const res1 = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData1)
+            const formData2 = new FormData()
+            formData2.append("file", fontPicture)
+            formData2.append('upload_preset', 'my-uploads');
+            const res2 = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData2)
+            setBackSideUrl(res1.data.url)
+            setFontUrl(res2.data.url)
+            setState({ ...state, isLoading: false, isUploaded: true })
+        }
     }
 
     const handleSelect = (e: any) => {
@@ -189,7 +191,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                     onChange={(e) => setState({ ...state, name: e.target.value })}
                     autoFocus
                     margin="dense"
-                    label="Name product"
+                    label="Tên sản phẩm"
                     fullWidth
                     variant="standard"
                 />
@@ -198,7 +200,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                     onChange={(e) => setState({ ...state, description: e.target.value })}
                     autoFocus
                     margin="dense"
-                    label="Description"
+                    label="Mô tả"
                     fullWidth
                     variant="standard"
                 />
@@ -208,7 +210,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                     autoFocus
                     margin="dense"
                     type="number"
-                    label="Price"
+                    label="Giá"
                     fullWidth
                     variant="standard"
                 />
@@ -218,7 +220,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                     autoFocus
                     margin="dense"
                     type="number"
-                    label="Discount/%"
+                    label="Khuyến mãi /%"
                     fullWidth
                     variant="standard"
                 />
@@ -383,8 +385,8 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
 
             </DialogContent>
             <DialogActions className="flex items-center  bg-gray-100 w-full">
-                <div className="">
-                    <Button onClick={() => setOpen(false)}>Cancel</Button>
+                <div className="flex items-center space-x-2">
+                    <Button variant="outlined" className="border-[1px] border-primary text-primary" onClick={() => setOpen(false)}>Cancel</Button>
                     <Button className="!bg-primary" variant="contained" onClick={isUploaded ? handleSubmit : handleUploadFiles}>{isUploaded ? "Submit" : "Upload"}</Button>
                 </div>
             </DialogActions>

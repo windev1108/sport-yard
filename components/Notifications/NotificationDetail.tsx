@@ -33,6 +33,7 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { RiRefund2Fill } from 'react-icons/ri';
 import currencyFormatter from 'currency-formatter'
+import io from 'socket.io-client';
 
 
 interface State {
@@ -43,7 +44,7 @@ interface State {
 }
 
 
-
+let socket: any
 
 const OrderDetail = ({ mutate }: any) => {
     const dispatch = useDispatch()
@@ -80,6 +81,19 @@ const OrderDetail = ({ mutate }: any) => {
     }, [isUpdated])
 
 
+
+    useEffect(() => {
+        socketInitializer()
+    }, [])
+
+
+    const socketInitializer = async () => {
+        socket = io(process.env.NEXT_PUBLIC_SERVER || "http://localhost:5000")
+        socket.on('connect', () => {
+            console.log('Socket connected')
+        })
+    }
+
     const handleClose = () => {
         dispatch(setOpenNotificationDetail(false))
     }
@@ -89,11 +103,8 @@ const OrderDetail = ({ mutate }: any) => {
         if (order.methodPay === 1 && user.balance < order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)) {
             toast.info(`Số dư của bạn không đủ ${currencyFormatter.format(order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!, { code: 'VND' })} phí dịch vụ , vui lòng nạp thêm `, { autoClose: 3000, theme: "colored" })
         } else {
-            const { data }: { data: User } = await axios.get(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`)
             dispatch(setOpenBackdropModal(true))
             setTimeout(async () => {
-                dispatch(setOpenBackdropModal(false))
-
                 // if order === booking thi tru tien va + phi van chuyen
                 if (order.methodPay === 2 && order.type === "order") {
                     const { data } = await axios.get(`/api/users/${order.orderId}`)
@@ -117,14 +128,24 @@ const OrderDetail = ({ mutate }: any) => {
                 //     balance: data.balance + (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
                 // })
 
+                // Clear remove order in orders pending
+                socket.emit("delete_order", {
+                    orderId: idOrder,
+                })
+
                 axios.put(`/api/orders/${idOrder}`, {
                     status: 3,
                     senderId: order.receiverId,
                     receiverId: order.senderId,
                 })
+                socket.emit("delete_order", {
+                    orderId: idOrder,
+                })
                 mutate()
                 dispatch(setIsUpdate(!isUpdated))
-            }, 3000)
+                dispatch(setOpenBackdropModal(false))
+            }, 2000)
+
         }
     }
 
@@ -135,11 +156,13 @@ const OrderDetail = ({ mutate }: any) => {
             senderId: order.receiverId,
             receiverId: order.senderId,
         })
+        socket.emit("delete_order", {
+            orderId: idOrder,
+        })
         mutate()
         dispatch(setIsUpdate(!isUpdated))
         dispatch(setOpenNotificationDetail(false))
     }
-
 
     const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
         [`&.${stepConnectorClasses.alternativeLabel}`]: {
@@ -197,7 +220,7 @@ const OrderDetail = ({ mutate }: any) => {
             1: <TbBrandBooking />,
             2: <MdPayments />,
             3: <ImLoop2 />,
-            4: order.status === 4 ? <AiOutlineClose /> : <MdOutlineDoneOutline />,
+            4: order.status === 4 || order.status === 10 ? <AiOutlineClose /> : <MdOutlineDoneOutline />,
             5: <AiOutlineInbox />,
             6: <BsTruck />,
             7: order.status === 8 || order.status === 9 ? order.status === 9 ? <RiRefund2Fill /> : <TbInboxOff /> : <GrDropbox />,
@@ -219,8 +242,8 @@ const OrderDetail = ({ mutate }: any) => {
             1: <TbBrandBooking />,
             2: <MdPayments />,
             3: <ImLoop2 />,
-            4: order.status === 4 ? <AiOutlineClose /> : <MdOutlineDoneOutline />,
-        };
+            4: order.status === 4 || order.status === 10 ? <AiOutlineClose /> : <MdOutlineDoneOutline />
+        }
 
 
         return (
@@ -233,7 +256,7 @@ const OrderDetail = ({ mutate }: any) => {
         ["Đặt hàng",
             'Thanh toán',
             "Chờ xác nhận",
-            order.status === 4 ? "Từ chối đơn hàng" : 'Xác nhận đơn hàng',
+            order.status === 4 ? "Từ chối đơn hàng" : `${order.status === 10 ? "Đơn hàng đã hết hiệu lực" : "Xác nhận đơn hàng"}`,
             "Chờ lấy hàng",
             "Đang giao",
             order.status === 8 || order.status === 9 ? `${order.status === 9 ? "Đã hoàn tiền đặt hàng" : "Từ chối nhận hàng"}` : "Giao hàng thành công",
@@ -246,7 +269,8 @@ const OrderDetail = ({ mutate }: any) => {
         ["Đặt trước",
             'Thanh toán',
             "Chờ xác nhận",
-            order.status === 4 ? "Từ chối đặt sân" : 'Đặt sân thành công',
+            order.status === 4 ? "Từ chối đặt sân" : `${order.status === 10 ? 'Đơn hàng đã hết hiệu lực' : 'Đặt sân thành công'}`
+            ,
         ]
 
 
@@ -359,7 +383,7 @@ const OrderDetail = ({ mutate }: any) => {
                         </div>
                         :
                         <Typography className="pb-4" align='center' alignItems={"center"} fontWeight={700} fontSize={20} variant="body1" component="h1">
-                            Order detail
+                            Chi tiết đơn hàng
                         </Typography>
                     }
                     <IconButton
@@ -374,21 +398,32 @@ const OrderDetail = ({ mutate }: any) => {
                         :
                         <>
                             <Stack className="py-2 shadow-md  w-full" sx={{ width: '100%' }} spacing={4}>
-                                <Stepper alternativeLabel activeStep={order.status === 4 || order.status === 8 || order.status === 5 || order.status === 6 ? order.status - 1 : order.status} connector={<ColorlibConnector />}>
-                                    {order.type === "order" ?
-                                        stepsOrder.map((label, index) => (
+                                {order.status === 10 && order.type === "order" ?
+                                    <Stepper alternativeLabel activeStep={3} connector={<ColorlibConnector />}>
+                                        {stepsOrder.map((label, index) => (
                                             <Step key={index}>
                                                 <StepLabel StepIconComponent={ColorlibStepIconOrder}>{label}</StepLabel>
                                             </Step>
                                         ))
-                                        :
-                                        stepsBooking.map((label, index) => (
-                                            <Step key={index}>
-                                                <StepLabel StepIconComponent={ColorlibStepIconBooking}>{label}</StepLabel>
-                                            </Step>
-                                        ))
-                                    }
-                                </Stepper>
+                                        }
+                                    </Stepper>
+                                    :
+                                    <Stepper alternativeLabel activeStep={order.status === 4 || order.status === 8 || order.status === 5 || order.status === 6 ? order.status - 1 : order.status} connector={<ColorlibConnector />}>
+                                        {order.type === "order" ?
+                                            stepsOrder.map((label, index) => (
+                                                <Step key={index}>
+                                                    <StepLabel StepIconComponent={ColorlibStepIconOrder}>{label}</StepLabel>
+                                                </Step>
+                                            ))
+                                            :
+                                            stepsBooking.map((label, index) => (
+                                                <Step key={index}>
+                                                    <StepLabel StepIconComponent={ColorlibStepIconBooking}>{label}</StepLabel>
+                                                </Step>
+                                            ))
+                                        }
+                                    </Stepper>
+                                }
                             </Stack>
                             {user.id === order.ownerId && order.status !== 6 && order.status !== 2 && order.status !== 4 && order.status !== 8 && order.type === "order" &&
                                 <div className="flex justify-center space-x-5">
@@ -434,11 +469,12 @@ const OrderDetail = ({ mutate }: any) => {
                                     <Typography variant="body1" component="h1">
                                         {`Trạng thái : `}
                                     </Typography>
-                                    <Typography className={`${order.status === 0 && "text-blue-500"} ${order.status === 2 && "text-yellow-500"} ${order.status === 3 && "text-primary"} ${order.status === 4 && "text-red-500"}`} fontWeight={700} variant="body1" component="h1">
+                                    <Typography className={`${order.status === 0 && "text-blue-500"} ${order.status === 2 && "text-yellow-500"} ${order.status === 3 && "text-primary"} ${order.status === 4 || order.status === 10 && "text-red-500"}`} fontWeight={700} variant="body1" component="h1">
                                         {order.status === 0 && "Chưa thanh toán"}
                                         {order.status === 2 && "Chờ xác nhận"}
                                         {order.status === 3 && "Xác nhận đặt sân thành công"}
                                         {order.status === 4 && "Từ chối đặt sân"}
+                                        {order.status === 10 && "Đơn hàng đã hết hiệu lực"}
                                     </Typography>
                                 </div>
                             }
@@ -685,7 +721,7 @@ const OrderDetail = ({ mutate }: any) => {
                                     <Typography variant="body1" component="h1">
                                         {`Trạng thái : `}
                                     </Typography>
-                                    <Typography className={`${order.status === 0 && "text-blue-500"} ${order.status === 5 && "text-yellow-500"} ${order.status === 6 && "text-yellow-500"}  ${order.status === 1 && "text-yellow-500"}   ${order.status === 2 && "text-yellow-500"} ${order.status === 3 && "text-primary"}  ${order.status === 7 && "text-primary"}  ${order.status === 9 && "text-primary"}   ${order.status === 4 && "text-red-500"}  ${order.status === 8 && "text-red-500"}`} fontWeight={700} variant="body1" component="h1">
+                                    <Typography className={`${order.status === 0 && "text-blue-500"} ${order.status === 5 && "text-yellow-500"} ${order.status === 6 && "text-yellow-500"}  ${order.status === 1 && "text-yellow-500"}   ${order.status === 2 && "text-yellow-500"} ${order.status === 3 && "text-primary"}  ${order.status === 7 && "text-primary"}  ${order.status === 9 && "text-primary"}   ${order.status === 4 && "text-red-500"}  ${order.status === 8 || order.status === 10 && "text-red-500"}`} fontWeight={700} variant="body1" component="h1">
                                         {order.status === 2 && "Chờ xác nhận"}
                                         {order.status === 3 && "Xác nhận đơn hàng thành công"}
                                         {order.status === 4 && "Từ chối đơn hàng"}
@@ -694,6 +730,7 @@ const OrderDetail = ({ mutate }: any) => {
                                         {order.status === 7 && "Giao hàng thành công"}
                                         {order.status === 8 && "Từ chối nhận hàng"}
                                         {order.status === 9 && "Đã hoàn tiền đặt hàng"}
+                                        {order.status === 10 && "Đơn hàng đã hết hiệu lực"}
                                     </Typography>
                                 </div>
                             }

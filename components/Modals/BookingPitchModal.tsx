@@ -1,4 +1,4 @@
-import {  Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Grid, Skeleton, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Grid, Skeleton, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { NextPage } from 'next'
 import React, { useEffect, useState, memo, useMemo } from 'react'
 import { GrNext, GrPrevious } from 'react-icons/gr'
@@ -8,7 +8,7 @@ import { Order, Pitch, Slot, User } from '../../Models'
 import Currency from 'react-currency-formatter';
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../redux/store'
-import { setOpenBackdropModal, setOpenNotificationDetail, setOpenPaymentModal } from '../../redux/features/isSlice'
+import { setIsUpdate, setOpenBackdropModal, setOpenNotificationDetail, setOpenPaymentModal } from '../../redux/features/isSlice'
 import { setIdOrder } from '../../redux/features/ordersSlice'
 import { GiSoccerField } from 'react-icons/gi'
 import axios from 'axios'
@@ -47,6 +47,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
     const token = getCookie("token")
     const dispatch = useDispatch()
     const { user }: any = useSelector<RootState>(state => state.user)
+    const { isUpdated }: any = useSelector<RootState>(state => state.is)
     const [state, setState] = useState<State>({
         duration: 0,
         slot: 0,
@@ -91,9 +92,9 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
             setState({ ...state, total: Math.round(+slotFound?.price! / 60 * duration - +slotFound?.price! / 60 * duration / 100 * 50) })
         } else if (size === 7) {
             setState({ ...state, total: Math.round(+slotFound?.price! / 60 * duration - +slotFound?.price! / 60 * duration / 100 * 25) })
-        } else if(size === 11) {
+        } else if (size === 11) {
             setState({ ...state, total: Math.round(+slotFound?.price! / 60 * duration) })
-        }else{
+        } else {
             return
         }
     }, [duration, slot, size])
@@ -126,7 +127,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
             toast.info("Vui lòng đăng nhập", { autoClose: 3000, theme: "colored" })
         } else if (pitch.owner === user.id) {
             toast.info("Không thể tự đặt sân của chính mình", { autoClose: 3000, theme: "colored" })
-        }else if(user.role !== "customer") {
+        } else if (user.role !== "customer") {
             toast.info(`Không thể đặt sân với vai trò ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}`, { autoClose: 3000, theme: "colored" })
         } else if (!slot || !duration || !size) {
             toast.info("Vui lòng hoàn thành booking", { autoClose: 3000, theme: "colored" })
@@ -157,6 +158,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
                     dispatch(setIdOrder(data.id))
                     dispatch(setOpenBackdropModal(false))
                     dispatch(setOpenNotificationDetail(true))
+                    dispatch(setIsUpdate(!isUpdated))
                     setOpen(false)
                 }, 1500)
             }

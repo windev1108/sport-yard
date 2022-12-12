@@ -1,35 +1,30 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
-import { NextPage } from 'next';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
-import { Avatar, Divider, IconButton, Select, Skeleton, Typography, Tooltip } from '@mui/material';
+import { Avatar, Divider, IconButton, Skeleton, Typography, Tooltip } from '@mui/material';
 import { deepOrange } from '@mui/material/colors';
 import Currency from 'react-currency-formatter';
 import { setOpenBackdropModal, setOpenFormEditUser, setOpenOrderProduct, setOpenProfileModal, setOpenSnackBar } from '../../redux/features/isSlice'
-import { Bank, Cart, Pitch, User } from '../../Models';
+import { Cart, User } from '../../Models';
 import axios from 'axios';
-import { useSession } from 'next-auth/react';
-import dynamic from 'next/dynamic';
-import { ImLocation, ImLoop2 } from 'react-icons/im';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import { MdPayment, MdPayments } from 'react-icons/md';
 import { FaUserTie } from 'react-icons/fa';
 import { setIdEditing, setIdProfile } from '../../redux/features/userSlice';
 import currencyFormatter from 'currency-formatter'
-import { AiFillCopy, AiOutlineClose } from 'react-icons/ai';
+import { AiOutlineClose } from 'react-icons/ai';
 import { GrFormAdd } from 'react-icons/gr';
 import { SiBitcoincash } from 'react-icons/si';
-const Map = dynamic(() => import("../Map"), { ssr: false })
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import emailjs from '@emailjs/browser';
+import { ImLocation } from 'react-icons/im';
+import io from 'socket.io-client';
 
 
 interface State {
@@ -37,7 +32,6 @@ interface State {
     methodPay: number
     isLoading: boolean
     bankCode: string
-    transferContent: string
 }
 
 
@@ -46,6 +40,8 @@ interface Order {
     owner: string
     cart: Cart[]
 }
+
+let socket: any
 
 const OrderProductModal = ({ mutate }: any) => {
     const dispatch = useDispatch()
@@ -56,10 +52,9 @@ const OrderProductModal = ({ mutate }: any) => {
         users: [],
         methodPay: 0,
         bankCode: "",
-        transferContent: "",
         isLoading: true,
     })
-    const { isLoading, users, methodPay, transferContent } = state
+    const { isLoading, users, methodPay } = state
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const SERVICE_ID: string | any = process.env.NEXT_PUBLIC_SERVICE_ID
@@ -69,14 +64,20 @@ const OrderProductModal = ({ mutate }: any) => {
 
 
 
-    console.log("order ", order);
     useEffect(() => {
         axios.get("/api/users")
             .then(res => setState({ ...state, users: res.data.users, isLoading: false }))
+
+        socketInitializer()
     }, [])
 
 
-
+    const socketInitializer = async () => {
+        socket = io(process.env.NEXT_PUBLIC_SERVER || "http://localhost:5000")
+        socket.on('connect', () => {
+            console.log('Socket connected')
+        })
+    }
 
     const getUser = (id: string) => {
         const foundUser: any = users.find((u: User) => u.id === id)
@@ -99,7 +100,7 @@ const OrderProductModal = ({ mutate }: any) => {
     }
 
 
-    const handleSubmitOrder = () => {
+    const handleSubmitOrder = async () => {
         if (order.some((o: Order) => o.owner === user.id)) {
             toast.info("Không thể tự đặt hàng của chính mình", { autoClose: 3000, theme: "colored" })
         } else if (!methodPay) {
@@ -110,13 +111,13 @@ const OrderProductModal = ({ mutate }: any) => {
             toast.info("Số dư của bạn không đủ", { autoClose: 3000, theme: "colored" })
         } else {
             dispatch(setOpenBackdropModal(true))
-            order.forEach((o: Order) => {
+            order.forEach(async (o: Order) => {
                 const traceCode = Math.floor(Math.random() * 900000 + 10000)
                 let sum = 0
                 o.cart.forEach((c: Cart) => {
-                    const total = c.product.price - c.product.price / 100 * c.product.discount
-                    const amount = c.amount
-                    const sumLoop = amount * total
+                    const total = +c.product.price - +c.product.price / 100 * +c.product.discount
+                    const amount = +c.amount
+                    const sumLoop = +amount * total
                     sum += sumLoop
                 })
 
@@ -128,7 +129,6 @@ const OrderProductModal = ({ mutate }: any) => {
                     orderId: user.id,
                     address: user.address,
                     methodPay,
-                    transferContent,
                     bookingId: traceCode,
                     products: o.cart,
                     total: sum,
@@ -142,13 +142,17 @@ const OrderProductModal = ({ mutate }: any) => {
                     from_name: `${user.firstName} ${user.lastName}`,
                     from_email: user.email,
                     amount_product: o.cart.length,
-                    total_price:  currencyFormatter.format(+sum, { code: 'VND' }),
+                    total_price: currencyFormatter.format(+sum, { code: 'VND' }),
                     method_pay: methodPay === 2 ? "Ví Sport Pay" : "Thanh toán khi nhận hàng",
                     trace_code: traceCode,
                     order_date: dayjs(order.date).format("dddd DD-MM-YYYY")
                 }
-                axios.post('/api/orders', formData)
+                const { data }: { data: { id: string } } = await axios.post('/api/orders', formData)
                 sum && emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
+                socket.emit("send_order", {
+                    orderId: data.id,
+                    createdAt: new Date()
+                })
             })
             setTimeout(async () => {
                 dispatch(setOpenBackdropModal(false))
@@ -389,7 +393,7 @@ const OrderProductModal = ({ mutate }: any) => {
                                     <div className="flex justify-center">
                                         <Button
                                             onClick={handleSubmitOrder}
-                                            className="lg:w-[50%] w-full text-white !bg-primary" variant='contained'>
+                                            className="lg:w-[50%] w-full !text-white !bg-primary" variant='contained'>
                                             Đặt hàng
                                         </Button>
                                     </div>

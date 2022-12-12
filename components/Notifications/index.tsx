@@ -31,7 +31,7 @@ import PaymentModal from '../Modals/PaymentModal';
 const Notifications = () => {
     const dispatch = useDispatch()
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { isOpenNotificationDetail, isOpenOrderProduct, isOpenPaymentModal }: any = useSelector<RootState>(state => state.is)
+    const { isOpenNotificationDetail, isOpenOrderProduct, isOpenPaymentModal, isUpdated }: any = useSelector<RootState>(state => state.is)
     const [isOpenDashboard, setIsOpenDashboard] = useState(false)
     const [notifications, setNotifications] = useState<Order[]>([])
     const [notificationsEl, setNotificationsEl] = useState<null | HTMLElement>(null);
@@ -45,6 +45,10 @@ const Notifications = () => {
     }
     const { mutate } = useSWR(user?.id ? "/api/orders" : null, fetcherNotifications)
 
+
+    useEffect(() => {
+        mutate()
+    }, [isUpdated])
 
 
     const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
@@ -198,11 +202,12 @@ const Notifications = () => {
                                                         <Typography fontSize={14} variant="body1" component="h1">
                                                             {`Trạng thái :`}
                                                         </Typography>
-                                                        <Typography className={`${item.status === 0 && "text-blue-500"} ${item.status === 2 && "text-yellow-500"} ${item.status === 3 && "text-primary"} ${item.status === 4 && "text-red-500"} `} fontWeight={700} fontSize={14} variant="body1" component="h1">
+                                                        <Typography className={`${item.status === 0 && "text-blue-500"} ${item.status === 2 && "text-yellow-500"} ${item.status === 3 && "text-primary"} ${item.status === 4 && "text-red-500"} ${item.status === 10 && "text-red-500"} `} fontWeight={700} fontSize={14} variant="body1" component="h1">
                                                             {item.status === 0 && "Chưa thanh toán"}
                                                             {item.status === 2 && "Chờ xác nhận"}
                                                             {item.status === 3 && "Xác nhận đặt sân thành công"}
                                                             {item.status === 4 && "Từ chối đặt sân"}
+                                                            {item.status === 10 && "Đơn hàng đã hết thời gian hiệu lực"}
                                                         </Typography>
 
                                                     </div>
@@ -276,25 +281,7 @@ const Notifications = () => {
                                             <Typography className="absolute right-2 top-1 lg:text-xs text-xs" variant="body2" component="h1">
                                                 {moment(item.timestamp).fromNow()}
                                             </Typography>
-                                            {item.status === 2 ?
-                                                <div className="flex space-x-2">
-                                                    <Typography fontSize={14} fontWeight={item.senderId === user?.id ? 500 : 700} variant="body1" component="h1">
-                                                        {`${item.senderId === user?.id ? "Bạn đã gửi một yêu cầu đến " : item.ownerName}`}
-                                                    </Typography>
-                                                    <Typography fontSize={14} fontWeight={item.senderId === user?.id ? 700 : 500} variant="body1" component="h1">
-                                                        {item.senderId === user?.id ? `${item.ownerName}` : "đã gửi bạn một yêu cầu"}
-                                                    </Typography>
-                                                </div>
-                                                :
-                                                <div className="flex space-x-2">
-                                                    <Typography fontSize={14} fontWeight={item.senderId === user?.id ? 500 : 700} variant="body1" component="h1">
-                                                        {`${item.senderId === user?.id ? "Bạn đã gửi một yêu cầu đến" : item.ownerName}`}
-                                                    </Typography>
-                                                    <Typography fontSize={14} fontWeight={item.senderId === user?.id ? 700 : 500} variant="body1" component="h1">
-                                                        {item.senderId === user?.id ? `${item.ordererName}` : "đã gửi bạn một yêu cầu"}
-                                                    </Typography>
-                                                </div>
-                                            }
+
                                             <div className="flex space-x-2">
                                                 <Typography fontSize={14} variant="body1" component="h1">
                                                     {`Đơn hàng :`}
@@ -307,7 +294,7 @@ const Notifications = () => {
                                                 <Typography fontSize={14} variant="body1" component="h1">
                                                     {`Trạng thái :`}
                                                 </Typography>
-                                                <Typography className={`${item.status === 0 && "text-blue-500"}  ${item.status === 5 && "text-yellow-500"} ${item.status === 6 && "text-yellow-500"} ${item.status === 1 && "text-yellow-500"} ${item.status === 2 && "text-yellow-500"} ${item.status === 3 && "text-primary"}  ${item.status === 7 && "text-primary"}  ${item.status === 9 && "text-primary"}   ${item.status === 4 && "text-red-500"}  ${item.status === 8 && "text-red-500"} `} fontWeight={700} fontSize={14} variant="body1" component="h1">
+                                                <Typography className={`${item.status === 0 && "text-blue-500"}  ${item.status === 5 && "text-yellow-500"} ${item.status === 6 && "text-yellow-500"} ${item.status === 1 && "text-yellow-500"} ${item.status === 2 && "text-yellow-500"} ${item.status === 3 && "text-primary"}  ${item.status === 7 && "text-primary"}  ${item.status === 9 && "text-primary"}   ${item.status === 4 && "text-red-500"}  ${item.status === 8 && "text-red-500"}  ${item.status === 10 && "text-red-500"} `} fontWeight={700} fontSize={14} variant="body1" component="h1">
                                                     {item.status === 0 && "Chưa thanh toán"}
                                                     {item.status === 2 && "Chờ xác nhận"}
                                                     {item.status === 3 && "Xác nhận thành công"}
@@ -317,6 +304,7 @@ const Notifications = () => {
                                                     {item.status === 7 && "Giao hàng thành công"}
                                                     {item.status === 8 && "Từ chối nhận hàng"}
                                                     {item.status === 9 && "Đã hoàn tiền đặt hàng"}
+                                                    {item.status === 10 && "Đơn hàng đã hết thời gian hiệu lực"}
                                                 </Typography>
 
                                             </div>

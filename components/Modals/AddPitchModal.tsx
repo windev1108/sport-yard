@@ -92,7 +92,7 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
             blobMainPicture: "",
             mainPicture: {},
             isLoading: false,
-            isUploaded: true
+            isUploaded: false
         })
         setUrls([])
     }, [])
@@ -128,9 +128,6 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
         const isValidEndTime = slots.every(s => s.end !== "")
         const isValidPrice = slots.every(s => s.price !== "")
 
-        // if (!pictures.length || !mainPicture.name) {
-        //     toast.info("Vui lòng chọn những bức ảnh", { autoClose: 3000, theme: "colored" })
-        // } else 
         if (!name || !location || !longitude || !latitude || !size.length) {
             toast.info("Vui lòng điền đầy đủ thông tin", {
                 autoClose: 3000,
@@ -174,20 +171,24 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
 
 
     const handleUploadFiles = async () => {
-        setState({ ...state, isLoading: true })
-        Array.from(pictures).map(async (picture) => {
+        if (!pictures.length || !mainPicture.name) {
+            toast.info("Vui lòng chọn những bức ảnh", { autoClose: 3000, theme: "colored" })
+        } else {
+            setState({ ...state, isLoading: true })
+            Array.from(pictures).map(async (picture) => {
+                const formData = new FormData()
+                formData.append("file", picture)
+                formData.append('upload_preset', 'my-uploads');
+                const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
+                setUrls((prev: string[]) => [...prev, data.url])
+            });
             const formData = new FormData()
-            formData.append("file", picture)
+            formData.append("file", mainPicture)
             formData.append('upload_preset', 'my-uploads');
             const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-            setUrls((prev: string[]) => [...prev, data.url])
-        });
-        const formData = new FormData()
-        formData.append("file", mainPicture)
-        formData.append('upload_preset', 'my-uploads');
-        const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-        setUrl(data.url)
-        setState({ ...state, isLoading: false, isUploaded: true })
+            setUrl(data.url)
+            setState({ ...state, isLoading: false, isUploaded: true })
+        }
     }
 
 
@@ -378,7 +379,7 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
             <DialogActions className="flex items-center  bg-gray-100 w-full">
                 <div className="flex space-x-2">
                     <Button className="!border-[1px] !border-primary text-primary" variant="outlined" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button className="!bg-primary !text-white" variant="contained" onClick={isUploaded ? handleSubmit : handleUploadFiles}>{isUploaded ? "Submit" : "Upload"}</Button>
+                    <Button className="!bg-primary !text-white" variant="contained" onClick={isUploaded ? handleSubmit : handleUploadFiles}>{isUploaded && blobMainPicture && blobPicture.length ? "Submit" : "Upload"}</Button>
                 </div>
             </DialogActions>
             {isLoading &&
