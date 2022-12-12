@@ -12,6 +12,7 @@ import axios from 'axios';
 import Review from './Review';
 import { getCookie } from 'cookies-next';
 import Router from 'next/router';
+import { setIsUpdate } from '../../redux/features/isSlice';
 
 
 interface State {
@@ -27,6 +28,7 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
     const token = getCookie("token")
     const dispatch = useDispatch()
     const { user }: User | any = useSelector<RootState>(state => state.user)
+    const { isUpdated }: User | any = useSelector<RootState>(state => state.is)
     const limitPitch = useRef();
 
 
@@ -41,24 +43,21 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
     })
     const { reviews, review, rating, myOrders, isLoading } = state
 
-    const handleRefeshPage = () => {
-        Router.replace(Router.asPath)
-    }
 
     const handleAddReview = (e: any) => {
         e.preventDefault()
         if (!review || !rating) {
             toast.info("Vui lòng nhập đánh giá", { autoClose: 3000, theme: "colored" })
-        }else if(myOrders === 0){
+        } else if (myOrders === 0) {
             toast.info("Vui lòng đặt sân để đánh giá", { autoClose: 3000, theme: "colored" })
-        }  else {
+        } else {
             const formData = {
                 star: rating,
                 userId: user.id,
                 comment: review,
-            }   
+            }
             toast.success("Thêm đánh giá thành công", { autoClose: 3000, theme: "colored" })
-            handleRefeshPage()
+            dispatch(setIsUpdate(!isUpdated))
             setState({ ...state, review: "", rating: 0 })
             type === "product" ? axios.post(`/api/products/${productId}/reviews`, formData) : axios.post(`/api/pitch/${pitchId}/reviews`, formData)
         }
@@ -78,13 +77,13 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
         axios.get(`/api/${type === "product" ? "products" : "pitch"}/${type === "product" ? productId : pitchId}/reviews`)
             .then(resReviews => {
                 axios.get('/api/orders')
-                    .then(resOrders => setState({ ...state, reviews: resReviews.data.reviews, myOrders: resOrders.data.orders.filter((order: Order) => order.orderId === user.id && order.productId === pitchId ).length, isLoading: false }))
+                    .then(resOrders => setState({ ...state, reviews: resReviews.data.reviews, myOrders: resOrders.data.orders.filter((order: Order) => order.orderId === user.id && order.productId === pitchId).length, isLoading: false }))
             })
         // .then(data => {
         //     // limitPitch.current = data.length
         //     setState({ ...state, reviews: data })
         // })
-    }, [])
+    }, [isUpdated])
 
 
 
@@ -145,10 +144,10 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
                         >
                             <div className="flex w-full space-x-4 items-center">
                                 <div>
-                                    {token ?    
+                                    {token ?
                                         <Avatar src={user.avatar ? user.avatar : user.firstName} sx={{ bgcolor: deepOrange[500] }} alt={user.firstName} />
                                         :
-                                        <Avatar  />
+                                        <Avatar />
                                     }
                                 </div>
                                 <div className="flex-1">

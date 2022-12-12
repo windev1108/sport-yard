@@ -487,11 +487,9 @@ const OrderDetail = ({ mutate }: any) => {
                                         {`Tên : `}
                                     </Typography>
                                     <Link href={`/pitch/${order.productId}`}>
-                                        <a>
-                                            <Typography className="hover:underline" fontWeight={700} variant="body1" component="h1">
-                                                {order.nameProduct}
-                                            </Typography>
-                                        </a>
+                                        <Typography className="hover:underline" fontWeight={700} variant="body1" component="h1">
+                                            {order.nameProduct}
+                                        </Typography>
                                     </Link>
                                 </div>
                             }
@@ -514,7 +512,7 @@ const OrderDetail = ({ mutate }: any) => {
                                     <div className="flex space-x-2 items-center">
                                         <TimelapseIcon className="rotate-[-15deg] text-primary" />
                                         <Typography fontWeight={700} variant="body1" component="h1">
-                                            {`${order.duration} míns`}
+                                            {`${order.duration} mins`}
                                         </Typography>
                                     </div>
                                     <div className="flex items-center space-x-2">
