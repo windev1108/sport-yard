@@ -58,7 +58,7 @@ const OrderProductModal = ({ mutate }: any) => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const SERVICE_ID: string | any = process.env.NEXT_PUBLIC_SERVICE_ID
-    const TEMPLATE_ID: string | any = process.env.NEXT_PUBLIC_TEMPLATE_ID1
+    const TEMPLATE_ID: string | any = process.env.NEXT_PUBLIC_TEMPLATE_ID
     const PUBLIC_KEY: string | any = process.env.NEXT_PUBLIC_PUBLIC_KEY
 
 
@@ -141,7 +141,7 @@ const OrderProductModal = ({ mutate }: any) => {
                     to_email: getUser(o.owner)?.email,
                     from_name: `${user.firstName} ${user.lastName}`,
                     from_email: user.email,
-                    amount_product: o.cart.length,
+                    name_product: `Số lượng sản phẩm : ${o.cart.length}`,
                     total_price: currencyFormatter.format(+sum, { code: 'VND' }),
                     method_pay: methodPay === 2 ? "Ví Sport Pay" : "Thanh toán khi nhận hàng",
                     trace_code: traceCode,

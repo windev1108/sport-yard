@@ -14,35 +14,43 @@ import { signIn, useSession } from "next-auth/react";
 import { NextPage } from "next";
 import { setCookies } from 'cookies-next';
 import jwt from 'jsonwebtoken'
+import { parseArgs } from "util";
 
 interface State {
   email: string
   password: string
-  users: User[]
+  users: User[],
+  isRemember: boolean
+  isHasRemember: any
 }
 
 const Signin: NextPage = (): JSX.Element => {
   const [state, setState] = useState<State>({
     email: "",
     password: "",
-    users: []
+    users: [],
+    isHasRemember: false,
+    isRemember: false
   })
-  const { users, email, password } = state
+  const { users, email, password, isRemember, isHasRemember } = state
+
 
 
 
   useEffect(() => {
+    const rememberData: any = localStorage.getItem('remember')
     axios.get("/api/users")
       .then(res => res.data)
       .then((data) => {
-        setState({ ...state, users: data.users })
+        setState({ ...state, users: data.users, isHasRemember: Boolean(JSON.parse(rememberData)?.email), email: JSON.parse(rememberData)?.email, password: JSON.parse(rememberData)?.password! })
       })
   }, [])
 
 
   const handleSubmit = async (e: any) => {
     e.preventDefault()
-    const user: User | undefined = users.find(user => user.email === email)
+    const user: User | any = users.length && users.find(user => user.email === email)
+
 
     if (!email && !password) {
       toast.info("Vui lòng nhập email & password", { autoClose: 3000, theme: "colored" })
@@ -55,6 +63,10 @@ const Signin: NextPage = (): JSX.Element => {
     } else if (user && user.password !== password) {
       toast.info("Password không chính xác", { autoClose: 3000, theme: "colored" })
     } else {
+      isRemember && localStorage.setItem("remember", JSON.stringify({
+        email,
+        password
+      }))
       const { data } = await axios.post('/api/login', { id: user.id })
       setCookies('token', data.token, { maxAge: 60 * 6 * 24 });
       Router.push("/")
@@ -117,6 +129,7 @@ const Signin: NextPage = (): JSX.Element => {
                         type="email"
                         label="Email Address"
                         name="email"
+                        className={`${isHasRemember ? "bg-yellow-100" : "bg-transparent"}`}
                         autoComplete="email"
                       />
                     </Grid>
@@ -130,9 +143,24 @@ const Signin: NextPage = (): JSX.Element => {
                         label="Password"
                         type="password"
                         id="password"
+                        className={`${isHasRemember ? "bg-yellow-100" : "bg-transparent"}`}
                         autoComplete="new-password"
                       />
                     </Grid>
+                    <div className="pl-[15px] pt-[10px] w-full flex justify-between">
+                      <div className="flex space-x-2">
+                        <input
+                          checked={isRemember}
+                          onChange={() => setState({ ...state, isRemember: !isRemember })}
+                          className="cursor-pointer" id="forgot" type="checkbox" />
+                        <label className="cursor-pointer" htmlFor='forgot'>Remember me?</label>
+                      </div>
+                      <Link href="forgot" >
+                        <span className="cursor-pointer hover:underline text-[#1976dE]">
+                          Forgot password?
+                        </span>
+                      </Link>
+                    </div>
                   </Grid>
                   <Button
                     className="bg-[#1976dE]"

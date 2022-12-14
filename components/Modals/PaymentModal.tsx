@@ -159,7 +159,7 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
                     to_email: owner.email,
                     from_name: `${user.firstName} ${user.lastName}`,
                     from_email: user.email,
-                    name_product: order.nameProduct,
+                    name_product: `Tên sân bóng : ${order.nameProduct}`,
                     total_price: `${order.total}đ`,
                     method_pay: "Ví Sport Pay",
                     trace_code: traceCode,
