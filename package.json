@@ -17,6 +17,7 @@
         "@emotion/styled": "^11.10.4",
         "@mui/icons-material": "^5.10.6",
         "@mui/material": "^5.10.8",
+        "@mui/x-data-grid": "^5.17.14",
         "@reduxjs/toolkit": "^1.8.5",
         "@types/currency-formatter": "^1.5.1",
         "@types/emoji-mart": "^3.0.9",

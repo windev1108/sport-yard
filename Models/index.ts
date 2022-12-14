@@ -36,6 +36,10 @@ export interface Pitch {
   location: string;
   owner: string;
   mainPicture: string;
+  booked : {
+    slot: number,
+    date : string
+  }[]
   slots: Slot[]
   size:  number[]
   coordinates: {

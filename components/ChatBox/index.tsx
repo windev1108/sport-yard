@@ -291,7 +291,7 @@ const ChatBox = () => {
                     </div>
 
                 </div>
-                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-full border-gray-300  w-full">
+                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-full border-gray-300  w-full">
                     {conversations?.map((conversation: User) => (
                         <div
                             onClick={() => handleShowMessage(conversation)}

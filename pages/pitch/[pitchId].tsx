@@ -39,9 +39,8 @@ interface State {
 }
 
 const PitchDetail = ({ pitchId }: any) => {
-  const { status, data } = useSession()
   const dispatch = useDispatch()
-  const { user }: User | any = useSelector<RootState>(state => state.user)
+  const { isUpdated }: User | any = useSelector<RootState>(state => state.is)
   const [state, setState] = useState<State>({
     reviews: [],
     pitch: {},
@@ -73,7 +72,7 @@ const PitchDetail = ({ pitchId }: any) => {
               })
           })
       })
-  }, [])
+  }, [isUpdated])
 
 
   const getUser = (id: string) => {

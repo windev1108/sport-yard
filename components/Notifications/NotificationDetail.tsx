@@ -474,7 +474,7 @@ const OrderDetail = ({ mutate }: any) => {
                                         {order.status === 2 && "Chờ xác nhận"}
                                         {order.status === 3 && "Xác nhận đặt sân thành công"}
                                         {order.status === 4 && "Từ chối đặt sân"}
-                                        {order.status === 10 && "Đơn hàng đã hết hiệu lực"}
+                                        {order.status === 10 && "Đơn hàng đã hết hạn"}
                                     </Typography>
                                 </div>
                             }
