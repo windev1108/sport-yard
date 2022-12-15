@@ -32,7 +32,6 @@ interface State {
     slot: number
     total: number
     size: number
-    optionSlot: number
     orders: Order[]
     owner: User | any
     isLoading: boolean
@@ -54,7 +53,6 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
         slot: 0,
         total: 0,
         size: 0,
-        optionSlot: 0,
         orders: [],
         owner: {},
         isLoading: true,
@@ -66,7 +64,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
         windspeed: 0,
     })
 
-    const { duration, slot, optionSlot, total, size, orders, owner, city, weather, temperature, humidity, windspeed, icon, isLoading } = state
+    const { duration, slot, total, size, orders, owner, city, weather, temperature, humidity, windspeed, icon, isLoading } = state
     const theme = useTheme();
     const fullscreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -108,7 +106,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
 
     const handleNexDate = () => {
         const day = new Date(date)
-        setState({ ...state, slot: 0, optionSlot: 0 })
+        setState({ ...state, slot: 0 })
         changeDate(new Date(day.setDate(day.getDate() + 1)))
 
     }
@@ -116,7 +114,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
     const handlePrevDate = () => {
         const dateNow = new Date(Date.now())
         const day = new Date(date)
-        setState({ ...state, slot: 0, optionSlot: 0 })
+        setState({ ...state, slot: 0 })
         if (date.getMonth() === dateNow.getMonth() && date.getDate() <= dateNow.getDate()) {
             toast.info("Không thể quay lại ngày đã qua", { autoClose: 3000, theme: "colored" })
         } else {
@@ -195,12 +193,8 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
     }
 
 
-    const handleShowOptionBooked = (slot: number) => {
-        setState({ ...state, optionSlot: slot })
-    }
 
-
-    const handleSetBooked = () => {
+    const handleLockSlot = (slot: number) => {
         axios.put(`/api/pitch/${pitch.id}`, {
             booked: pitch?.booked ? [...pitch?.booked, {
                 slot,
@@ -210,7 +204,23 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
         })
         dispatch(setIsUpdate(!isUpdated))
         setOpen(false)
-        toast.success("Cập nhật slot thành công", { autoClose: 3000, theme: "colored" })
+        toast.success("Lock slot thành công", { autoClose: 3000, theme: "colored" })
+    }
+
+    const handleDeleteSlot = (slot: number) => {
+        const newSlots = pitch.slots?.filter(s => s.id !== slot)
+
+        axios.put(`/api/pitch/${pitch.id}`, {
+            slots: newSlots.map((s, index: number) => {
+                return {
+                    ...s,
+                    id: index + 1,
+                }
+            })
+        })
+        dispatch(setIsUpdate(!isUpdated))
+        setOpen(false)
+        toast.success("Xóa slot thành công", { autoClose: 3000, theme: "colored" })
     }
 
     return (
@@ -393,9 +403,8 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
                             >
                                 <Button
                                     disabled={handleInValidDate(+item.start.substring(0, 2)) || handleInvalidSlot(item.id)}
-                                    className={`${handleInValidDate(+item.start.substring(0, 2)) && "!bg-gray-300"}  ${handleInvalidSlot(item.id) && "!bg-gray-300"} relative w-full !border-primary !text-black !px-1 ${slot === item.id && "!bg-primary"}`}
+                                    className={`${handleInValidDate(+item.start.substring(0, 2)) && "!bg-gray-300"}  ${handleInvalidSlot(item.id) && "!bg-gray-300"} group relative w-full !border-primary !text-black !px-1 ${slot === item.id && "!bg-primary"}`}
                                     onClick={() => handleSelectSlot(item.id)}
-                                    onDoubleClick={() => pitch.owner === user.id && handleShowOptionBooked(item.id)}
                                     variant={slot === item.id ? "contained" : "outlined"}>
                                     {handleInvalidSlot(item.id) ?
                                         <Typography className="absolute  bg-white bg-opacity-70 shadow-md rounded-md px-2 py-1 text-red-500 left-[25%] top-[30%]" fontWeight={700} variant='body1' component="h1">
@@ -408,7 +417,25 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
                                         </Typography>
                                     }
 
-                                    {optionSlot === item.id &&
+
+                                    {pitch.owner === user.id &&
+                                        <div className="absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-60 group-hover:block hidden">
+                                            <div className="relative top-[50%] w-[80%] space-y-2 left-[50%] translate-x-[-50%] translate-y-[-50%] flex-col">
+                                                <Button
+                                                    onClick={() => handleDeleteSlot(item.id)}
+                                                    variant="contained" className="w-full !bg-red-500 hover:bg-red-400 font-bold shadow-md rounded-md px-2 py-1 text-whites">
+                                                    {"Delete Slot"}
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleLockSlot(item.id)}
+                                                    variant="contained" className="w-full !bg-primary hover:bg-opacity-70 font-bold shadow-md rounded-md px-2 py-1 text-whites">
+                                                    {"Lock Slot"}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    {/* {optionSlot === item.id &&
                                         <div className="absolute top-0 left-0 bottom-0 right-0 bg-black bg-opacity-60">
                                             <Button
                                                 onClick={handleSetBooked}
@@ -416,7 +443,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
                                                 {"Booked"}
                                             </Button>
                                         </div>
-                                    }
+                                    } */}
 
                                     <Grid container>
                                         <Grid item xs={12} md={12} lg={12} textAlign="center">
