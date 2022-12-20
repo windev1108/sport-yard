@@ -165,10 +165,9 @@ const ChatBox = () => {
 
     const handleSendMessage = useCallback(async (e: any) => {
         e.preventDefault();
-        const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
-        const { data } = await axios.get(`/api/users/${userSelected?.id}`)
-
-        if (pictures.length) {
+        if (!message) {
+            toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })
+        } else if (pictures.length) {
             if (urls.length === previewBlobs.length && isUploaded) {
                 setState({ ...state, pictures: [], previewBlobs: [] })
                 await axios.post("/api/messages", {
@@ -177,14 +176,21 @@ const ChatBox = () => {
                     pictures: urls,
                     type: "images"
                 })
-                !checkIsExistConversations && user?.role !== "admin" && axios.put(`/api/users/${userSelected?.id}`, {
-                    conversations: [...data.conversations, user?.id]
-                })
+                if (user?.role !== "admin") {
+                    const { data } = userSelected?.id && await axios.get(`/api/users/${userSelected?.id}`)
+                    const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
+                    !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
+                        conversations: [...data?.conversations, user?.id]
+                    })
+                    !checkIsExistConversations && axios.put(`/api/users/${user?.id}`, {
+                        conversations: [...user?.conversations, userSelected?.id]
+                    })
+                }
             } else {
                 toast.info("Vui thử lại sau ", { autoClose: 3000, theme: "colored" })
             }
             await mutate()
-        } else if (message) {
+        } else {
             setState({ ...state, message: "" })
             await axios.post("/api/messages", {
                 senderId: user?.id,
@@ -200,11 +206,16 @@ const ChatBox = () => {
             setTimeout(() => {
                 scrollToBottom()
             }, 300)
-            !checkIsExistConversations && user?.role !== "admin" && axios.put(`/api/users/${userSelected?.id}`, {
-                conversations: [...data?.conversations, user?.id]
-            })
-        } else {
-            toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })
+            if (user?.role !== "admin") {
+                const { data } = userSelected?.id && await axios.get(`/api/users/${userSelected?.id}`)
+                const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
+                !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
+                    conversations: [...data?.conversations, user?.id]
+                })
+                !checkIsExistConversations && axios.put(`/api/users/${user?.id}`, {
+                    conversations: [...user?.conversations, userSelected?.id]
+                })
+            }
         }
     }, [])
 
