@@ -186,9 +186,6 @@ const ChatBox = () => {
                 !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
                     conversations: [...data?.conversations, user?.id]
                 })
-                !checkIsExistConversations && axios.put(`/api/users/${user?.id}`, {
-                    conversations: [...user?.conversations, userSelected?.id]
-                })
             }
             await mutate()
             setTimeout(() => {
@@ -302,7 +299,7 @@ const ChatBox = () => {
                     </div>
 
                 </div>
-                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-full border-gray-300  w-full">
+                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-fullborder-gray-300  w-full">
                     {conversations?.map((conversation: User) => (
                         <div
                             onClick={() => handleShowMessage(conversation)}
