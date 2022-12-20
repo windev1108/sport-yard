@@ -1,6 +1,6 @@
 import { IconButton, Tooltip, Avatar } from '@mui/material';
 import axios from 'axios';
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useRef, useCallback, memo } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Message, User } from '../../Models';
 import { RootState } from '../../redux/store';
@@ -75,7 +75,7 @@ const ChatBox = () => {
     })
     const { isOpenChatBox }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { users, conversations, messages, message, previewBlobs, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
+    const { users, conversations, message, previewBlobs, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
     const [showEmojis, setShowEmojis] = useState(false)
     const [usersOnline, setUsersOnline] = useState<SocketUser[]>([])
     const [urls, setUrls] = useState<string[]>([])
@@ -163,11 +163,38 @@ const ChatBox = () => {
     }, [])
 
 
-    const handleSendMessage = useCallback(async (e: any) => {
+    const handleSendMessage = async (e: any) => {
         e.preventDefault();
         if (!message) {
             toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })
-        } else if (pictures.length) {
+        } else if (message) {
+            setState({ ...state, message: "" })
+            setShowEmojis(false)
+            await axios.post("/api/messages", {
+                senderId: user?.id,
+                receiverId: userSelected?.id,
+                message,
+                type: "text"
+            })
+            socket.emit("send_message", {
+                sender: user,
+                receiverId: userSelected?.id,
+            })
+            if (user?.role !== "admin") {
+                const { data } = userSelected?.id && await axios.get(`/api/users/${userSelected?.id}`)
+                const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
+                !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
+                    conversations: [...data?.conversations, user?.id]
+                })
+                !checkIsExistConversations && axios.put(`/api/users/${user?.id}`, {
+                    conversations: [...user?.conversations, userSelected?.id]
+                })
+            }
+            await mutate()
+            setTimeout(() => {
+                scrollToBottom()
+            }, 300)
+        } else {
             if (urls.length === previewBlobs.length && isUploaded) {
                 setState({ ...state, pictures: [], previewBlobs: [] })
                 await axios.post("/api/messages", {
@@ -190,34 +217,8 @@ const ChatBox = () => {
                 toast.info("Vui thử lại sau ", { autoClose: 3000, theme: "colored" })
             }
             await mutate()
-        } else {
-            setState({ ...state, message: "" })
-            await axios.post("/api/messages", {
-                senderId: user?.id,
-                receiverId: userSelected?.id,
-                message,
-                type: "text"
-            })
-            socket.emit("send_message", {
-                sender: user,
-                receiverId: userSelected?.id,
-            })
-            await mutate()
-            setTimeout(() => {
-                scrollToBottom()
-            }, 300)
-            if (user?.role !== "admin") {
-                const { data } = userSelected?.id && await axios.get(`/api/users/${userSelected?.id}`)
-                const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
-                !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
-                    conversations: [...data?.conversations, user?.id]
-                })
-                !checkIsExistConversations && axios.put(`/api/users/${user?.id}`, {
-                    conversations: [...user?.conversations, userSelected?.id]
-                })
-            }
         }
-    }, [])
+    }
 
 
     const handleShowMessage = (userSelect: User) => {
@@ -512,4 +513,4 @@ const ChatBox = () => {
     )
 }
 
-export default ChatBox
+export default memo(ChatBox)

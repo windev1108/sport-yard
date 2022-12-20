@@ -46,11 +46,6 @@ const Notifications = () => {
     const { mutate } = useSWR(user?.id ? "/api/orders" : null, fetcherNotifications)
 
 
-    useEffect(() => {
-        mutate()
-    }, [isUpdated])
-
-
     const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
         setNotificationsEl(event.currentTarget);
     }

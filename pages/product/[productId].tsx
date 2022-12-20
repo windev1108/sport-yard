@@ -1,4 +1,4 @@
-import { Avatar, Button, Container, FormControl, Grid, IconButton, ImageList, ImageListItem, InputLabel, ListItemAvatar, ListItemText, MenuItem, OutlinedInput, Select, TextField, Tooltip, Typography } from "@mui/material";
+import { Avatar, Button, Container, FormControl, Grid, IconButton, ImageList, ImageListItem, InputLabel, ListItemAvatar, ListItemText, MenuItem, OutlinedInput, Select, Skeleton, TextField, Tooltip, Typography } from "@mui/material";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { AiFillStar, AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
@@ -41,6 +41,7 @@ interface State {
     rating: number | null
     review: string
     tab: number
+    isLoading: boolean
 }
 
 
@@ -67,15 +68,15 @@ const ProductDetail = ({ productId }: any) => {
         review: "",
         rating: 0,
         amount: 1,
-        tab: 0
+        tab: 0,
+        isLoading: true
     })
-    const { users, product, reviews, sliders, sizeInput, amount, tab } = state
+    const { users, product, reviews, sliders, sizeInput, amount, tab, isLoading } = state
     const {
         name,
         discount,
         price,
         size,
-        owner
     }: Product = product
     const theme = useTheme();
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -95,8 +96,7 @@ const ProductDetail = ({ productId }: any) => {
                             }
 
                         })
-                        setState({ ...state, users: resUsers.data.users, product: res.data, sliders: sliders.slice(0, 6) })
-                        dispatch(setIsLoading(false))
+                        setState({ ...state, users: resUsers.data.users, product: res.data, sliders: sliders.slice(0, 6), isLoading: false })
                     })
             })
 
@@ -158,67 +158,94 @@ const ProductDetail = ({ productId }: any) => {
                 <div className="lg:flex block lg:px-20 p-4 pt-24 space-y-6 space-x-6">
                     <div className="lg:w-[50%] w-full !p-0 flex-col space-y-2 space-x-6 border-gray-200 border-[1px]">
                         <>
-                            <Swiper
-                                spaceBetween={1}
-                                navigation={true}
-                                thumbs={{ swiper: thumbsSwiper }}
-                                modules={[Navigation, FreeMode, Thumbs]}
-                                className="lg:!w-full w-full  !h-[32rem]"
-                            >
-                                {sliders?.map((slider, index) => (
-                                    <SwiperSlide key={index}>
-                                        <img className="cursor-pointer h-full !w-full !object-contain" src={slider.img} alt="pictures" />
-                                    </SwiperSlide>
-                                )
-                                )}
-                            </Swiper>
-                            <Swiper
-                                onSwiper={setThumbsSwiper}
-                                spaceBetween={10}
-                                slidesPerView={4}
-                                freeMode={true}
-                                watchSlidesProgress={true}
-                                modules={[Navigation, FreeMode, Thumbs]}
-                                className="lg:!w-full w-full !h-28"
-                            >
-                                {sliders?.map((slider, index) => (
-                                    <SwiperSlide key={index}>
-                                        <img className=" cursor-pointer h-full !w-full !object-cover" src={slider.img} alt="pictures" />
-                                    </SwiperSlide>
-                                )
-                                )}
-                            </Swiper>
+                            {isLoading ?
+                                <Skeleton variant="rectangular" className="w-full h-[32rem]" />
+                                :
+                                <Swiper
+                                    spaceBetween={1}
+                                    navigation={true}
+                                    thumbs={{ swiper: thumbsSwiper }}
+                                    modules={[Navigation, FreeMode, Thumbs]}
+                                    className="lg:!w-full w-full  !h-[32rem]"
+                                >
+                                    {sliders?.map((slider, index) => (
+                                        <SwiperSlide key={index}>
+                                            <img className="cursor-pointer h-full !w-full !object-contain" src={slider.img} alt="pictures" />
+                                        </SwiperSlide>
+                                    )
+                                    )}
+                                </Swiper>
+                            }
+                            {isLoading ?
+                                <Skeleton variant="rectangular" className="w-full h-28 !mt-1 !ml-0" />
+                                :
+                                <Swiper
+                                    onSwiper={setThumbsSwiper}
+                                    spaceBetween={10}
+                                    slidesPerView={4}
+                                    freeMode={true}
+                                    watchSlidesProgress={!isLoading}
+                                    modules={[Navigation, FreeMode, Thumbs]}
+                                    className="lg:!w-full w-full !h-28 !ml-0"
+                                >
+                                    {sliders?.map((slider, index) => (
+                                        <SwiperSlide key={index}>
+                                            <img className=" cursor-pointer h-full !w-full !object-cover" src={slider.img} alt="pictures" />
+                                        </SwiperSlide>
+                                    )
+                                    )}
+                                </Swiper>
+                            }
                         </>
                     </div>
                     <div className="lg:w-[50%] w-full !m-0 lg:!ml-6 flex-col space-y-4">
                         <Grid item>
-                            <Typography fontSize={20} variant="body1" component="h1">
-                                {name}
-                            </Typography>
+                            {isLoading ?
+                                <Skeleton variant="text" height={40} width={500} />
+                                :
+                                <Typography fontSize={20} variant="body1" component="h1">
+                                    {name}
+                                </Typography>
+                            }
                         </Grid>
 
                         <Grid container className="flex items-center gap-2">
-                            <Typography fontSize={16} className="line-through" variant="body2" color="text.secondary">
-                                <Currency quantity={+price} currency="VND" pattern="##,### !" />
-                            </Typography>
-                            <Typography variant="body2" fontSize={20} className="text-red-600 !font-bold">
-                                <Currency quantity={+price - +price / 100 * discount} currency="VND" pattern="##,### !" />
-                            </Typography>
+                            {isLoading ?
+                                <Skeleton variant="text" height={40} width={100} />
+                                :
+                                <Typography fontSize={16} className="line-through" variant="body2" color="text.secondary">
+                                    <Currency quantity={+price} currency="VND" pattern="##,### !" />
+                                </Typography>
+
+                            }
+                            {isLoading ?
+                                <Skeleton variant="text" height={40} width={100} />
+                                :
+                                <Typography variant="body2" fontSize={20} className="text-red-600 !font-bold">
+                                    <Currency quantity={+price - +price / 100 * discount} currency="VND" pattern="##,### !" />
+                                </Typography>
+                            }
                         </Grid>
                         <Grid item>
                             <div className="flex items-center space-x-5">
-                                <div onClick={() => handleShowProfile(product.owner)} className="flex cursor-pointer  items-center">
-                                    <Tooltip title="Chủ sản phẩm">
-                                        <IconButton>
-                                            <FaUserTie size={16} className="text-primary" />
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Chủ sản phẩm">
-                                        <span className="text-base font-semibold">{`${getUser(product.owner)?.firstName} ${getUser(product.owner)?.lastName}`}</span>
-                                    </Tooltip>
-                                </div>
-
-                                {getUser(product.owner)?.phone &&
+                                {isLoading ?
+                                    <Skeleton variant="text" height={40} width={100} />
+                                    :
+                                    <div onClick={() => handleShowProfile(product.owner)} className="flex cursor-pointer  items-center">
+                                        <Tooltip title="Chủ sản phẩm">
+                                            <IconButton>
+                                                <FaUserTie size={16} className="text-primary" />
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Tooltip title="Chủ sản phẩm">
+                                            <span className="text-base font-semibold">{`${getUser(product.owner)?.firstName} ${getUser(product.owner)?.lastName}`}</span>
+                                        </Tooltip>
+                                    </div>
+                                }
+                                {isLoading ?
+                                    <Skeleton variant="text" height={40} width={130} />
+                                    :
+                                    getUser(product.owner)?.phone &&
                                     <div className="flex cursor-pointer items-center">
                                         <Tooltip title="Gọi">
                                             <IconButton>
@@ -234,79 +261,101 @@ const ProductDetail = ({ productId }: any) => {
                                         </Tooltip>
                                     </div>
                                 }
-
-
                             </div>
                         </Grid>
                         <Grid container alignItems={"center"}>
                             <Grid item xs={6} md={6} lg={9}>
-                                <Typography fontSize={18} variant="body1" component="h1">
-                                    Size
-                                </Typography>
+                                {isLoading ?
+                                    <Skeleton variant="text" height={40} width={50} />
+                                    :
+                                    <Typography fontSize={18} variant="body1" component="h1">
+                                        Size
+                                    </Typography>
+                                }
                             </Grid>
                             <Grid item xs={6} md={6} lg={3}>
-                                <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                                    <InputLabel id="demo-select-small">Size</InputLabel>
-                                    <Select
-                                        labelId="demo-select-small"
-                                        id="demo-select-small"
-                                        value={sizeInput}
-                                        label="Age"
-                                        onChange={(e) => setState({ ...state, sizeInput: e.target.value })}
-                                    >
-                                        <MenuItem value="">
-                                            <em>None</em>
-                                        </MenuItem>
-                                        {size?.map(s => (
-                                            <MenuItem key={s} value={s}>
-                                                {s}
+                                {isLoading ?
+                                    <Skeleton variant="text" height={40} width={165} />
+                                    :
+                                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                                        <InputLabel id="demo-select-small">Size</InputLabel>
+                                        <Select
+                                            labelId="demo-select-small"
+                                            id="demo-select-small"
+                                            value={sizeInput}
+                                            label="Age"
+                                            onChange={(e) => setState({ ...state, sizeInput: e.target.value })}
+                                        >
+                                            <MenuItem value="">
+                                                <em>None</em>
                                             </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                                            {size?.map(s => (
+                                                <MenuItem key={s} value={s}>
+                                                    {s}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                }
                             </Grid>
                         </Grid>
                         <Grid container alignItems={"center"}>
                             <Grid item xs={6} md={8} lg={8}>
-                                <Typography fontSize={18} variant="body1" component="h1">
-                                    Amount
-                                </Typography>
+                                {isLoading ?
+                                    <Skeleton variant="text" height={40} width={100} />
+                                    :
+                                    <Typography fontSize={18} variant="body1" component="h1">
+                                        Amount
+                                    </Typography>
+                                }
                             </Grid>
                             <Grid item xs={6} md={4} lg={4}>
-                                <FormControl className="flex-row" size="small">
-                                    <Button
-                                        onClick={() => setState({ ...state, amount: amount <= 1 ? 1 : amount - 1 })}
-                                        className="w-[25%]" variant="outlined">
-                                        <AiOutlineMinus size={20} />
-                                    </Button>
-                                    <OutlinedInput
-                                        value={amount}
-                                        onChange={(e) => setState({ ...state, amount: +e.target.value })}
-                                        className="w-[50%]"
-                                        inputProps={{ min: 0, style: { textAlign: 'center' } }} // the change is here
-                                        placeholder="1" />
-                                    <Button
-                                        onClick={() => setState({ ...state, amount: amount + 1 })}
-                                        className="w-[25%]" variant="outlined">
-                                        <AiOutlinePlus size={20} />
-                                    </Button>
-                                </FormControl>
+                                {isLoading ?
+                                    <Skeleton variant="text" height={40} width={220} />
+                                    :
+                                    <FormControl className="flex-row" size="small">
+                                        <Button
+                                            onClick={() => setState({ ...state, amount: amount <= 1 ? 1 : amount - 1 })}
+                                            className="w-[25%]" variant="outlined">
+                                            <AiOutlineMinus size={20} />
+                                        </Button>
+                                        <OutlinedInput
+                                            value={amount}
+                                            onChange={(e) => setState({ ...state, amount: +e.target.value })}
+                                            className="w-[50%]"
+                                            inputProps={{ min: 0, style: { textAlign: 'center' } }} // the change is here
+                                            placeholder="1" />
+                                        <Button
+                                            onClick={() => setState({ ...state, amount: amount + 1 })}
+                                            className="w-[25%]" variant="outlined">
+                                            <AiOutlinePlus size={20} />
+                                        </Button>
+                                    </FormControl>
+                                }
 
                             </Grid>
                         </Grid>
                         <Grid container columnSpacing={2}>
                             <Grid item lg={6}>
-                                <Button
-                                    onClick={handleBuyProduct}
-                                    className="!bg-primary w-full" variant="contained">Mua ngay
-                                </Button>
+                                {isLoading ?
+                                    <Skeleton variant="text" height={60} className="w-full" />
+                                    :
+                                    <Button
+                                        onClick={handleBuyProduct}
+                                        className="!bg-primary w-full" variant="contained">Mua ngay
+                                    </Button>
+                                }
                             </Grid>
                             <Grid item lg={6}>
-                                <Button
-                                    className="!border-primary !text-secondary w-full" variant="outlined"
-                                    onClick={handleAddToCart}
-                                >Thêm vào giỏ hàng
-                                </Button>
+                                {isLoading ?
+                                    <Skeleton variant="text" height={60} className="w-full" />
+                                    :
+                                    <Button
+                                        className="!border-primary !text-secondary w-full" variant="outlined"
+                                        onClick={handleAddToCart}
+                                    >Thêm vào giỏ hàng
+                                    </Button>
+                                }
                             </Grid>
                         </Grid>
                     </div>

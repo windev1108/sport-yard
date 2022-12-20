@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, memo } from 'react'
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -100,8 +100,11 @@ const OrderDetail = ({ mutate }: any) => {
 
 
     const handleAcceptRequest = async () => {
-        if (order.methodPay === 1 && user.balance < order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)) {
+        const { data } = await axios.get(`/api/users/${order.orderId}`)
+        if (order.methodPay === 1 && user?.balance < (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)) {
             toast.info(`Số dư của bạn không đủ ${currencyFormatter.format(order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!, { code: 'VND' })} phí dịch vụ , vui lòng nạp thêm `, { autoClose: 3000, theme: "colored" })
+        } else if (order.methodPay === 2 && data?.balance < order.total) {
+            toast.info("Số dư của khách hàng không đủ để hoàn thành thanh toán này", { autoClose: 3000, theme: "colored" })
         } else {
             dispatch(setOpenBackdropModal(true))
             setTimeout(async () => {
@@ -119,30 +122,31 @@ const OrderDetail = ({ mutate }: any) => {
                     axios.put(`/api/users/${data.orderId}`, {
                         balance: data.balance - (order.total)
                     })
-                    axios.put(`/api/users/${user.id}`, {
-                        balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
-                    })
+                    order.methodPay === 2 ?
+                        axios.put(`/api/users/${user.id}`, {
+                            balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
+                        })
+                        : axios.put(`/api/users/${user.id}`, {
+                            balance: user.balance - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
+                        })
                 }
 
-                // order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
-                //     balance: data.balance + (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
-                // })
+                order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
+                    balance: data.balance + (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
+                })
 
                 // Clear remove order in orders pending
                 socket.emit("delete_order", {
                     orderId: idOrder,
                 })
 
+                // Change status order to accept
                 axios.put(`/api/orders/${idOrder}`, {
                     status: 3,
                     senderId: order.receiverId,
                     receiverId: order.senderId,
                 })
-                socket.emit("delete_order", {
-                    orderId: idOrder,
-                })
                 mutate()
-                dispatch(setIsUpdate(!isUpdated))
                 dispatch(setOpenBackdropModal(false))
             }, 2000)
 
@@ -160,7 +164,6 @@ const OrderDetail = ({ mutate }: any) => {
             orderId: idOrder,
         })
         mutate()
-        dispatch(setIsUpdate(!isUpdated))
         dispatch(setOpenNotificationDetail(false))
     }
 
@@ -338,6 +341,9 @@ const OrderDetail = ({ mutate }: any) => {
         setTimeout(() => {
             axios.put(`/api/users/${order.orderId}`, {
                 balance: data.balance + order.total
+            })
+            axios.put(`/api/users/${user?.id}`, {
+                balance: user.balance - order.total
             })
             axios.put(`/api/orders/${idOrder}`, {
                 status: 9
@@ -1062,4 +1068,4 @@ const OrderDetail = ({ mutate }: any) => {
 
 
 
-export default OrderDetail
+export default memo(OrderDetail)
