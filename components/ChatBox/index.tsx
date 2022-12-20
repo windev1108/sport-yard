@@ -90,7 +90,6 @@ const ChatBox = () => {
 
 
 
-
     const hideChatMessage = () => {
         setState({ ...state, userSelected: {}, isOpenChatMessage: false, isFadeDownChatBox: false })
     }
@@ -145,7 +144,7 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [user])
+    }, [user?.id])
 
     const getConversations = useCallback(async () => {
         const token: any = getCookie("token")
@@ -163,7 +162,7 @@ const ChatBox = () => {
     }, [])
 
 
-    const handleSendMessage = async (e: any) => {
+    const handleSendMessage = useCallback(async (e: any) => {
         e.preventDefault();
         if (!message) {
             toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })
@@ -188,9 +187,7 @@ const ChatBox = () => {
                 })
             }
             await mutate()
-            setTimeout(() => {
-                scrollToBottom()
-            }, 300)
+            scrollToBottom()
         } else {
             if (urls.length === previewBlobs.length && isUploaded) {
                 setState({ ...state, pictures: [], previewBlobs: [] })
@@ -215,7 +212,7 @@ const ChatBox = () => {
             }
             await mutate()
         }
-    }
+    }, [message])
 
 
     const handleShowMessage = (userSelect: User) => {
@@ -236,6 +233,10 @@ const ChatBox = () => {
     const handleDeleteBlob = (name: string) => {
         setState({ ...state, previewBlobs: previewBlobs?.filter(blob => blob.name !== name), pictures: Array.from(pictures)?.filter((pic: any) => pic.name !== name) })
     }
+
+    useEffect(() => {
+        scrollToBottom()
+    }, [data])
 
     const scrollToBottom = () => {
         messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -299,7 +300,7 @@ const ChatBox = () => {
                     </div>
 
                 </div>
-                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-fullborder-gray-300  w-full">
+                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-full border-gray-300  w-full">
                     {conversations?.map((conversation: User) => (
                         <div
                             onClick={() => handleShowMessage(conversation)}
