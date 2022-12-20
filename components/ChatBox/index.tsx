@@ -1,6 +1,6 @@
 import { IconButton, Tooltip, Avatar } from '@mui/material';
 import axios from 'axios';
-import React, { useEffect, useState, useRef, useCallback, memo } from 'react'
+import React, { useEffect, useState, useRef, useCallback, useLayoutEffect, memo } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Message, User } from '../../Models';
 import { RootState } from '../../redux/store';
@@ -30,8 +30,6 @@ import { toast } from 'react-toastify'
 
 interface State {
     messages: Message[]
-    users: User[],
-    conversations: User[]
     userSelected: any
     message: string
     previewBlobs: {
@@ -61,8 +59,6 @@ const ChatBox = () => {
     const dispatch = useDispatch()
     const [state, setState] = useState<State>({
         messages: [],
-        users: [],
-        conversations: [],
         userSelected: {},
         pictures: [],
         message: "",
@@ -75,13 +71,15 @@ const ChatBox = () => {
     })
     const { isOpenChatBox }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { users, conversations, message, previewBlobs, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
+    const { message, previewBlobs, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
     const [showEmojis, setShowEmojis] = useState(false)
     const [usersOnline, setUsersOnline] = useState<SocketUser[]>([])
     const [urls, setUrls] = useState<string[]>([])
     const [emoji, setEmoji] = useState<{ native: string } | any>({})
     const messageEndRef = useRef<any>(null)
     const messageRef = useRef<any>()
+    const conversationsRef: { current: User[] } = useRef<User[]>([])
+    const usersRef: { current: User[] } = useRef<User[]>([])
 
 
     const toggleChatBox = () => {
@@ -110,7 +108,7 @@ const ChatBox = () => {
     }, [])
 
     const getUser = (id: string) => {
-        const user: User | any = users.find((u: User) => u.id === id)
+        const user: User | any = usersRef?.current.find((u: User) => u.id === id)
         return user
     }
 
@@ -151,20 +149,27 @@ const ChatBox = () => {
         const { id } = jwt.decode(token) as { [key: string]: string }
         const resUsers = await axios.get('/api/users')
         const { data }: { data: User } = await axios.get(`/api/users/${id}`)
-        setState({
-            ...state,
-            users: resUsers.data.users,
-            conversations: data?.role === "admin" ? resUsers.data.users.filter((u: User) => u?.id !== data.id) : data?.conversations?.map((c: string) => {
+        usersRef.current = resUsers.data.users,
+            conversationsRef.current = data?.role === "admin" ? resUsers.data.users.filter((u: User) => u?.id !== data.id) : data?.conversations?.map((c: string) => {
                 return resUsers.data.users.find((u: User) => u.id === c)
             })
-
-        })
     }, [])
+
+
+    // useLayoutEffect(() => {
+    //     if (user?.role === "admin") {
+    //         const listUsersOnline: User[] | any = usersOnline.filter((u: SocketUser) => u.userId !== user?.id).map((u: SocketUser) => conversationsRef?.current?.find((c: User) => c?.id === u?.userId))
+    //         const listUsersOffline = usersRef?.current?.filter((c: User) => listUsersOnline?.some((u: User) => u?.id !== c?.id && c.id !== user?.id))
+    //         console.log("listUsersOnline ", listUsersOnline);
+    //         console.log("listUsersOffline ", listUsersOffline)
+    //         conversationsRef.current = [...listUsersOnline, ...listUsersOffline]
+    //     }
+    // }, [usersOnline.length])
 
 
     const handleSendMessage = useCallback(async (e: any) => {
         e.preventDefault();
-        if (!message) {
+        if (!message && !isUploaded) {
             toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })
         } else if (message) {
             setState({ ...state, message: "" })
@@ -211,6 +216,7 @@ const ChatBox = () => {
                 toast.info("Vui thử lại sau ", { autoClose: 3000, theme: "colored" })
             }
             await mutate()
+            scrollToBottom()
         }
     }, [message])
 
@@ -300,8 +306,8 @@ const ChatBox = () => {
                     </div>
 
                 </div>
-                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-full border-gray-300  w-full">
-                    {conversations?.map((conversation: User) => (
+                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-[90%] border-gray-300  w-full">
+                    {conversationsRef.current?.map((conversation: User) => (
                         <div
                             onClick={() => handleShowMessage(conversation)}
                             key={conversation?.id} className={`${conversation?.id === userSelected?.id && "bg-gray-200"} flex p-2 hover:bg-gray-100 cursor-pointer items-center px-5 space-x-2`}>
@@ -494,7 +500,7 @@ const ChatBox = () => {
                                     <IconButton
                                         type='submit'
                                     >
-                                        {previewBlobs.length && !isUploaded ?
+                                        {previewBlobs.length && !isUploaded && !isLoading ?
                                             <AiOutlineUpload className="text-primary" />
                                             :
                                             <IoMdSend className="text-primary" />
