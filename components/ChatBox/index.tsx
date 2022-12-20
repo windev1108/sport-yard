@@ -99,7 +99,7 @@ const ChatBox = () => {
     const fetcher = async (url: string) => {
         const res = await axios.get(url)
         messageEndRef.current && scrollToBottom()
-        return res.data.messages?.filter((m: Message) => m.senderId === user.id && m.receiverId === userSelected?.id || m.receiverId === user.id && m.senderId === userSelected?.id)
+        return res.data.messages?.filter((m: Message) => m.senderId === user?.id && m.receiverId === userSelected?.id || m.receiverId === user?.id && m.senderId === userSelected?.id)
     }
 
 
@@ -134,7 +134,6 @@ const ChatBox = () => {
 
     }
 
-    console.log("Date", new Date("Wed, 07 Dec 2022 17:42:12 GMT").getHours());
 
     useEffect(() => {
         mutate()
@@ -166,20 +165,20 @@ const ChatBox = () => {
 
     const handleSendMessage = useCallback(async (e: any) => {
         e.preventDefault();
-        const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user.id)
-        const { data } = userSelected?.id && await axios.get(`/api/users/${userSelected?.id}`)
+        const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
+        const { data } = await axios.get(`/api/users/${userSelected?.id}`)
 
         if (pictures.length) {
             if (urls.length === previewBlobs.length && isUploaded) {
                 setState({ ...state, pictures: [], previewBlobs: [] })
                 await axios.post("/api/messages", {
-                    senderId: user.id,
+                    senderId: user?.id,
                     receiverId: userSelected?.id,
                     pictures: urls,
                     type: "images"
                 })
-                !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
-                    conversations: [...data.conversations, user.id]
+                !checkIsExistConversations && user?.role !== "admin" && axios.put(`/api/users/${userSelected?.id}`, {
+                    conversations: [...data.conversations, user?.id]
                 })
             } else {
                 toast.info("Vui thử lại sau ", { autoClose: 3000, theme: "colored" })
@@ -188,7 +187,7 @@ const ChatBox = () => {
         } else if (message) {
             setState({ ...state, message: "" })
             await axios.post("/api/messages", {
-                senderId: user.id,
+                senderId: user?.id,
                 receiverId: userSelected?.id,
                 message,
                 type: "text"
@@ -201,8 +200,8 @@ const ChatBox = () => {
             setTimeout(() => {
                 scrollToBottom()
             }, 300)
-            !checkIsExistConversations && data.role !== "admin" && axios.put(`/api/users/${userSelected?.id}`, {
-                conversations: [...data?.conversations, user.id]
+            !checkIsExistConversations && user?.role !== "admin" && axios.put(`/api/users/${userSelected?.id}`, {
+                conversations: [...data?.conversations, user?.id]
             })
         } else {
             toast.info("Vui lòng nhập tin nhắn ", { autoClose: 3000, theme: "colored" })
@@ -261,7 +260,7 @@ const ChatBox = () => {
 
 
     useEffect(() => {
-        socket?.emit("user-typing", { userId: user.id, receiverId: userSelected?.id, typing: Boolean(message) })
+        socket?.emit("user-typing", { userId: user?.id, receiverId: userSelected?.id, typing: Boolean(message) })
     }, [message])
 
     const handleOpenProfile = (id: string) => {
@@ -279,7 +278,7 @@ const ChatBox = () => {
                     <div className="flex justify-between w-full items-center px-2">
                         <div className="flex items-center space-x-2">
                             <div className="relative">
-                                <Avatar src={user.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{user.firstName?.substring(0, 1)}
+                                <Avatar src={user?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{user?.firstName?.substring(0, 1)}
                                 </Avatar>
                                 <div className="bg-primary absolute -bottom-[2px] -right-[3px] w-[.90rem] h-[.90rem] rounded-full border-[3px] border-white"></div>
                             </div>
@@ -383,15 +382,15 @@ const ChatBox = () => {
                             {data && typeof data !== "string" && data?.map((item: Message, index: number) => (
                                 <div key={item.id} className="flex flex-col w-full p-2">
                                     <span className="text-center text-xs pb-3">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span>
-                                    <div className={`${item.senderId === user.id ? "justify-end" : "justify-start"} flex w-full`}>
+                                    <div className={`${item.senderId === user?.id ? "justify-end" : "justify-start"} flex w-full`}>
                                         {item.type === "text" &&
                                             <div className={`flex max-w-[50%] space-x-2`}>
-                                                {item.senderId !== user.id
+                                                {item.senderId !== user?.id
                                                     &&
                                                     <Avatar src={userSelected?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{userSelected?.firstName?.substring(0, 1)}
                                                     </Avatar>
                                                 }
-                                                <span className={`${item.senderId === user.id ? "bg-[#d7e4ff]" : "bg-gray-100"} px-3 text-black py-2 text-sm rounded-md max-w-[100%]`}>{item.message}</span>
+                                                <span className={`${item.senderId === user?.id ? "bg-[#d7e4ff]" : "bg-gray-100"} px-3 text-black py-2 text-sm rounded-md max-w-[100%]`}>{item.message}</span>
                                             </div>
                                         }
                                         {item.type === "images" &&
@@ -402,7 +401,7 @@ const ChatBox = () => {
                                             </div>
                                         }
                                     </div>
-                                    {index === data?.length - 1 && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.receiverId === user.id && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.typing &&
+                                    {index === data?.length - 1 && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.receiverId === user?.id && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.typing &&
                                         <div className="relative flex items-center py-2 space-x-12">
                                             <Avatar src={getUser(userSelected?.id)?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{getUser(userSelected?.id)?.firstName?.substring(0, 1)}
                                             </Avatar>
