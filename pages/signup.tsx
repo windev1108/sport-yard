@@ -48,6 +48,8 @@ const Signup = () => {
         autoClose: 3000,
         theme: "colored",
       });
+    } else if (password.length < 6) {
+      toast.info("Mật khẩu phải ít nhất 6 kí tự ", { autoClose: 3000, theme: "colored" })
     } else {
       axios.post("api/users", { email, password, firstName, lastName, role, balance: 0, banks: [], cart: [] })
       toast.success("Đăng ký thành công", {
@@ -99,7 +101,7 @@ const Signup = () => {
                 <Typography component="h1" variant="h5">
                   Sign up
                 </Typography>
-                <Box component="form"  onSubmit={handleSubmit} sx={{ mt: 3 }}>
+                <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                       <TextField

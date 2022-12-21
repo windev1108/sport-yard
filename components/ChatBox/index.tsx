@@ -156,15 +156,13 @@ const ChatBox = () => {
     }, [])
 
 
-    // useLayoutEffect(() => {
-    //     if (user?.role === "admin") {
-    //         const listUsersOnline: User[] | any = usersOnline.filter((u: SocketUser) => u.userId !== user?.id).map((u: SocketUser) => conversationsRef?.current?.find((c: User) => c?.id === u?.userId))
-    //         const listUsersOffline = usersRef?.current?.filter((c: User) => listUsersOnline?.some((u: User) => u?.id !== c?.id && c.id !== user?.id))
-    //         console.log("listUsersOnline ", listUsersOnline);
-    //         console.log("listUsersOffline ", listUsersOffline)
-    //         conversationsRef.current = [...listUsersOnline, ...listUsersOffline]
-    //     }
-    // }, [usersOnline.length])
+    useLayoutEffect(() => {
+        if (user?.role === "admin") {
+            const listUsersOnline: User[] | any = usersOnline.filter((u: SocketUser) => u.userId !== user?.id).map((u: SocketUser) => conversationsRef?.current?.find((c: User) => c?.id === u?.userId))
+            const listUsersOffline = usersRef?.current?.filter((c: User) => listUsersOnline?.some((u: User) => u?.id !== c?.id && c.id !== user?.id))
+            conversationsRef.current = [...listUsersOnline, ...listUsersOffline]
+        }
+    }, [usersOnline.length])
 
 
     const handleSendMessage = useCallback(async (e: any) => {
