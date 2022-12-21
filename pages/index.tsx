@@ -1,5 +1,4 @@
 import type { NextPage } from "next";
-import { useEffect } from 'react'
 import Layout from "../components/Layout";
 import Slider from "../components/Slider";
 import AreaRow from "../components/AreaRow";

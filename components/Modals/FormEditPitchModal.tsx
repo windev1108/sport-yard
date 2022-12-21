@@ -117,8 +117,6 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
         })
     }
 
-    console.log("main picture", mainPicture);
-    console.log("pictures :", pictures);
 
     const handleSubmit = () => {
         let slots: Slot[] = []

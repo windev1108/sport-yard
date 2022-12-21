@@ -132,10 +132,6 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
 
 
     const handleSubmit = () => {
-        console.log("pictures.length :",pictures.length);
-        console.log("fontPicture :",fontPicture.name);
-        console.log("backSidePicture :",backSidePicture.name);
-
         if (!name || !price || !size.length || !discount) {
             toast.info("Please complete all information", {
                 autoClose: 3000,

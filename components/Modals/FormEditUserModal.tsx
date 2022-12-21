@@ -329,9 +329,9 @@ const FormEditUserModal: NextPage = () => {
                                                 </Select>
                                             </FormControl>
                                             <Grid lg={12}>
-                                                <input defaultValue={item.name} name={`name-account-${index + 1}`} className="border-[1px] placeholder:text-secondary font-semibold border-gray-300 outline-none  text-center !text-sm h-10 w-full cursor-pointer"  // the change is here
+                                                <input defaultValue={item.name} name={`name-account-${index + 1}`} className="border-[1px] placeholder:text-secondary border-gray-300 outline-none  text-center !text-sm h-10 w-full cursor-pointer"  // the change is here
                                                     required placeholder="Name account" />
-                                                <input defaultValue={item.accountNumber} name={`account-number-${index + 1}`} className="border-[1px] placeholder:text-secondary font-semibold border-gray-300 outline-none  text-center !text-sm h-10 w-full cursor-pointer" type="number" // the change is here
+                                                <input defaultValue={item.accountNumber} name={`account-number-${index + 1}`} className="border-[1px] placeholder:text-secondary border-gray-300 outline-none  text-center !text-sm h-10 w-full cursor-pointer" type="number" // the change is here
                                                     required placeholder="Account number" />
                                             </Grid>
                                         </Grid>
@@ -371,7 +371,7 @@ const FormEditUserModal: NextPage = () => {
                 </div>
             </DialogContent>
             <DialogActions className="flex  items-center  bg-gray-100 w-full">
-                <Button variant="outlined"  className="hover:border-primary border-primary text-primary" onClick={() => dispatch(setOpenFormEditUser(false))}>Cancel</Button>
+                <Button variant="outlined" className="hover:border-primary border-primary text-primary" onClick={() => dispatch(setOpenFormEditUser(false))}>Cancel</Button>
                 <Button className="!bg-primary !text-white" variant="contained" onClick={isUploaded || !blobAvatar ? handleSubmit : handleUploadFiles}>{isUploaded || !blobAvatar ? "Submit" : "Upload"}</Button>
             </DialogActions>
             {isLoading &&

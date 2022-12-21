@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import axios from 'axios';
@@ -51,7 +51,7 @@ const OwnerManager = () => {
     const [openConfirmModal, setConfirmModal] = useState(false);
     const [openFormEditProductModal, setFormEditProductModal] = useState(false);
     const [openFormEditPitchModal, setFormEditPitchModal] = useState(false);
-
+    const usersRef: { current: User[] } = useRef<User[]>([])
     const { tabData, tab, idDeleting, idEditing, typeProduct } = state
 
 
@@ -62,25 +62,35 @@ const OwnerManager = () => {
     }, [token])
 
 
-    useEffect(() => {
-        axios.get(`/api/${tab == 1 ? "pitch" : "products"}`)
-            .then(res => res.data
-            ).then((data) => {
-                switch (tab) {
-                    case 1: setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id) })
-                        dispatch(setIsLoading(false))
-                        break
-                    case 2: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes") })
-                        dispatch(setIsLoading(false))
-                        break
-                    case 3: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers") })
-                        dispatch(setIsLoading(false))
-                        break
-                    default: return
-                }
-            })
+    useLayoutEffect(() => {
+        if (user.role === "owner") {
+            axios.get(`/api/${tab == 1 ? "pitch" : "products"}`)
+                .then(res => res.data
+                ).then((data) => {
+                    axios.get("/api/users")
+                        .then(resUsers => {
+                            switch (tab) {
+                                case 1: setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id) })
+                                    dispatch(setIsLoading(false))
+                                    usersRef.current = resUsers.data.users
+                                    break
+                                case 2: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes") })
+                                    dispatch(setIsLoading(false))
+                                    break
+                                case 3: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers") })
+                                    dispatch(setIsLoading(false))
+                                    break
+                                default: return
+                            }
+                        })
+                })
+        }
     }, [tab, isUpdated])
 
+
+    const getUser = (id: string) => {
+        return usersRef.current?.find((u: User) => u.id === id)
+    }
 
     const handleChange = useCallback((e: React.SyntheticEvent, newValue: number) => {
         setState({ ...state, tab: newValue });
@@ -122,19 +132,19 @@ const OwnerManager = () => {
                     className="bg-white"
                     onClick={() => setModalAddPitch(true)}
                     icon={<GiSoccerField className="text-orange-500 text-3xl" />}
-                    tooltipTitle="Add Pitch"
+                    tooltipTitle="Thêm sân bóng"
                 />
                 <SpeedDialAction
                     className="bg-white"
                     onClick={handleShowModalAddClothes}
                     icon={<GiClothes className="text-orange-500 text-3xl" />}
-                    tooltipTitle="Add Clothes"
+                    tooltipTitle="Thêm áo thể thao"
                 />
                 <SpeedDialAction
                     className="bg-white"
                     onClick={handleShowModalAddShoes}
                     icon={<GiSonicShoes className="text-orange-500 text-3xl" />}
-                    tooltipTitle="Add Sneakers"
+                    tooltipTitle="Thêm giày thể thao"
                 />
             </SpeedDial>
 
@@ -148,9 +158,9 @@ const OwnerManager = () => {
             {openConfirmModal && <ConfirmModal tab={tab} id={idDeleting} open={openConfirmModal} setOpen={setConfirmModal} />}
             <div className="pt-16  overflow-hidden">
                 <Tabs value={tab} onChange={handleChange} aria-label="icon label tabs example">
-                    <Tab value={1} icon={<GiSoccerField className="text-4xl" />} label="Pitch" />
-                    <Tab value={2} icon={<GiClothes className="text-4xl" />} label="Clothes" />
-                    <Tab value={3} icon={<GiSonicShoes className="text-4xl" />} label="Sneakers" />
+                    <Tab value={1} icon={<GiSoccerField className="text-4xl" />} label="Sân bóng" />
+                    <Tab value={2} icon={<GiClothes className="text-4xl" />} label="Áo thể thao" />
+                    <Tab value={3} icon={<GiSonicShoes className="text-4xl" />} label="Giày thể thao" />
                 </Tabs>
                 <table className="min-w-full overflow-hidden">
                     <thead>
@@ -158,29 +168,34 @@ const OwnerManager = () => {
                             <th
                                 colSpan={1}
                                 className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                ID</th>
+                                STT</th>
+                            <th
+                                colSpan={1}
+                                className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-center text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                {tab === 1 ? "Tên sân bóng" : "Tên sản phẩm"}</th>
+                            <th
+                                colSpan={3}
+                                className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-center text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                {tab === 1 ? "Địa điểm" : "Mô tả"}</th>
+
+                            {tab !== 1 &&
+                                <th
+                                    colSpan={2}
+                                    className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                    {"Giá"}</th>
+
+                            }
+                            {tab !== 1 &&
+                                <th
+                                    colSpan={2}
+                                    className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                    {"Giảm giá"}</th>
+                            }
+
                             <th
                                 colSpan={1}
                                 className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                {"Name"}</th>
-                            <th
-                                colSpan={3}
-                                className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                {tab === 1 ? "Location" : "Description"}</th>
-
-                            {tab !== 1 &&
-                                <th
-                                    colSpan={2}
-                                    className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                    {"Price"}</th>
-
-                            }
-                            {tab !== 1 &&
-                                <th
-                                    colSpan={2}
-                                    className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                    {"Discount"}</th>
-                            }
+                                {"Chủ sỡ hữu"}</th>
 
                             <th
                                 colSpan={2}
@@ -191,15 +206,15 @@ const OwnerManager = () => {
                             <th
                                 colSpan={2}
                                 className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-center text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                {"Pictures"}</th>
+                                {"Hình ảnh"}</th>
                             <th
                                 colSpan={2}
                                 className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-center text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                Edit</th>
+                                Sửa</th>
                             <th
                                 colSpan={2}
                                 className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-center text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                Delete</th>
+                                Xóa</th>
                         </tr>
                     </thead>
 
@@ -210,7 +225,7 @@ const OwnerManager = () => {
                             >
                                 <td
                                     colSpan={1}
-                                    className="px-6  whitespace-no-wrap border-b border-gray-200">
+                                    className="px-6 text-center whitespace-no-wrap border-b border-gray-200">
                                     <div className="text-sm leading-5 text-gray-500">{index + 1}</div>
                                 </td>
                                 <td
@@ -228,7 +243,7 @@ const OwnerManager = () => {
                                 <td
                                     colSpan={3}
                                     className="px-6  whitespace-no-wrap border-b border-gray-200">
-                                    <div className="text-sm leading-5 text-gray-500">{tab === 1 ? data.location : data.description}</div>
+                                    <div className="text-sm leading-5 text-gray-500">{tab === 1 ? data.location : data.description !== "" ? data.description : "Không có mô tả"}</div>
                                 </td>
                                 {tab !== 1 &&
                                     <td
@@ -244,6 +259,13 @@ const OwnerManager = () => {
                                         <div className="text-sm text-center leading-5 text-gray-500"> {`${data.discount}%`}</div>
                                     </td>
                                 }
+
+                                <td
+                                    colSpan={1}
+                                    className="px-6  border-b border-gray-200">
+                                    <div className="text-sm text-center whitespace-nowrap leading-5 text-gray-500"> {`${getUser(data.owner)?.firstName} ${getUser(data.owner)?.lastName} `}</div>
+                                </td>
+
                                 <td
                                     colSpan={2}
                                     className="px-6  whitespace-no-wrap border-b border-gray-200">

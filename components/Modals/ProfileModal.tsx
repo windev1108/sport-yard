@@ -19,8 +19,9 @@ import { setAction } from '../../redux/features/transactionSlice';
 import dynamic from 'next/dynamic';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import { GrClose } from 'react-icons/gr';
+import { GrClose, GrUserExpert, GrUserAdmin, GrUser } from 'react-icons/gr';
 import { removeCookies, getCookie } from 'cookies-next';
+import { RiUserFollowLine, RiUserLine, RiUserSettingsLine } from 'react-icons/ri';
 const Balance = dynamic(() => import("../Balance"), { ssr: false })
 
 
@@ -87,7 +88,7 @@ const ProfileModal: NextPage = () => {
     const handleSendMessage = async () => {
         const isExistConversation = user.conversations.some((c: string) => c === idProfile)
         !isExistConversation && axios.put(`/api/users/${user.id}`, {
-            conversations : [...user.conversations , idProfile]
+            conversations: [...user.conversations, idProfile]
         })
         dispatch(setOpenProfileModal(false))
         dispatch(setOpenChatBox(true))
@@ -96,7 +97,7 @@ const ProfileModal: NextPage = () => {
         <Dialog
             className="z-[10002]"
             fullScreen={fullScreen}
-            open={isOpenProfileModal} onClose={handleClose} maxWidth="md">
+            open={isOpenProfileModal} onClose={handleClose} maxWidth="lg">
             <DialogTitle className="text-center items-center" fontWeight={700}>
                 {isLoading ?
                     <div className="flex justify-center">
@@ -118,7 +119,7 @@ const ProfileModal: NextPage = () => {
                 }
             </DialogTitle>
             <Divider />
-            <DialogContent className="lg:flex block justify-center lg:space-y-0 space-y-6 space-x-6 lg:w-[30rem]">
+            <DialogContent className="lg:flex block justify-center lg:space-y-0 space-y-6 space-x-6 lg:w-[35rem]">
                 <div className="lg:w-[40%] w-full ">
                     <div className="flex justify-center">
                         {isLoading ?
@@ -160,6 +161,26 @@ const ProfileModal: NextPage = () => {
                             <BsFillTelephoneFill color="#ef8e19" size={18} />
                             <Typography variant="body1" component="h1">
                                 {userProfile.phone ? `+84${userProfile.phone}` : "No contact"}
+                            </Typography>
+                        </div>
+
+                    }
+
+                    {isLoading ?
+                        <Skeleton variant="text" width={200} />
+                        :
+                        <div className="flex gap-2 items-center">
+                            {user?.role === "admin" &&
+                                <RiUserSettingsLine color="#ef8e19" size={22} />
+                            }
+                            {user?.role === "owner" &&
+                                <RiUserFollowLine color="#ef8e19" size={22} />
+                            }
+                            {user?.role === "customer" &&
+                                <RiUserLine color="#ef8e19" size={22} />
+                            }
+                            <Typography variant="body1" component="h1">
+                                {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
                             </Typography>
                         </div>
 
@@ -214,14 +235,14 @@ const ProfileModal: NextPage = () => {
                                 :
                                 <Button
                                     onClick={handleOpenFormDeposit}
-                                    className="!bg-[#ff9c00] !text-white">Deposit</Button>
+                                    className="!bg-[#ff9c00] !text-white">Nạp tiền</Button>
                             }
                             {isLoading ?
                                 <Skeleton variant="rounded" width={90} height={35} />
                                 :
                                 <Button
                                     onClick={handleOpenFormWithdraw}
-                                    className="!bg-[#018833] !text-white">Withdraw</Button>
+                                    className="!bg-[#018833] !text-white">Rút tiền</Button>
                             }
                         </div>
                         <div className="flex space-x-2">
@@ -229,14 +250,14 @@ const ProfileModal: NextPage = () => {
                                 <Skeleton variant="rounded" width={62} height={35} />
                                 :
                                 <div>
-                                    <Button onClick={handleShowFormEdit} className="justify-self-start !bg-[#007FFF] !text-white" variant="contained">EDIT</Button>
+                                    <Button onClick={handleShowFormEdit} className="justify-self-start !bg-[#007FFF] !text-white" variant="contained">Sửa thông tin</Button>
                                 </div>
                             }
                             {isLoading ?
                                 <Skeleton variant="rounded" width={62} height={35} />
                                 :
                                 <div>
-                                    <Button onClick={handleLogout} className="!bg-primary justify-self-start  !text-white" variant="contained">Logout</Button>
+                                    <Button onClick={handleLogout} className="!bg-primary justify-self-start  !text-white" variant="contained">Đăng xuất</Button>
                                 </div>
                             }
                         </div>

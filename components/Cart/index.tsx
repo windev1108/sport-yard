@@ -50,7 +50,7 @@ const CartComponent = () => {
                 user?.cart?.forEach((c: CartInUser) => {
                     results.push({ amount: c.amount, product: res.data.products.find((p: Product) => p.id === c.id) })
                 })
-                setState({ ...state, cart: results })
+                setState({ ...state, cart: results.reverse() })
             })
 
     }, [user?.cart])
@@ -149,7 +149,7 @@ const CartComponent = () => {
                         <div className="absolute top-0 left-0 right-1 h-10 z-10 bg-white shadow-md w-full flex items-center justify-around lg:justify-between pl-4 lg:pr-4 pr-12">
                             <div className="cursor-pointer flex items-center">
                                 <Typography fontWeight={700} variant="body1" component="h1">
-                                    View cart
+                                    Giỏ hàng
                                 </Typography>
                                 <IconButton
                                     onClick={handleOpenCartDetail}

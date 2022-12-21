@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, memo, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, memo, useCallback, useRef } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import axios from 'axios';
@@ -62,6 +62,7 @@ const OwnerManager = () => {
     const [openConfirmModal, setConfirmModal] = useState(false);
     const [openFormEditProductModal, setFormEditProductModal] = useState(false);
     const [openFormEditPitchModal, setFormEditPitchModal] = useState(false);
+    const usersRef: { current: User[] } = useRef<User[]>([])
     const { tabData, tab, idDeleting, idEditing, typeProduct, isLoading } = state
 
 
@@ -72,40 +73,46 @@ const OwnerManager = () => {
 
     }, [token])
 
+    const getUser = (id: string) => {
+        return usersRef.current?.find((u: User) => u.id === id)
+    }
 
     useLayoutEffect(() => {
-        switch (tab) {
-            case 0: {
-                axios.get("/api/users")
-                    .then(res => {
-                        setState({ ...state, tabData: res.data.users, isLoading: false })
-                    })
+        if (user.role === "admin") {
+            switch (tab) {
+                case 0: {
+                    axios.get("/api/users")
+                        .then(res => {
+                            setState({ ...state, tabData: res.data.users, isLoading: false })
+                            usersRef.current = res.data.users
+                        })
+                }
+                    break
+                case 1: {
+                    axios.get("/api/pitch")
+                        .then(res => {
+                            setState({ ...state, tabData: res.data.pitch, isLoading: false })
+                        })
+                }
+                    break
+                case 2: {
+                    axios.get("/api/products")
+                        .then(res => {
+                            setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "clothes"), isLoading: false })
+                        })
+                }
+                    break
+                case 3: {
+                    axios.get("/api/products")
+                        .then(res => {
+                            setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "sneakers"), isLoading: false })
+                        })
+                }
+                    break
+                default: return
             }
-                break
-            case 1: {
-                axios.get("/api/pitch")
-                    .then(res => {
-                        setState({ ...state, tabData: res.data.pitch, isLoading: false })
-                    })
-            }
-                break
-            case 2: {
-                axios.get("/api/products")
-                    .then(res => {
-                        setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "clothes"), isLoading: false })
-                    })
-            }
-                break
-            case 3: {
-                axios.get("/api/products")
-                    .then(res => {
-                        setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "sneakers"), isLoading: false })
-                    })
-            }
-                break
-            default: return
         }
-    }, [tab])
+    }, [tab, isUpdated])
 
 
     const handleChange = useCallback((e: React.SyntheticEvent, newValue: number) => {
@@ -152,22 +159,22 @@ const OwnerManager = () => {
                 <SpeedDialAction
                     onClick={() => setModalAddUser(true)}
                     icon={<HiUser className="text-orange-500 text-3xl" />}
-                    tooltipTitle="Add User"
+                    tooltipTitle="Thêm người dùng"
                 />
                 <SpeedDialAction
                     onClick={() => setModalAddPitch(true)}
                     icon={<GiSoccerField className="text-orange-500 text-3xl" />}
-                    tooltipTitle="Add Pitch"
+                    tooltipTitle="Thêm sân"
                 />
                 <SpeedDialAction
                     onClick={handleShowModalAddClothes}
                     icon={<GiClothes className="text-orange-500 text-3xl" />}
-                    tooltipTitle="Add Clothes"
+                    tooltipTitle="Thêm áo thể thao"
                 />
                 <SpeedDialAction
                     onClick={handleShowModalAddShoes}
                     icon={<GiSonicShoes className="text-orange-500 text-3xl" />}
-                    tooltipTitle="Add Sneakers"
+                    tooltipTitle="Thêm giày thể thao"
                 />
             </SpeedDial>
 
@@ -182,10 +189,10 @@ const OwnerManager = () => {
             {openConfirmModal && <ConfirmModal tab={tab} id={idDeleting} open={openConfirmModal} setOpen={setConfirmModal} />}
             <div className="pt-16  overflow-hidden">
                 <Tabs value={tab} onChange={handleChange} aria-label="icon label tabs example">
-                    <Tab value={0} icon={<FaUsers className="text-4xl" />} label="Users" />
-                    <Tab value={1} icon={<GiSoccerField className="text-4xl" />} label="Pitch" />
-                    <Tab value={2} icon={<GiClothes className="text-4xl" />} label="Clothes" />
-                    <Tab value={3} icon={<GiSonicShoes className="text-4xl" />} label="Sneakers" />
+                    <Tab value={0} icon={<FaUsers className="text-4xl" />} label="Người dùng" />
+                    <Tab value={1} icon={<GiSoccerField className="text-4xl" />} label="Sân bóng" />
+                    <Tab value={2} icon={<GiClothes className="text-4xl" />} label="Áo thể thao" />
+                    <Tab value={3} icon={<GiSonicShoes className="text-4xl" />} label="Giày thể thao" />
                 </Tabs>
                 {isLoading ?
                     <Skeleton variant="rectangular" width={2000} height={800} />
@@ -209,7 +216,7 @@ const OwnerManager = () => {
                                     <th
                                         colSpan={1}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Firt Name"}</th>
+                                        {"First Name"}</th>
                                     :
                                     <th
                                         colSpan={1}
@@ -249,6 +256,13 @@ const OwnerManager = () => {
                                         colSpan={2}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
                                         {"Discount"}</th>
+                                }
+
+                                {tab !== 0 &&
+                                    <th
+                                        colSpan={2}
+                                        className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                        {"Owner"}</th>
                                 }
 
                                 {tab === 0 ?
@@ -335,7 +349,7 @@ const OwnerManager = () => {
                                         <td
                                             colSpan={2}
                                             className="border-b border-gray-200">
-                                            <div className="text-sm leading-5 text-gray-500">{tab === 1 ? data.location : data.description}</div>
+                                            <div className="text-sm leading-5 text-gray-500">{tab === 1 ? data.location : data.description !== "" ? data.description : "Không có mô tả"}</div>
                                         </td>
                                     }
 
@@ -365,9 +379,16 @@ const OwnerManager = () => {
 
                                     {tab === 3 &&
                                         <td
-                                            colSpan={1}
+                                            colSpan={2}
                                             className="px-6  border-b border-gray-200">
                                             <div className="text-sm text-center leading-5 text-gray-500"> {`${data.discount}%`}</div>
+                                        </td>
+                                    }
+                                    {tab !== 0 &&
+                                        <td
+                                            colSpan={1}
+                                            className="px-6  border-b border-gray-200">
+                                            <div className="text-sm text-center whitespace-nowrap leading-5 text-gray-500"> {`${getUser(data.owner)?.firstName} ${getUser(data.owner)?.lastName} `}</div>
                                         </td>
                                     }
 
@@ -379,14 +400,14 @@ const OwnerManager = () => {
                                         </td>
                                         :
                                         <td
-                                            colSpan={1}
+                                            colSpan={2}
                                             className="px-6  border-b border-gray-200">
                                             <div className="text-sm leading-5 text-gray-500"> {`${data.size?.sort((a: number | string, b: number | string) => typeof a === "number" && typeof b === "number" ? a - b : data.size)}`}</div>
                                         </td>
                                     }
 
                                     <td
-                                        colSpan={2}
+                                        colSpan={1}
                                         className="!h-36 border-b border-gray-200">
                                         {tab === 0 ?
                                             <span

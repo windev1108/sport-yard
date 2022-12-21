@@ -11,7 +11,7 @@ const BackdropModal = () => {
             className="z-[10000]"
             open={isOpenBackdropModal}
         >
-            <Image className=" animate-spin transition-all duration-700" width={60} height={60} src={require("../../assets/images/ball.png")} />
+            <Image className=" animate-spin transition-all duration-700" width={80} height={80} src={require("../../assets/images/ball.png")} />
         </Backdrop>
     )
 }
