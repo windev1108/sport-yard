@@ -6,7 +6,7 @@ import { Message, User } from '../../Models';
 import { RootState } from '../../redux/store';
 import { deepOrange } from '@mui/material/colors';
 import { setOpenChatBox, setOpenProfileModal } from '../../redux/features/isSlice';
-import { IoMdCall, IoMdClose, IoMdSend } from 'react-icons/io'
+import { IoMdCall, IoMdClose, IoMdRemoveCircleOutline, IoMdSend } from 'react-icons/io'
 import { FiChevronDown } from 'react-icons/fi';
 import { BsChevronCompactUp, BsDash, BsPlus, BsEmojiSmile } from 'react-icons/bs';
 import { RiVideoLine } from 'react-icons/ri';
@@ -37,6 +37,7 @@ interface State {
         preview: string
     }[]
     pictures: {}[]
+    isChange: boolean
     isOpenChatMessage: boolean
     isFadeDownChatBox: boolean
     isLoading: boolean
@@ -63,6 +64,7 @@ const ChatBox = () => {
         pictures: [],
         message: "",
         previewBlobs: [],
+        isChange: false,
         isOpenChatMessage: false,
         isFadeDownChatBox: false,
         isUploaded: false,
@@ -71,7 +73,7 @@ const ChatBox = () => {
     })
     const { isOpenChatBox }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { message, previewBlobs, pictures, userSelected, isUploaded, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
+    const { message, previewBlobs, pictures, userSelected, isUploaded, isChange, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
     const [showEmojis, setShowEmojis] = useState(false)
     const [usersOnline, setUsersOnline] = useState<SocketUser[]>([])
     const [urls, setUrls] = useState<string[]>([])
@@ -153,6 +155,7 @@ const ChatBox = () => {
             conversationsRef.current = data?.role === "admin" ? resUsers.data.users.filter((u: User) => u?.id !== data.id) : data?.conversations?.map((c: string) => {
                 return resUsers.data.users.find((u: User) => u.id === c)
             })
+        setState({ ...state, isChange: !isChange })
     }, [])
 
 
@@ -224,6 +227,13 @@ const ChatBox = () => {
         } else {
             setState({ ...state, userSelected: userSelect, isOpenChatMessage: true })
         }
+    }
+
+    const handleDeleteConversation = (id: string) => {
+        setState({ ...state, userSelected: {}, isOpenChatMessage: false })
+        axios.put(`/api/users/${user.id}`, {
+            conversations: user?.conversations.filter((c: string) => c !== id)
+        })
     }
 
 
@@ -357,7 +367,7 @@ const ChatBox = () => {
                             </div>
 
 
-                            <div className={`${isOpenOptionInfo ? "scale-100" : "scale-0"} ${userSelected?.phone ? "lg:top-[-150%] bottom-[-100%] lg:bottom-auto" : "lg:top-[-80%] bottom-[-50%] lg:bottom-auto"} origin-bottom-right absolute -left-[0%] transition-all duration-700 ease-in-out bg-white shadow-md border-[1px] border-gray-300 w-[9rem]`}>
+                            <div className={`${isOpenOptionInfo ? "scale-100" : "scale-0"} ${userSelected?.phone ? "lg:top-[-215%] bottom-[-100%] lg:bottom-auto" : "lg:top-[-148%] bottom-[-50%] lg:bottom-auto"} origin-bottom-right absolute -left-[0%] transition-all duration-700 ease-in-out bg-white shadow-md border-[1px] border-gray-300 w-[15rem]`}>
                                 <div onClick={() => handleOpenProfile(userSelected?.id!)} className="flex space-x-2 items-center px-3 py-1 hover:bg-gray-200">
                                     <CgProfile className="text-primary" size={20} />
                                     <span className="font-semibold">Xem hồ sơ</span>
@@ -372,6 +382,10 @@ const ChatBox = () => {
                                         </Link>
                                     </div>
                                 }
+                                <div onClick={() => handleDeleteConversation(userSelected?.id!)} className="flex space-x-2 items-center px-3 py-1 hover:bg-gray-200">
+                                    <IoMdRemoveCircleOutline className="text-red-500" size={20} />
+                                    <span className="font-semibold">Xóa cuộc trò chuyện</span>
+                                </div>
                             </div>
                             <div className="flex z-30 absolute right-2">
                                 <IconButton
