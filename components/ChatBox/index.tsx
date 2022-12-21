@@ -142,7 +142,7 @@ const ChatBox = () => {
 
     useEffect(() => {
         getConversations()
-    }, [user?.id])
+    }, [user?.conversations])
 
     const getConversations = useCallback(async () => {
         const token: any = getCookie("token")
@@ -183,10 +183,9 @@ const ChatBox = () => {
                 receiverId: userSelected?.id,
             })
             if (user?.role !== "admin") {
-                const { data } = userSelected?.id && await axios.get(`/api/users/${userSelected?.id}`)
                 const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
                 !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
-                    conversations: [...data?.conversations, user?.id]
+                    conversations: [...userSelected?.conversations, user?.id]
                 })
             }
             await mutate()
