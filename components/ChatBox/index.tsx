@@ -14,7 +14,7 @@ import dayjs from 'dayjs';
 import moment from 'moment';
 import { CgProfile } from 'react-icons/cg'
 import { GrUserAdmin } from 'react-icons/gr';
-import { AiFillPicture, AiOutlineCloseCircle, AiOutlineUpload } from 'react-icons/ai';
+import { AiFillPicture, AiOutlineCloseCircle, AiOutlineLoading3Quarters, AiOutlineUpload } from 'react-icons/ai';
 import EmojisPicker from '../EmojisPicker';
 import LinearProgress from '@mui/material/LinearProgress';
 import useSWR from 'swr';
@@ -313,32 +313,38 @@ const ChatBox = () => {
                     </div>
 
                 </div>
-                <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-[90%] border-gray-300  w-full">
-                    {conversationsRef.current?.map((conversation: User) => (
-                        <div
-                            onClick={() => handleShowMessage(conversation)}
-                            key={conversation?.id} className={`${conversation?.id === userSelected?.id && "bg-gray-200"} flex p-2 hover:bg-gray-100 cursor-pointer items-center px-5 space-x-2`}>
-                            <div className="relative">
-                                <Avatar alt="" src={conversation?.avatar} sx={{ bgcolor: deepOrange[500] }} >{conversation?.firstName?.substring(0, 1)}
-                                </Avatar>
-                                <div className={`${usersOnline?.some((u: SocketUser) => u.userId === conversation?.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute bottom-0 right-0 border-[3px] border-white w-[.90rem] h-[.90rem] rounded-full`}></div>
-                            </div>
-                            <div>
-                                <div className="flex space-x-2 items-center">
-                                    <div className="flex-col">
-                                        <span className="flex text-sm font-semibold text-black">{`${conversation?.firstName} ${conversation?.lastName}`}</span>
-                                        {usersOnline?.some((u: SocketUser) => u.userId === conversation?.id) &&
-                                            <span className="flex text-xs">Đang hoạt động</span>
+                {conversationsRef.current.length === 0 ?
+                    <div className="flex justify-center items-center h-[90%] w-full bg-white">
+                        <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear text-primary text-4xl" />
+                    </div>
+                    :
+                    <div className="max-h-full border-l-[1px] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300 bg-white h-[90%] border-gray-300  w-full">
+                        {conversationsRef.current?.map((conversation: User) => (
+                            <div
+                                onClick={() => handleShowMessage(conversation)}
+                                key={conversation?.id} className={`${conversation?.id === userSelected?.id && "bg-gray-200"} flex p-2 hover:bg-gray-100 cursor-pointer items-center px-5 space-x-2`}>
+                                <div className="relative">
+                                    <Avatar alt="" src={conversation?.avatar} sx={{ bgcolor: deepOrange[500] }} >{conversation?.firstName?.substring(0, 1)}
+                                    </Avatar>
+                                    <div className={`${usersOnline?.some((u: SocketUser) => u.userId === conversation?.id) ? "bg-primary text-primary animate-ripple" : "bg-[#BDBDBD]"} absolute bottom-0 right-0 border-[3px] border-white w-[.90rem] h-[.90rem] rounded-full`}></div>
+                                </div>
+                                <div>
+                                    <div className="flex space-x-2 items-center">
+                                        <div className="flex-col">
+                                            <span className="flex text-sm font-semibold text-black">{`${conversation?.firstName} ${conversation?.lastName}`}</span>
+                                            {usersOnline?.some((u: SocketUser) => u.userId === conversation?.id) &&
+                                                <span className="flex text-xs">Đang hoạt động</span>
+                                            }
+                                        </div>
+                                        {conversation?.id === process.env.NEXT_PUBLIC_ADMIN_ID &&
+                                            <GrUserAdmin className="text-primary" />
                                         }
                                     </div>
-                                    {conversation?.id === process.env.NEXT_PUBLIC_ADMIN_ID &&
-                                        <GrUserAdmin className="text-primary" />
-                                    }
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                }
             </div>
 
             {isOpenChatMessage &&
