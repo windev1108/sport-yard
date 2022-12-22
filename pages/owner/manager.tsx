@@ -70,27 +70,15 @@ const OwnerManager = () => {
                     axios.get("/api/users")
                         .then(resUsers => {
                             switch (tab) {
-                                case 1: {
-                                    setTimeout(() => {
-                                        setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id) })
-                                        dispatch(setIsLoading(false))
-                                        usersRef.current = resUsers.data.users
-                                    }, 1500)
-                                }
+                                case 1: setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id) })
+                                    dispatch(setIsLoading(false))
+                                    usersRef.current = resUsers.data.users
                                     break
-                                case 2: {
-                                    setTimeout(() => {
-                                        setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes") })
-                                        dispatch(setIsLoading(false))
-                                    }, 1500)
-                                }
+                                case 2: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes") })
+                                    dispatch(setIsLoading(false))
                                     break
-                                case 3: {
-                                    setTimeout(() => {
-                                        setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers") })
-                                        dispatch(setIsLoading(false))
-                                    }, 1500)
-                                }
+                                case 3: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers") })
+                                    dispatch(setIsLoading(false))
                                     break
                                 default: return
                             }
@@ -105,7 +93,9 @@ const OwnerManager = () => {
     }
 
     const handleChange = useCallback((e: React.SyntheticEvent, newValue: number) => {
-        setState({ ...state, tab: newValue });
+        setTimeout(() => {
+            setState({ ...state, tab: newValue });
+        }, 1500)
     }, [])
 
     const handleDelete = (id: any) => {
