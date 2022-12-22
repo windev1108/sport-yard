@@ -70,22 +70,34 @@ const OwnerManager = () => {
                     axios.get("/api/users")
                         .then(resUsers => {
                             switch (tab) {
-                                case 1: setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id) })
-                                    dispatch(setIsLoading(false))
-                                    usersRef.current = resUsers.data.users
+                                case 1: {
+                                    setTimeout(() => {
+                                        setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id) })
+                                        dispatch(setIsLoading(false))
+                                        usersRef.current = resUsers.data.users
+                                    }, 1500)
+                                }
                                     break
-                                case 2: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes") })
-                                    dispatch(setIsLoading(false))
+                                case 2: {
+                                    setTimeout(() => {
+                                        setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes") })
+                                        dispatch(setIsLoading(false))
+                                    }, 1500)
+                                }
                                     break
-                                case 3: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers") })
-                                    dispatch(setIsLoading(false))
+                                case 3: {
+                                    setTimeout(() => {
+                                        setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers") })
+                                        dispatch(setIsLoading(false))
+                                    }, 1500)
+                                }
                                     break
                                 default: return
                             }
                         })
                 })
         }
-    }, [tab])
+    }, [tab, isUpdated])
 
 
     const getUser = (id: string) => {

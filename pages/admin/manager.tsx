@@ -81,38 +81,46 @@ const OwnerManager = () => {
         if (user.role === "admin") {
             switch (tab) {
                 case 0: {
-                    axios.get("/api/users")
-                        .then(res => {
-                            setState({ ...state, tabData: res.data.users, isLoading: false })
-                            usersRef.current = res.data.users
-                        })
+                    setTimeout(() => {
+                        axios.get("/api/users")
+                            .then(res => {
+                                setState({ ...state, tabData: res.data.users, isLoading: false })
+                                usersRef.current = res.data.users
+                            })
+                    }, 1500)
                 }
                     break
                 case 1: {
-                    axios.get("/api/pitch")
-                        .then(res => {
-                            setState({ ...state, tabData: res.data.pitch, isLoading: false })
-                        })
+                    setTimeout(() => {
+                        axios.get("/api/pitch")
+                            .then(res => {
+                                setState({ ...state, tabData: res.data.pitch, isLoading: false })
+                            })
+                    }, 1500)
                 }
                     break
                 case 2: {
-                    axios.get("/api/products")
-                        .then(res => {
-                            setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "clothes"), isLoading: false })
-                        })
+                    setTimeout(() => {
+                        axios.get("/api/products")
+                            .then(res => {
+                                setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "clothes"), isLoading: false })
+                            })
+                    }, 1500)
                 }
                     break
                 case 3: {
-                    axios.get("/api/products")
-                        .then(res => {
-                            setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "sneakers"), isLoading: false })
-                        })
+                    setTimeout(() => {
+                        axios.get("/api/products")
+                            .then(res => {
+                                setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "sneakers"), isLoading: false })
+                            })
+                    }, 1500)
                 }
                     break
                 default: return
             }
         }
-    }, [tab])
+    }, [tab, isUpdated])
 
 
     const handleChange = useCallback((e: React.SyntheticEvent, newValue: number) => {
