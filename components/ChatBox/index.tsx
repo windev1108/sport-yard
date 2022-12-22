@@ -313,7 +313,7 @@ const ChatBox = () => {
                     </div>
 
                 </div>
-                {conversationsRef.current.length === 0 ?
+                {conversationsRef?.current?.length === 0 ?
                     <div className="flex justify-center items-center h-[90%] w-full bg-white">
                         <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear text-primary text-4xl" />
                     </div>
