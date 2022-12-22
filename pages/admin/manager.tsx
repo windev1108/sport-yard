@@ -258,12 +258,21 @@ const OwnerManager = () => {
                                         {"Discount"}</th>
                                 }
 
+                                {tab !== 0 && tab !== 1 &&
+                                    <th
+                                        colSpan={1}
+                                        className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                        {"Amount"}</th>
+                                }
+
                                 {tab !== 0 &&
                                     <th
                                         colSpan={2}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
                                         {"Owner"}</th>
                                 }
+
+
 
                                 {tab === 0 ?
                                     <th
@@ -382,6 +391,13 @@ const OwnerManager = () => {
                                             colSpan={2}
                                             className="px-6  border-b border-gray-200">
                                             <div className="text-sm text-center leading-5 text-gray-500"> {`${data.discount}%`}</div>
+                                        </td>
+                                    }
+                                    {tab !== 0 && tab !== 1 &&
+                                        <td
+                                            colSpan={1}
+                                            className="px-6  border-b border-gray-200">
+                                            <div className="text-sm text-center whitespace-nowrap leading-5 text-gray-500"> {data?.amount}</div>
                                         </td>
                                     }
                                     {tab !== 0 &&

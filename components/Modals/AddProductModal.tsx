@@ -11,7 +11,7 @@ import { setIsUpdate } from '../../redux/features/isSlice';
 import { RootState } from '../../redux/store';
 import { BiImageAdd } from 'react-icons/bi';
 import { toast } from 'react-toastify';
-import { ImageList, Tooltip, ImageListItem } from '@mui/material';
+import { ImageList, Tooltip, ImageListItem, FormControl, FormHelperText, Input } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox/Checkbox';
 import FormGroup from '@mui/material/FormGroup/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
@@ -38,6 +38,7 @@ interface State {
     fontPicture: any
     backSidePicture: any
     discount: number | string
+    amount: number | string
     blobPicture: any[]
     blobFont: any
     blobBackSide: any
@@ -59,13 +60,14 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
         fontPicture: {},
         backSidePicture: {},
         discount: "",
+        amount: "",
         blobPicture: [],
         blobFont: "",
         blobBackSide: "",
         isUploaded: false,
         isLoading: false
     })
-    const { name, price, discount, size, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading, isUploaded } = state
+    const { name, price, discount, amount, size, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading, isUploaded } = state
     const [urls, setUrls] = useState<string[]>([])
     const [fontUrl, setFontUrl] = useState<string>("")
     const [backSideUrl, setBackSideUrl] = useState<string>("")
@@ -83,6 +85,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                 fontPicture: {},
                 backSidePicture: {},
                 discount: "",
+                amount: "",
                 blobPicture: [],
                 blobFont: "",
                 blobBackSide: "",
@@ -119,7 +122,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
 
     const handleSubmit = async () => {
         if (!name || !price || !size.length || !discount) {
-            toast.info("Please complete all information", {
+            toast.info("Vui lòng điền đẩy đủ thông tin", {
                 autoClose: 3000,
                 theme: "colored",
             });
@@ -131,6 +134,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                     discount,
                     price,
                     size,
+                    amount,
                     mainPictures: [fontUrl, backSideUrl],
                     pictures: urls,
                     type,
@@ -147,7 +151,12 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
 
 
     const handleUploadFiles = async () => {
-        if (!blobPicture || !blobFont || !blobBackSide) {
+        if (!name || !price || !size.length || !discount || !amount) {
+            toast.info("Vui lòng điền đẩy đủ thông tin", {
+                autoClose: 3000,
+                theme: "colored",
+            });
+        } else if (!blobPicture || !blobFont || !blobBackSide) {
             toast.info("Vui lòng chọn những bức ảnh", { autoClose: 3000, theme: "colored" })
         } else {
             setState({ ...state, isLoading: true })
@@ -186,44 +195,97 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
         <Dialog fullScreen={fullScreen} open={open} onClose={() => setOpen(false)} fullWidth={true}>
             <DialogTitle>{"Thêm sản phẩm"}</DialogTitle>
             <DialogContent>
-                <TextField
-                    value={name}
-                    onChange={(e) => setState({ ...state, name: e.target.value })}
-                    autoFocus
-                    margin="dense"
-                    label="Tên sản phẩm"
+                <FormControl
                     fullWidth
-                    variant="standard"
-                />
-                <TextField
-                    value={description}
-                    onChange={(e) => setState({ ...state, description: e.target.value })}
-                    autoFocus
-                    margin="dense"
-                    label="Mô tả"
+                    error variant="standard">
+                    <TextField
+                        value={name}
+                        onChange={(e) => setState({ ...state, name: e.target.value })}
+                        autoFocus
+                        margin="dense"
+                        label="Tên sản phẩm"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!name &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập tên sản phẩm</FormHelperText>
+                    }
+                </FormControl>
+
+                <FormControl
                     fullWidth
-                    variant="standard"
-                />
-                <TextField
-                    value={price}
-                    onChange={(e) => setState({ ...state, price: e.target.value })}
-                    autoFocus
-                    margin="dense"
-                    type="number"
-                    label="Giá"
+                    error variant="standard">
+                    <TextField
+                        value={description}
+                        onChange={(e) => setState({ ...state, description: e.target.value })}
+                        autoFocus
+                        margin="dense"
+                        label="Mô tả"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!description &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập mô tả sản phẩm</FormHelperText>
+                    }
+                </FormControl>
+
+
+
+                <FormControl
                     fullWidth
-                    variant="standard"
-                />
-                <TextField
-                    value={discount}
-                    onChange={(e) => setState({ ...state, discount: e.target.value })}
-                    autoFocus
-                    margin="dense"
-                    type="number"
-                    label="Khuyến mãi /%"
+                    error variant="standard">
+                    <TextField
+                        value={price}
+                        onChange={(e) => setState({ ...state, price: e.target.value })}
+                        autoFocus
+                        margin="dense"
+                        type="number"
+                        label="Giá"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!price &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập nhập giá sản phẩm</FormHelperText>
+                    }
+                </FormControl>
+
+                <FormControl
                     fullWidth
-                    variant="standard"
-                />
+                    error variant="standard">
+                    <TextField
+                        value={amount}
+                        onChange={(e) => setState({ ...state, amount: e.target.value })}
+                        autoFocus
+                        margin="dense"
+                        type="number"
+                        label="Số lượng trong kho"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!amount &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập số lượng trong kho</FormHelperText>
+                    }
+                </FormControl>
+
+                <FormControl
+                    fullWidth
+                    error variant="standard">
+                    <TextField
+                        value={discount}
+                        onChange={(e) => setState({ ...state, discount: e.target.value })}
+                        autoFocus
+                        margin="dense"
+                        type="number"
+                        label="Khuyến mãi /%"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!discount &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập số lượng trong kho</FormHelperText>
+                    }
+                </FormControl>
+
+
                 <FormLabel className="mt-4" component="legend">Size</FormLabel>
                 <FormGroup onChange={handleSelect} className="!flex-row">
                     <FormControlLabel

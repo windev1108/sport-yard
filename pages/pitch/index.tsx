@@ -75,9 +75,11 @@ const Yards = () => {
                       </MenuItem>
                       <MenuItem value={"hải châu"}>Quận Hải châu</MenuItem>
                       <MenuItem value={"cẩm lệ"}>Quận Cẩm lệ</MenuItem>
+                      <MenuItem value={"thanh khê"}>Quận Thanh khê</MenuItem>
                       <MenuItem value={"liên chiểu"}>Quận Liên chiểu</MenuItem>
                       <MenuItem value={"hòa vang"}>Quận Hòa Vang</MenuItem>
                       <MenuItem value={"ngũ hành sơn"}>Quận Ngũ Hành Sơn</MenuItem>
+                      <MenuItem value={"sơn trà"}>Quận Sơn trà</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>

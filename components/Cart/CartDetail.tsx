@@ -7,12 +7,12 @@ import Button from '@mui/material/Button';
 import { NextPage } from 'next';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
-import {  Divider, Skeleton, Typography } from '@mui/material';
+import { Divider, Skeleton, Typography } from '@mui/material';
 import axios from 'axios';
 import { Cart } from '../../Models';
 import Currency from 'react-currency-formatter';
 import { setOpenCartDetail, setOpenOrderProduct } from '../../redux/features/isSlice';
-import {  setOrder, setTotalPrice } from '../../redux/features/ordersSlice'
+import { setOrder, setTotalPrice } from '../../redux/features/ordersSlice'
 import { AiFillMinusCircle, AiFillPlusCircle, AiOutlineClose } from 'react-icons/ai';
 import IconButton from '@mui/material/IconButton/IconButton';
 import { toast } from 'react-toastify';
@@ -162,7 +162,7 @@ const CartDetail: NextPage<Props> = ({ cart }) => {
             dispatch(setOrder(ownerProduct))
             dispatch(setOpenCartDetail(false))
         } else {
-            toast.info("Please choose a product to order", { autoClose: 3000, theme: "colored" })
+            toast.info("Vui lòng chọn sản phẩm để đặt hàng", { autoClose: 3000, theme: "colored" })
         }
     }
 

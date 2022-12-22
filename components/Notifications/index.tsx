@@ -202,7 +202,7 @@ const Notifications = () => {
                                                             {item.status === 2 && "Chờ xác nhận"}
                                                             {item.status === 3 && "Xác nhận đặt sân thành công"}
                                                             {item.status === 4 && "Từ chối đặt sân"}
-                                                            {item.status === 10 && "Đơn hàng đã hết thời gian hiệu lực"}
+                                                            {item.status === 10 && "Đơn hàng đã hết hạn"}
                                                         </Typography>
 
                                                     </div>
@@ -299,7 +299,7 @@ const Notifications = () => {
                                                     {item.status === 7 && "Giao hàng thành công"}
                                                     {item.status === 8 && "Từ chối nhận hàng"}
                                                     {item.status === 9 && "Đã hoàn tiền đặt hàng"}
-                                                    {item.status === 10 && "Đơn hàng đã hết thời gian hiệu lực"}
+                                                    {item.status === 10 && "Đơn hàng đã hết hạn"}
                                                 </Typography>
 
                                             </div>

@@ -263,6 +263,23 @@ const ProductDetail = ({ productId }: any) => {
                                 }
                             </div>
                         </Grid>
+                        <Grid container className="flex items-center gap-2">
+                            {isLoading ?
+                                <Skeleton variant="text" height={40} width={100} />
+                                :
+                                <Typography fontSize={16} variant="body2" color="text.secondary">
+                                    Số lượng tồn kho
+                                </Typography>
+
+                            }
+                            {isLoading ?
+                                <Skeleton variant="text" height={40} width={100} />
+                                :
+                                <Typography variant="body2" fontSize={20} className="text-gray-500 !font-semibold text-sm">
+                                    {product.amount}
+                                </Typography>
+                            }
+                        </Grid>
                         <Grid container alignItems={"center"}>
                             <Grid item xs={6} md={6} lg={9}>
                                 {isLoading ?

@@ -9,7 +9,7 @@ import { Avatar, Divider, IconButton, Skeleton, Typography, Tooltip } from '@mui
 import { deepOrange } from '@mui/material/colors';
 import Currency from 'react-currency-formatter';
 import { setOpenBackdropModal, setOpenFormEditUser, setOpenOrderProduct, setOpenProfileModal, setOpenSnackBar } from '../../redux/features/isSlice'
-import { Cart, User } from '../../Models';
+import { Cart, Product, User } from '../../Models';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
@@ -101,12 +101,21 @@ const OrderProductModal = ({ mutate }: any) => {
 
 
     const handleSubmitOrder = async () => {
+        const checkAmountProducts: { isValid: boolean, owner: string }[] = order.map((o: Order) => {
+            return {
+                isValid: o.cart?.every((c: Cart) => c.amount <= c.product?.amount!),
+                owner: o.owner
+            }
+        })
+
         if (order.some((o: Order) => o.owner === user.id)) {
             toast.info("Không thể tự đặt hàng của chính mình", { autoClose: 3000, theme: "colored" })
         } else if (!methodPay) {
             toast.info("Vui lòng chọn phương thức thanh toán", { autoClose: 3000, theme: "colored" })
         } else if (!user.address) {
             toast.info("Vui lòng thêm địa chỉ nhận hàng", { autoClose: 3000, theme: "colored" })
+        } else if (checkAmountProducts.some((p) => !p.isValid)) {
+            toast.info(`Sản phẩm của ${checkAmountProducts.filter(p => !p.isValid).map((p) => p.owner).map((o: string) => { return `${getUser(o).firstName} ${getUser(o).lastName}` })} đã vượt quá số lượng tồn kho`, { autoClose: 3000, theme: "colored" })
         } else if (methodPay === 2 && user.balance < totalPrice + totalPrice / 100 * 5 + 38000) {
             toast.info("Số dư của bạn không đủ", { autoClose: 3000, theme: "colored" })
         } else {
@@ -240,6 +249,9 @@ const OrderProductModal = ({ mutate }: any) => {
                                                     Size
                                                 </th>
                                                 <th scope="col" className="py-3 p-2 lg:py-3 lg:px-6 lg:text-xs text-[10px]">
+                                                    Số lượng tồn kho
+                                                </th>
+                                                <th scope="col" className="py-3 p-2 lg:py-3 lg:px-6 lg:text-xs text-[10px]">
                                                     Số lượng
                                                 </th>
                                                 <th scope="col" className="py-3 p-2 lg:py-3 lg:px-6 lg:text-xs text-[10px] text-center">
@@ -258,6 +270,9 @@ const OrderProductModal = ({ mutate }: any) => {
                                                     </td>
                                                     <td className="w-[10%] lg:py-4 p-2 lg:px-6 text-center">
                                                         {c.size}
+                                                    </td>
+                                                    <td className="w-[10%] lg:py-4 p-2 lg:px-12 text-center">
+                                                        {c.product.amount}
                                                     </td>
                                                     <td className="w-[10%] lg:py-4 p-2 lg:px-12 text-center">
                                                         {c.amount}

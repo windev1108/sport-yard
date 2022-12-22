@@ -393,7 +393,9 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
                                                     {row.status === 9 &&
                                                         <TableCell className="text-primary" align="center">{"Đã hoàn tiền đặt hàng"}</TableCell>
                                                     }
-                                                    {row.status === 10 && "Đơn hàng đã hết hạn"}
+                                                    {row.status === 10 &&
+                                                        <TableCell className="text-red-500" align="center">{"Đơn hàng đã hết hạn"}</TableCell>
+                                                    }
                                                     <TableCell align="center">{row.createdAt}</TableCell>
                                                 </TableRow>
                                             );

@@ -431,7 +431,7 @@ const OrderDetail = ({ mutate }: any) => {
                                     </Stepper>
                                 }
                             </Stack>
-                            {user.id === order.ownerId && order.status !== 6 && order.status !== 2 && order.status !== 4 && order.status !== 8 && order.type === "order" &&
+                            {user.id === order.ownerId && order.status !== 6 && order.status !== 2 && order.status !== 4 && order.status !== 8 && order.status !== 10 && order.type === "order" &&
                                 <div className="flex justify-center space-x-5">
                                     <IconButton
                                         onClick={handlePrevStep}

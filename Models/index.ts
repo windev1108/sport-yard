@@ -75,6 +75,7 @@ export interface Product {
   name: string;
   price: number;
   pictures: string[];
+  amount? : number
   mainPictures: string[];
   size: string[];
   owner?: string;
