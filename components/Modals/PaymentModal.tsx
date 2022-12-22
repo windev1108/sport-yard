@@ -41,13 +41,11 @@ interface State {
     order: Order | any
 }
 
-interface Props {
-    mutate: () => void
-}
+
 
 let socket: any
 
-const PaymentModal: NextPage<Props> = ({ mutate }) => {
+const PaymentModal = () => {
     const dispatch = useDispatch()
     const { isOpenPaymentModal }: any = useSelector<RootState>(state => state.is)
     const { idOrder }: any = useSelector<RootState>(state => state.orders)
@@ -150,7 +148,7 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
                     methodPay,
                     receiverId: owner.id,
                     ownerId: owner.id,
-                    orderId: user.id,
+                    ordererId: user.id,
                     status: 2,
                     bookingId: traceCode,
                 })
@@ -169,7 +167,6 @@ const PaymentModal: NextPage<Props> = ({ mutate }) => {
                 dispatch(setOpenPaymentModal(false))
                 dispatch(setOpenNotificationDetail(false))
                 dispatch(setOpenBackdropModal(false))
-                mutate()
                 toast.success("Đặt sân thành công", { autoClose: 3000, theme: "colored" })
                 handleClose()
                 socket.emit("send_order", {

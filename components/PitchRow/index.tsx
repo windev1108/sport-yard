@@ -16,16 +16,16 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 
 interface State {
   pitch: PitchModel[];
-  isLoading : boolean
+  isLoading: boolean
 }
 
 const PitchRow = () => {
   const dispatch = useDispatch()
   const [state, setState] = useState<State>({
     pitch: [],
-    isLoading : true
+    isLoading: true
   });
-  const { pitch ,isLoading } = state;
+  const { pitch, isLoading } = state;
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -34,7 +34,7 @@ const PitchRow = () => {
     axios
       .get("/api/pitch")
       .then((res) => {
-        setState({ ...state, pitch: res.data.pitch , isLoading : false})
+        setState({ ...state, pitch: res.data.pitch, isLoading: false })
       });
   }, []);
 
@@ -51,7 +51,7 @@ const PitchRow = () => {
                   <AiFillStar className="text-3xl text-primary" />
                 </Grid>
                 <Grid item>
-                  <Typography className="lg:text-2xl text-base" variant="body1" component="h1"> RECOMMENDED STADIUMS</Typography>
+                  <Typography className="lg:text-2xl text-base" variant="body1" component="h1"> Sân bóng được đề xuất</Typography>
                 </Grid>
                 <Grid item>
                   <AiFillStar className="text-3xl text-primary" />

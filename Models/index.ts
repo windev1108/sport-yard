@@ -118,7 +118,7 @@ export interface Order {
   receiverId?: string
   ordererName: string
   ownerId: string
-  orderId: string
+  ordererId: string
   time: string
   location?: string
   address: string

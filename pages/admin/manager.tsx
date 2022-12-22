@@ -205,37 +205,37 @@ const OwnerManager = () => {
                                 <th
                                     colSpan={1}
                                     className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                    ID</th>
+                                    STT</th>
 
 
                                 {tab === 0 &&
                                     <th
                                         colSpan={1}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Avatar"}</th>
+                                        {"Ảnh đại diện"}</th>
                                 }
                                 {tab === 0 ?
                                     <th
                                         colSpan={1}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"First Name"}</th>
+                                        {"Tên"}</th>
                                     :
                                     <th
                                         colSpan={1}
-                                        className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Name"}</th>
+                                        className="px-6 py-3 text-xs font-medium leading-4  text-left whitespace-nowrap text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                        {tab === 1 ? "Tên sân bóng" : "Tên sản phẩm"}</th>
                                 }
 
                                 {tab === 0 ?
                                     <th
                                         colSpan={1}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Last name"}</th>
+                                        {"Họ"}</th>
                                     :
                                     <th
                                         colSpan={2}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {tab === 1 ? "Location" : "Description"}</th>
+                                        {tab === 1 ? "Địa điểm" : "Mô tả"}</th>
                                 }
 
                                 {tab === 0 ?
@@ -248,7 +248,7 @@ const OwnerManager = () => {
                                     <th
                                         colSpan={1}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Price"}</th>
+                                        {"Giá"}</th>
                                 }
 
 
@@ -257,21 +257,21 @@ const OwnerManager = () => {
                                     <th
                                         colSpan={2}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Discount"}</th>
+                                        {"Giảm giá"}</th>
                                 }
 
                                 {tab !== 0 && tab !== 1 &&
                                     <th
                                         colSpan={1}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Amount"}</th>
+                                        {"Số lượng"}</th>
                                 }
 
                                 {tab !== 0 &&
                                     <th
                                         colSpan={2}
-                                        className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Owner"}</th>
+                                        className="px-6 py-3 text-xs font-medium leading-4 whitespace-nowrap text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                        {tab === 1 ? "Chủ sân" : "Chủ sản phẩm"}</th>
                                 }
 
 
@@ -280,7 +280,7 @@ const OwnerManager = () => {
                                     <th
                                         colSpan={2}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Password"}</th>
+                                        {"Mật khẩu"}</th>
                                     :
                                     <th
                                         colSpan={1}
@@ -293,22 +293,22 @@ const OwnerManager = () => {
                                     <th
                                         colSpan={2}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Role"}</th>
+                                        {"Vai trò"}</th>
                                     :
                                     <th
                                         colSpan={2}
                                         className="px-6 py-3 text-xs font-medium leading-4  text-center text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                        {"Pictures"}</th>
+                                        {"Hình ảnh"}</th>
 
                                 }
                                 <th
                                     colSpan={2}
                                     className="px-6 py-3 text-xs font-medium leading-4  text-center text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                    Edit</th>
+                                    Sửa</th>
                                 <th
                                     colSpan={2}
                                     className="px-6 py-3 text-xs font-medium leading-4  text-center text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                    Delete</th>
+                                    Xóa</th>
                             </tr>
                         </thead>
                         <tbody className="h-full overflow-y-scroll bg-white">

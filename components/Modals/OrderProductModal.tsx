@@ -43,7 +43,7 @@ interface Order {
 
 let socket: any
 
-const OrderProductModal = ({ mutate }: any) => {
+const OrderProductModal = () => {
     const dispatch = useDispatch()
     const { isOpenOrderProduct }: any = useSelector<RootState>(state => state.is)
     const { order, totalPrice }: any = useSelector<RootState>(state => state.orders)
@@ -135,7 +135,7 @@ const OrderProductModal = ({ mutate }: any) => {
                     senderId: user.id,
                     receiverId: o.owner,
                     ownerId: o.owner,
-                    orderId: user.id,
+                    ordererId: user.id,
                     address: user.address,
                     methodPay,
                     bookingId: traceCode,
@@ -166,7 +166,6 @@ const OrderProductModal = ({ mutate }: any) => {
             setTimeout(async () => {
                 dispatch(setOpenBackdropModal(false))
                 dispatch(setOpenOrderProduct(false))
-                mutate()
                 toast.success("Đơn hàng đã tạo thành công", { autoClose: 3000, theme: "colored" })
             }, 3000)
         }

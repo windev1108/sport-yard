@@ -12,7 +12,6 @@ import { Cart, Order, Pitch, Product, User } from '../../Models';
 import Currency from 'react-currency-formatter';
 import TimelapseIcon from '@mui/icons-material/Timelapse';
 import { toast } from 'react-toastify';
-import dayjs from 'dayjs';
 import StepConnector, { stepConnectorClasses } from '@mui/material/StepConnector';
 import { ImLoop2 } from 'react-icons/im'
 import { setIsUpdate, setOpenBackdropModal, setOpenNotificationDetail, setOpenPaymentModal } from '../../redux/features/isSlice';
@@ -33,7 +32,10 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { RiRefund2Fill } from 'react-icons/ri';
 import currencyFormatter from 'currency-formatter'
+import 'moment/locale/vi';
 import io from 'socket.io-client';
+import { NextPage } from 'next';
+import moment from 'moment';
 
 
 interface State {
@@ -43,12 +45,16 @@ interface State {
     isLoading: boolean
 }
 
+interface Props {
+    notifications: Order[]
+}
+
 
 let socket: any
 
-const OrderDetail = ({ mutate }: any) => {
+const OrderDetail: NextPage<Props> = ({ notifications }) => {
     const dispatch = useDispatch()
-    const { isUpdated, isOpenNotificationDetail }: any = useSelector<RootState>(state => state.is)
+    const { isOpenNotificationDetail }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
     const { idOrder }: any = useSelector<RootState>(state => state.orders)
     const [state, setState] = useState<State>({
@@ -78,11 +84,12 @@ const OrderDetail = ({ mutate }: any) => {
 
         }
 
-    }, [isUpdated])
+    }, [notifications])
 
 
 
     useEffect(() => {
+        moment.locale("vi")
         socketInitializer()
     }, [])
 
@@ -100,8 +107,8 @@ const OrderDetail = ({ mutate }: any) => {
 
 
     const handleAcceptRequest = async () => {
-        const { data } = await axios.get(`/api/users/${order.orderId}`)
-        if (order.methodPay === 1 && user?.balance < (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)) {
+        const { data } = await axios.get(`/api/users/${order.ordererId}`)
+        if (order.methodPay === 3 && user?.balance < (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)) {
             toast.info(`Số dư của bạn không đủ ${currencyFormatter.format(order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!, { code: 'VND' })} phí dịch vụ , vui lòng nạp thêm `, { autoClose: 3000, theme: "colored" })
         } else if (order.methodPay === 2 && data?.balance < order.total) {
             toast.info("Số dư của khách hàng không đủ để hoàn thành thanh toán này", { autoClose: 3000, theme: "colored" })
@@ -109,26 +116,25 @@ const OrderDetail = ({ mutate }: any) => {
             dispatch(setOpenBackdropModal(true))
             setTimeout(async () => {
                 // if order === booking thi tru tien va + phi van chuyen
-                if (order.methodPay === 2 && order.type === "order") {
-                    const { data } = await axios.get(`/api/users/${order.orderId}`)
-                    axios.put(`/api/users/${order.orderId}`, {
+                if (order.type === "order") {
+                    const { data } = await axios.get(`/api/users/${order?.ordererId}`)
+                    order.methodPay === 2 && axios.put(`/api/users/${order.ordererId}`, {
                         balance: data.balance - (order.total + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!)
                     })
-                    axios.put(`/api/users/${user.id}`, {
+                    order.methodPay === 2 && axios.put(`/api/users/${user?.id}`, {
                         balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!) + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
                     })
+                    order.methodPay === 3 && axios.put(`/api/users/${user.id}`, {
+                        balance: user.balance - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
+                    })
                 } else {
-                    const { data } = await axios.get(`/api/users/${order.orderId}`)
-                    axios.put(`/api/users/${data.orderId}`, {
+                    const { data } = await axios.get(`/api/users/${order.ordererId}`)
+                    order.methodPay === 2 && axios.put(`/api/users/${order.ordererId}`, {
                         balance: data.balance - (order.total)
                     })
-                    order.methodPay === 2 ?
-                        axios.put(`/api/users/${user.id}`, {
-                            balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
-                        })
-                        : axios.put(`/api/users/${user.id}`, {
-                            balance: user.balance - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
-                        })
+                    order.methodPay === 2 && axios.put(`/api/users/${user?.id}`, {
+                        balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
+                    })
                 }
 
                 order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
@@ -137,7 +143,7 @@ const OrderDetail = ({ mutate }: any) => {
 
                 // Clear remove order in orders pending
                 socket.emit("delete_order", {
-                    orderId: idOrder,
+                    ordererId: idOrder,
                 })
 
                 // Change status order to accept
@@ -146,7 +152,6 @@ const OrderDetail = ({ mutate }: any) => {
                     senderId: order.receiverId,
                     receiverId: order.senderId,
                 })
-                mutate()
                 dispatch(setOpenBackdropModal(false))
             }, 2000)
 
@@ -161,9 +166,8 @@ const OrderDetail = ({ mutate }: any) => {
             receiverId: order.senderId,
         })
         socket.emit("delete_order", {
-            orderId: idOrder,
+            ordererId: idOrder,
         })
-        mutate()
         dispatch(setOpenNotificationDetail(false))
     }
 
@@ -259,7 +263,7 @@ const OrderDetail = ({ mutate }: any) => {
         ["Đặt hàng",
             'Thanh toán',
             "Chờ xác nhận",
-            order.status === 4 ? "Từ chối đơn hàng" : `${order.status === 10 ? "Đơn hàng đã hết hiệu lực" : "Xác nhận đơn hàng"}`,
+            order.status === 4 ? "Từ chối đơn hàng" : `${order.status === 10 ? "Đơn hàng đã hết hạn" : "Xác nhận đơn hàng"}`,
             "Chờ lấy hàng",
             "Đang giao",
             order.status === 8 || order.status === 9 ? `${order.status === 9 ? "Đã hoàn tiền đặt hàng" : "Từ chối nhận hàng"}` : "Giao hàng thành công",
@@ -272,7 +276,7 @@ const OrderDetail = ({ mutate }: any) => {
         ["Đặt trước",
             'Thanh toán',
             "Chờ xác nhận",
-            order.status === 4 ? "Từ chối đặt sân" : `${order.status === 10 ? 'Đơn hàng đã hết hiệu lực' : 'Đặt sân thành công'}`
+            order.status === 4 ? "Từ chối đặt sân" : `${order.status === 10 ? 'Đơn hàng đã hết hạn' : 'Đặt sân thành công'}`
             ,
         ]
 
@@ -323,29 +327,33 @@ const OrderDetail = ({ mutate }: any) => {
                 amount: res.data?.amount! - o.amount,
             })
         })
-        mutate()
     }
 
 
-    const handleRejectTakeGoods = () => {
+    const handleRejectTakeGoods = async () => {
         if (!reasonReject) {
             toast.info("Vui lòng nhập lý do từ nhận hàng", { autoClose: 3000, theme: "colored" })
-        } {
+        } else {
             axios.put(`/api/orders/${idOrder}`, {
                 status: 8,
                 message: reasonReject
             })
+            if (order?.methodPay === 3) {
+                const { data }: any = axios.get(`/api/users/${order.ownerId}`)
+                axios.put(`/api/orders/${order?.ownerId}`, {
+                    balance: data.balance + +order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!
+                })
+            }
         }
         setFormReasonRejectTakeGood(false)
-        mutate()
     }
 
     const handleRefundOrder = async () => {
-        const { data } = await axios.get(`/api/users/${order.orderId}`)
+        const { data } = await axios.get(`/api/users/${order.ordererId}`)
 
         dispatch(setOpenBackdropModal(true))
         setTimeout(() => {
-            axios.put(`/api/users/${order.orderId}`, {
+            axios.put(`/api/users/${order.ordererId}`, {
                 balance: data.balance + order.total
             })
             axios.put(`/api/users/${user?.id}`, {
@@ -550,7 +558,7 @@ const OrderDetail = ({ mutate }: any) => {
                                         {`Ngày đặt sân : `}
                                     </Typography>
                                     <Typography fontWeight={700} variant="body1" component="h1">
-                                        {dayjs(order.date).format("dddd DD/MM/YYYY")}
+                                        {moment(order.date).format("dddd DD/MM/YYYY").charAt(0).toUpperCase() + moment(order.date).format("dddd DD/MM/YYYY").slice(1)}
                                     </Typography>
                                 </div>
                             }
@@ -740,7 +748,7 @@ const OrderDetail = ({ mutate }: any) => {
                                         {order.status === 7 && "Giao hàng thành công"}
                                         {order.status === 8 && "Từ chối nhận hàng"}
                                         {order.status === 9 && "Đã hoàn tiền đặt hàng"}
-                                        {order.status === 10 && "Đơn hàng đã hết hiệu lực"}
+                                        {order.status === 10 && "Đơn hàng đã hết hạn"}
                                     </Typography>
                                 </div>
                             }
@@ -950,7 +958,7 @@ const OrderDetail = ({ mutate }: any) => {
                                         {`Ngày đặt hàng : `}
                                     </Typography>
                                     <Typography fontWeight={700} variant="body1" component="h1">
-                                        {dayjs(order.date).format("DD/MM/YYYY")}
+                                        {moment(order.date).format("DD/MM/YYYY")}
                                     </Typography>
                                 </div>
                             }
@@ -1034,7 +1042,7 @@ const OrderDetail = ({ mutate }: any) => {
                     </DialogActions>
                 }
 
-                {order.status === 6 && user.id === order.orderId &&
+                {order.status === 6 && user.id === order.ordererId &&
                     <DialogActions className="flex items-center  bg-gray-100 w-full">
                         <div className="flex justify-end my-3">
                             <div className="flex space-x-2">

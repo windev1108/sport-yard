@@ -49,7 +49,7 @@ const ClothesRow = () => {
                                     <AiFillStar className="text-3xl text-primary" />
                                 </Grid>
                                 <Grid item>
-                                    <Typography className="lg:text-2xl text-base" variant="body1" component="h1"> RECOMMENDED CLOTHES</Typography>
+                                    <Typography className="lg:text-2xl text-base" variant="body1" component="h1">Áo thể thao được đề xuất</Typography>
                                 </Grid>
                                 <Grid item>
                                     <AiFillStar className="text-3xl text-primary" />

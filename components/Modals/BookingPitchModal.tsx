@@ -138,6 +138,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
                     senderId: user.id,
                     receiverId: "",
                     duration,
+                    ordererId: user.id,
                     ownerId: owner.id!,
                     location: pitch.location,
                     productId: pitch.id,

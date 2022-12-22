@@ -77,7 +77,7 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
         axios.get(`/api/${type === "product" ? "products" : "pitch"}/${type === "product" ? productId : pitchId}/reviews`)
             .then(resReviews => {
                 axios.get('/api/orders')
-                    .then(resOrders => setState({ ...state, reviews: resReviews.data.reviews, myOrders: resOrders.data.orders.filter((order: Order) => order.orderId === user.id && order.productId === pitchId).length, isLoading: false }))
+                    .then(resOrders => setState({ ...state, reviews: resReviews.data.reviews, myOrders: resOrders.data.orders.filter((order: Order) => order.ordererId === user.id && order.productId === pitchId).length, isLoading: false }))
             })
         // .then(data => {
         //     // limitPitch.current = data.length

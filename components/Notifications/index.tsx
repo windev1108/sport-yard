@@ -1,25 +1,23 @@
 import { Badge, Divider, IconButton, Menu, Typography, Tooltip } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { Order, User } from '../../Models';
+import { Order } from '../../Models';
 import Currency from 'react-currency-formatter';
 import { useDispatch, useSelector } from 'react-redux';
-import { setIsUpdate, setOpenDashboard, setOpenNotificationDetail } from '../../redux/features/isSlice';
+import { setOpenNotificationDetail } from '../../redux/features/isSlice';
 import NotificationImg from '../../assets/images/notification.png'
 import Image from 'next/image';
 import { db } from '../../firebase/config';
 import { RootState } from '../../redux/store';
-import dynamic from 'next/dynamic'
 import axios from 'axios';
 import { AiFillDashboard, AiOutlineClear } from 'react-icons/ai';
 import { query, collection, onSnapshot, orderBy } from 'firebase/firestore'
-import dayjs from 'dayjs';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { setIdOrder } from '../../redux/features/ordersSlice';
 import { toast } from 'react-toastify';
 import { MdClose } from 'react-icons/md';
 import moment from 'moment';
 import { getCookie } from 'cookies-next';
-import useSWR from 'swr';
+import 'moment/locale/vi';
 import NotificationDetail from './NotificationDetail'
 import OrderProductModal from '../Modals/OrderProductModal';
 import jwt from 'jsonwebtoken'
@@ -31,19 +29,23 @@ import PaymentModal from '../Modals/PaymentModal';
 const Notifications = () => {
     const dispatch = useDispatch()
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { isOpenNotificationDetail, isOpenOrderProduct, isOpenPaymentModal, isUpdated }: any = useSelector<RootState>(state => state.is)
+    const { isOpenNotificationDetail, isOpenOrderProduct, isOpenPaymentModal }: any = useSelector<RootState>(state => state.is)
     const [isOpenDashboard, setIsOpenDashboard] = useState(false)
     const [notifications, setNotifications] = useState<Order[]>([])
     const [notificationsEl, setNotificationsEl] = useState<null | HTMLElement>(null);
 
-
-    const fetcherNotifications = async (url: string) => {
+    useEffect(() => {
+        moment().locale('vi')
         const token: any = getCookie("token")
-        const { id }: any = jwt.decode(token)
-        const { data } = await axios.get(url)
-        setNotifications(user.role !== "admin" ? data.orders.filter((order: Order) => id === order.senderId || id === order.receiverId) : data.orders)
-    }
-    const { mutate } = useSWR(user?.id ? "/api/orders" : null, fetcherNotifications)
+        const { id, role }: any = jwt.decode(token)
+        const q = query(collection(db, "orders"), orderBy("timestamp", "desc"))
+        const unsub = onSnapshot(q, (snapshot: any) => {
+            const results = snapshot.docs.map((doc: any) => ({ ...doc.data(), id: doc.id }))
+            setNotifications(role !== "admin" ? results.filter((order: Order) => id === order.senderId || id === order.receiverId) : results)
+        })
+        return unsub
+    }, [])
+
 
 
     const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
@@ -84,9 +86,9 @@ const Notifications = () => {
 
     return (
         <>
-            {isOpenNotificationDetail && <NotificationDetail mutate={mutate} />}
-            {isOpenOrderProduct && <OrderProductModal mutate={mutate} />}
-            {isOpenPaymentModal && <PaymentModal mutate={mutate} />}
+            {isOpenNotificationDetail && <NotificationDetail notifications={notifications} />}
+            {isOpenOrderProduct && <OrderProductModal />}
+            {isOpenPaymentModal && <PaymentModal />}
             {isOpenDashboard && <Dashboard setOpen={setIsOpenDashboard} isOpenDashboard={isOpenDashboard} orders={notifications} />}
 
             <Tooltip title="Notifications">
@@ -121,7 +123,7 @@ const Notifications = () => {
                             {user.role === "admin" &&
                                 <div className="flex items-center px-4">
                                     <Typography fontWeight={700} variant="body1" component="h1">
-                                        Dashboard
+                                        Thống kê
                                     </Typography>
                                     <IconButton
                                         onClick={handleOpenDashboard}
@@ -135,7 +137,7 @@ const Notifications = () => {
                             {user.role === "owner" &&
                                 <div className="flex items-center px-4">
                                     <Typography fontWeight={700} variant="body1" component="h1">
-                                        Dashboard
+                                        Thống kê
                                     </Typography>
                                     <IconButton
                                         onClick={handleOpenDashboard}
@@ -148,7 +150,7 @@ const Notifications = () => {
                             }
                             <div className="flex items-center px-4">
                                 <Typography fontWeight={700} variant="body1" component="h1">
-                                    Clear
+                                    Xóa tất cả
                                 </Typography>
                                 <IconButton
                                     onClick={handleClearNotification}
@@ -256,7 +258,7 @@ const Notifications = () => {
                                                                     {`${item.slot} (${item.time}) - `}
                                                                 </Typography>
                                                                 <Typography fontWeight={700} fontSize={14} variant="body1" component="h1">
-                                                                    {dayjs(item.date).format("dddd DD/MM/YYYY")}
+                                                                    {moment(item.date).format("dddd DD/MM/YYYY").charAt(0).toUpperCase() + moment(item.date).format("dddd DD/MM/YYYY").slice(1)}
                                                                 </Typography>
                                                             </div>
                                                         </div>
@@ -305,7 +307,7 @@ const Notifications = () => {
                                             </div>
                                             <div className="flex   space-x-2">
                                                 <Typography fontSize={14} variant="body1" component="h1">
-                                                    {`Total :`}
+                                                    {`Tổng tiền :`}
                                                 </Typography>
                                                 <Typography fontSize={14} variant="body1" component="h1">
                                                     <Currency quantity={item.total} currency="VND" pattern="##,### !" />
@@ -313,7 +315,7 @@ const Notifications = () => {
                                             </div>
                                             <div className="flex   space-x-2">
                                                 <Typography fontSize={14} variant="body1" component="h1">
-                                                    {`Amount product :`}
+                                                    {`Số lượng sản phẩm :`}
                                                 </Typography>
                                                 <Typography fontSize={14} variant="body1" component="h1">
                                                     {item.products?.length}

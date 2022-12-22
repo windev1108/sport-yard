@@ -52,7 +52,7 @@ const SneakersRow = () => {
                                     <AiFillStar className="text-3xl text-primary" />
                                 </Grid>
                                 <Grid item>
-                                    <Typography className="lg:text-2xl text-base" variant="body1" component="h1"> RECOMMENDED SNEAKERS</Typography>
+                                    <Typography className="lg:text-2xl text-base" variant="body1" component="h1">Giày thể thao được đề xuất</Typography>
                                 </Grid>
                                 <Grid item>
                                     <AiFillStar className="text-3xl text-primary" />

@@ -190,14 +190,21 @@ const OwnerManager = () => {
                             {tab !== 1 &&
                                 <th
                                     colSpan={2}
-                                    className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                    className="px-6 py-3 text-xs font-medium leading-4 whitespace-nowrap tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
                                     {"Giảm giá"}</th>
+                            }
+
+                            {tab !== 1 &&
+                                <th
+                                    colSpan={1}
+                                    className="px-6 py-3 text-xs font-medium leading-4 whitespace-nowrap tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                    {"Số lượng"}</th>
                             }
 
                             <th
                                 colSpan={1}
-                                className="px-6 py-3 text-xs font-medium leading-4 tracking-wider text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
-                                {"Chủ sỡ hữu"}</th>
+                                className="px-6 py-3 text-xs font-medium leading-4 tracking-wider whitespace-nowrap text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                                {tab === 1 ? "Chủ sân" : "Chủ sản phẩm"}</th>
 
                             <th
                                 colSpan={2}
@@ -259,6 +266,14 @@ const OwnerManager = () => {
                                         colSpan={2}
                                         className="px-6  whitespace-no-wrap border-b border-gray-200">
                                         <div className="text-sm text-center leading-5 text-gray-500"> {`${data.discount}%`}</div>
+                                    </td>
+                                }
+
+                                {tab !== 1 &&
+                                    <td
+                                        colSpan={1}
+                                        className="px-6  border-b border-gray-200">
+                                        <div className="text-sm text-center whitespace-nowrap leading-5 text-gray-500"> {data?.amount}</div>
                                     </td>
                                 }
 

@@ -13,8 +13,7 @@ import Router, { useRouter } from "next/router";
 import { signIn, useSession } from "next-auth/react";
 import { NextPage } from "next";
 import { setCookies } from 'cookies-next';
-import jwt from 'jsonwebtoken'
-import { parseArgs } from "util";
+
 
 interface State {
   email: string
@@ -67,7 +66,7 @@ const Signin: NextPage = (): JSX.Element => {
         email,
         password
       }))
-      const { data } = await axios.post('/api/login', { id: user.id })
+      const { data } = await axios.post('/api/login', { id: user.id, role : user.role })
       setCookies('token', data.token, { maxAge: 60 * 6 * 24 });
       Router.push("/")
     }
