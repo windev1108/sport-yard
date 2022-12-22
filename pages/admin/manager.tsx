@@ -112,7 +112,7 @@ const OwnerManager = () => {
                 default: return
             }
         }
-    }, [tab, isUpdated])
+    }, [tab])
 
 
     const handleChange = useCallback((e: React.SyntheticEvent, newValue: number) => {

@@ -85,7 +85,7 @@ const OwnerManager = () => {
                         })
                 })
         }
-    }, [tab, isUpdated])
+    }, [tab])
 
 
     const getUser = (id: string) => {
