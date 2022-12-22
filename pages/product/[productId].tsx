@@ -169,7 +169,12 @@ const ProductDetail = ({ productId }: any) => {
                                     className="lg:!w-full w-full  !h-[32rem]"
                                 >
                                     {sliders?.map((slider, index) => (
-                                        <SwiperSlide key={index}>
+                                        <SwiperSlide className="relative" key={index}>
+                                            {product?.amount === 0 &&
+                                                <div className="absolute top-0 left-0 right-0 bottom-0 flex justify-center items-center bg-black bg-opacity-60 z-10">
+                                                    <h1 className="rotate-[-45deg] text-5xl font-bold text-red-500">Sell out</h1>
+                                                </div>
+                                            }
                                             <img className="cursor-pointer h-full !w-full !object-contain" src={slider.img} alt="pictures" />
                                         </SwiperSlide>
                                     )
@@ -358,6 +363,7 @@ const ProductDetail = ({ productId }: any) => {
                                     <Skeleton variant="text" height={60} className="w-full" />
                                     :
                                     <Button
+                                        disabled={!product.amount}
                                         onClick={handleBuyProduct}
                                         className="!bg-primary w-full" variant="contained">Mua ngay
                                     </Button>
@@ -368,6 +374,7 @@ const ProductDetail = ({ productId }: any) => {
                                     <Skeleton variant="text" height={60} className="w-full" />
                                     :
                                     <Button
+                                        disabled={!product.amount}
                                         className="!border-primary !text-secondary w-full" variant="outlined"
                                         onClick={handleAddToCart}
                                     >Thêm vào giỏ hàng

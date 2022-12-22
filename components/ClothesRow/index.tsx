@@ -2,13 +2,11 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { Navigation, Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
-import {  Product } from "../../Models";
+import { Product } from "../../Models";
 import { AiFillStar } from "react-icons/ai";
 import axios from "axios";
-import {  Container, Grid, Skeleton, Typography } from '@mui/material';
+import { Container, Grid, Skeleton, Typography } from '@mui/material';
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
-import { setIsLoading } from "../../redux/features/isSlice";
 import ProductComponent from "../Product";
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -16,7 +14,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 
 interface State {
     products: Product[];
-    isLoading : boolean;
+    isLoading: boolean;
 }
 
 const ClothesRow = () => {
@@ -25,7 +23,7 @@ const ClothesRow = () => {
         products: [],
         isLoading: true
     });
-    const { products , isLoading } = state;
+    const { products, isLoading } = state;
     const theme = useTheme();
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -34,7 +32,7 @@ const ClothesRow = () => {
         axios
             .get("/api/products")
             .then((res) => {
-                setState({ ...state, products: res.data.products.filter((product: Product) => product.type === "clothes") , isLoading : false})
+                setState({ ...state, products: res.data.products.filter((product: Product) => product.type === "clothes"), isLoading: false })
             });
     }, []);
 
@@ -153,6 +151,7 @@ const ClothesRow = () => {
                                 price={p.price}
                                 discount={p.discount}
                                 size={p.size}
+                                amount={p.amount!}
                                 pictures={p.pictures}
                                 mainPictures={p.mainPictures}
                             />

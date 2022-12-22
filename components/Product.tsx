@@ -6,7 +6,7 @@ import {
     Typography,
 } from "@mui/material";
 import { NextPage } from "next";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { Product, Reviews, User } from "../Models";
 import LinesEllipsis from "react-lines-ellipsis";
@@ -20,7 +20,6 @@ import { Rating, IconButton } from '@mui/material';
 import { RootState } from "../redux/store";
 import { toast } from "react-toastify";
 import { setContentSnackBar } from "../redux/features/userSlice";
-import { useSession } from "next-auth/react";
 import { getCookie } from "cookies-next";
 
 export interface Props {
@@ -29,6 +28,7 @@ export interface Props {
     description: string;
     discount: number;
     price: number;
+    amount: number,
     size: string[]
     pictures: string[];
     mainPictures: string[];
@@ -45,6 +45,7 @@ const Product: NextPage<Props> = ({
     description,
     discount,
     price,
+    amount,
     size,
     pictures,
     mainPictures,
@@ -96,6 +97,11 @@ const Product: NextPage<Props> = ({
             <Link href={`/product/${id}`}>
                 <a>
                     <div className="relative group h-[80%] flex overflow-hidden">
+                        {amount === 0 &&
+                            <div className="absolute top-0 left-0 right-0 bottom-0 flex justify-center items-center bg-black bg-opacity-60 z-10">
+                                <h1 className="rotate-[-45deg] text-5xl font-bold text-red-500">Sell out</h1>
+                            </div>
+                        }
                         <div className="group-hover:translate-x-[-100%] transition-transform duration-700 flex">
                             <CardMedia
                                 component="img"

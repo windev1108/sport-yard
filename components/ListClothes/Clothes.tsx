@@ -13,7 +13,7 @@ import { ImLocation } from "react-icons/im";
 import Currency from "react-currency-formatter";
 import Link from "next/link";
 import LinesEllipsis from "react-lines-ellipsis";
-import {  AiOutlineShoppingCart } from "react-icons/ai";
+import { AiOutlineShoppingCart } from "react-icons/ai";
 import { formatReviews } from "../../utils/helper";
 import { Product, Reviews } from "../../Models";
 import axios from "axios";
@@ -27,6 +27,7 @@ const Clothes: NextPage<Product> = ({
     id,
     name,
     pictures,
+    amount,
     mainPictures,
     price,
     discount,
@@ -44,12 +45,11 @@ const Clothes: NextPage<Product> = ({
         axios.get(`/api/pitch/${id}/reviews`)
             .then(res => setState({ ...state, reviews: res.data.reviews }))
     }, [])
-    console.log("reviews :", reviews);
 
     return (
         <Grid item xs={12} md={6} lg={3}>
             <Link href={`/products/clothes/${id}`}>
-                <Card className="cursor-pointer flex-col justify-between h-[28rem]">
+                <Card className="relative cursor-pointer flex-col justify-between h-[28rem]">
                     <div className="relative group h-[80%] flex overflow-hidden">
                         <div className="group-hover:translate-x-[-100%] transition-transform duration-700 flex">
                             <CardMedia

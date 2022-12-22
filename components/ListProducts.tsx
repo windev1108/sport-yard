@@ -44,6 +44,7 @@ const ListProducts: NextPage<Props> = ({ products, isLoading }) => {
                                 price={p.price}
                                 discount={p.discount}
                                 size={p.size}
+                                amount={p.amount!}
                                 pictures={p.pictures}
                                 mainPictures={p.mainPictures}
                             />

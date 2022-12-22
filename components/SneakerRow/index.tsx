@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Navigation, Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
-import {  Product } from "../../Models";
+import { Product } from "../../Models";
 import { AiFillStar } from "react-icons/ai";
 import axios from "axios";
 import { Container, Grid, Skeleton, Typography } from '@mui/material';
@@ -23,19 +23,19 @@ const SneakersRow = () => {
     const dispatch = useDispatch()
     const [state, setState] = useState<State>({
         products: [],
-        isLoading : true
+        isLoading: true
     });
-    const { products , isLoading } = state;
+    const { products, isLoading } = state;
     const theme = useTheme();
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-  
+
 
 
     useEffect(() => {
         axios
             .get("/api/products")
             .then((res) => {
-                setState({ ...state, products: res.data.products.filter((product: Product) => product.type === "sneakers") , isLoading: false})
+                setState({ ...state, products: res.data.products.filter((product: Product) => product.type === "sneakers"), isLoading: false })
             });
     }, []);
 
@@ -52,7 +52,7 @@ const SneakersRow = () => {
                                     <AiFillStar className="text-3xl text-primary" />
                                 </Grid>
                                 <Grid item>
-                                <Typography className="lg:text-2xl text-base" variant="body1" component="h1"> RECOMMENDED SNEAKERS</Typography>
+                                    <Typography className="lg:text-2xl text-base" variant="body1" component="h1"> RECOMMENDED SNEAKERS</Typography>
                                 </Grid>
                                 <Grid item>
                                     <AiFillStar className="text-3xl text-primary" />
@@ -77,58 +77,58 @@ const SneakersRow = () => {
                     <SwiperSlide
                         className="w-[25%] h-[400px] shadow-md">
                         <div className="relative h-[28rem]">
-                                <Skeleton variant="rectangular" className="!w-full !h-[80%]" />
-                                <div className="h-[20%] shadow-md pb-[24px] pl-[16px] pr-[16px] pt-[16px]">
-                                    <Skeleton className="!w-full" variant="text" />
-                                    <Skeleton width={100} variant="text" />
-                                    <div className="flex justify-center items-center gap-2">
-                                        <Skeleton width={80} variant="text" />
-                                        <Skeleton width={80} variant="text" />
-                                    </div>
+                            <Skeleton variant="rectangular" className="!w-full !h-[80%]" />
+                            <div className="h-[20%] shadow-md pb-[24px] pl-[16px] pr-[16px] pt-[16px]">
+                                <Skeleton className="!w-full" variant="text" />
+                                <Skeleton width={100} variant="text" />
+                                <div className="flex justify-center items-center gap-2">
+                                    <Skeleton width={80} variant="text" />
+                                    <Skeleton width={80} variant="text" />
                                 </div>
                             </div>
+                        </div>
                     </SwiperSlide>
                     <SwiperSlide
                         className="w-[25%] h-[400px] shadow-md">
                         <div className="relative h-[28rem]">
-                                <Skeleton variant="rectangular" className="!w-full !h-[80%]" />
-                                <div className="h-[20%] shadow-md pb-[24px] pl-[16px] pr-[16px] pt-[16px]">
-                                    <Skeleton className="!w-full" variant="text" />
-                                    <Skeleton width={100} variant="text" />
-                                    <div className="flex justify-center items-center gap-2">
-                                        <Skeleton width={80} variant="text" />
-                                        <Skeleton width={80} variant="text" />
-                                    </div>
+                            <Skeleton variant="rectangular" className="!w-full !h-[80%]" />
+                            <div className="h-[20%] shadow-md pb-[24px] pl-[16px] pr-[16px] pt-[16px]">
+                                <Skeleton className="!w-full" variant="text" />
+                                <Skeleton width={100} variant="text" />
+                                <div className="flex justify-center items-center gap-2">
+                                    <Skeleton width={80} variant="text" />
+                                    <Skeleton width={80} variant="text" />
                                 </div>
                             </div>
+                        </div>
                     </SwiperSlide>
                     <SwiperSlide
                         className="w-[25%] h-[400px] shadow-md">
                         <div className="relative h-[28rem]">
-                                <Skeleton variant="rectangular" className="!w-full !h-[80%]" />
-                                <div className="h-[20%] shadow-md pb-[24px] pl-[16px] pr-[16px] pt-[16px]">
-                                    <Skeleton className="!w-full" variant="text" />
-                                    <Skeleton width={100} variant="text" />
-                                    <div className="flex justify-center items-center gap-2">
-                                        <Skeleton width={80} variant="text" />
-                                        <Skeleton width={80} variant="text" />
-                                    </div>
+                            <Skeleton variant="rectangular" className="!w-full !h-[80%]" />
+                            <div className="h-[20%] shadow-md pb-[24px] pl-[16px] pr-[16px] pt-[16px]">
+                                <Skeleton className="!w-full" variant="text" />
+                                <Skeleton width={100} variant="text" />
+                                <div className="flex justify-center items-center gap-2">
+                                    <Skeleton width={80} variant="text" />
+                                    <Skeleton width={80} variant="text" />
                                 </div>
                             </div>
+                        </div>
                     </SwiperSlide>
                     <SwiperSlide
                         className="w-[25%] h-[400px] shadow-md">
                         <div className="relative h-[28rem]">
-                                <Skeleton variant="rectangular" className="!w-full !h-[80%]" />
-                                <div className="h-[20%] shadow-md pb-[24px] pl-[16px] pr-[16px] pt-[16px]">
-                                    <Skeleton className="!w-full" variant="text" />
-                                    <Skeleton width={100} variant="text" />
-                                    <div className="flex justify-center items-center gap-2">
-                                        <Skeleton width={80} variant="text" />
-                                        <Skeleton width={80} variant="text" />
-                                    </div>
+                            <Skeleton variant="rectangular" className="!w-full !h-[80%]" />
+                            <div className="h-[20%] shadow-md pb-[24px] pl-[16px] pr-[16px] pt-[16px]">
+                                <Skeleton className="!w-full" variant="text" />
+                                <Skeleton width={100} variant="text" />
+                                <div className="flex justify-center items-center gap-2">
+                                    <Skeleton width={80} variant="text" />
+                                    <Skeleton width={80} variant="text" />
                                 </div>
                             </div>
+                        </div>
                     </SwiperSlide>
                 </Swiper>
                 :
@@ -154,6 +154,7 @@ const SneakersRow = () => {
                                 price={p.price}
                                 discount={p.discount}
                                 size={p.size}
+                                amount={p.amount!}
                                 pictures={p.pictures}
                                 mainPictures={p.mainPictures}
                             />

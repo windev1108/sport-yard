@@ -155,6 +155,7 @@ const ListClothes: NextPage = () => {
                             mainPictures={item.mainPictures}
                             description={item.description}
                             size={item.size}
+                            amount={item.amount}
                             discount={item.discount}
                             type={item.type}
                         />

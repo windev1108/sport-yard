@@ -313,9 +313,15 @@ const OrderDetail = ({ mutate }: any) => {
         }
     }
 
-    const handleConfirmTakeGoodSuccess = () => {
+    const handleConfirmTakeGoodSuccess = async () => {
         axios.put(`/api/orders/${idOrder}`, {
             status: 7
+        })
+        order.products?.forEach(async (o: any) => {
+            const res: { data: Product } = await axios.get(`/api/products/${o.product.id}`)
+            axios.put(`/api/products/${o.product.id}`, {
+                amount: res.data?.amount! - o.amount,
+            })
         })
         mutate()
     }
