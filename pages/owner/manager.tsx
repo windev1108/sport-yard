@@ -95,7 +95,7 @@ const OwnerManager = () => {
     const handleChange = useCallback((e: React.SyntheticEvent, newValue: number) => {
         setTimeout(() => {
             setState({ ...state, tab: newValue });
-        }, 1500)
+        }, 500)
     }, [])
 
     const handleDelete = (id: any) => {

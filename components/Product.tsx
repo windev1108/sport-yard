@@ -99,7 +99,7 @@ const Product: NextPage<Props> = ({
                     <div className="relative group h-[80%] flex overflow-hidden">
                         {amount === 0 &&
                             <div className="absolute top-0 left-0 right-0 bottom-0 flex justify-center items-center bg-black bg-opacity-60 z-10">
-                                <h1 className="rotate-[-45deg] text-5xl font-bold text-red-500">Sell out</h1>
+                                <h1 className="rotate-[-45deg] text-5xl font-bold text-red-500">Sold out</h1>
                             </div>
                         }
                         <div className="group-hover:translate-x-[-100%] transition-transform duration-700 flex">

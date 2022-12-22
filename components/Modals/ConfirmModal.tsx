@@ -21,21 +21,21 @@ const ConfirmModal: NextPage<Props> = ({ tab, id, open, setOpen }) => {
 
     const handleDeleteUser = () => {
         axios.delete(`/api/users/${id}`)
-        toast.success("Delete user success", { autoClose: 3000, theme: "colored" })
+        toast.success("Xóa người dùng thành công", { autoClose: 3000, theme: "colored" })
         setOpen(false)
         dispatch(setIsUpdate(!isUpdated))
     }
 
     const handleDeletePitch = () => {
         axios.delete(`/api/pitch/${id}`)
-        toast.success("Delete pitch success", { autoClose: 3000, theme: "colored" })
+        toast.success("Xóa sân bóng thành công", { autoClose: 3000, theme: "colored" })
         setOpen(false)
         dispatch(setIsUpdate(!isUpdated))
     }
 
     const handleDeleteProduct = () => {
         axios.delete(`/api/products/${id}`)
-        toast.success("Delete product success", { autoClose: 3000, theme: "colored" })
+        toast.success("Xóa sản phẩm thành công", { autoClose: 3000, theme: "colored" })
         setOpen(false)
         dispatch(setIsUpdate(!isUpdated))
     }
@@ -47,25 +47,25 @@ const ConfirmModal: NextPage<Props> = ({ tab, id, open, setOpen }) => {
             aria-describedby="alert-dialog-description"
         >
             <DialogTitle id="alert-dialog-title">
-                {tab === 0 && "Are you sure you want to delete this user?"}
-                {tab === 1 && "Are you sure you want to delete this pitch?"}
-                {tab === 2 || tab == 3 && "Are you sure you want to delete this product?"}
+                {tab === 0 && "Bạn thực sự muốn xóa người dùng này?"}
+                {tab === 1 && "Bạn thực sự muốn xóa sân bóng này?"}
+                {tab === 2 || tab == 3 && "Bạn thực sự muốn xóa sản phẩm này?"}
             </DialogTitle>
             <DialogActions>
-                <Button onClick={() => setOpen(false)}>Disagree</Button>
+                <Button onClick={() => setOpen(false)}>Hủy</Button>
                 {tab === 0 &&
                     <Button onClick={handleDeleteUser} autoFocus>
-                        Agree
+                        Đồng ý
                     </Button>}
 
                 {tab === 1 &&
                     <Button onClick={handleDeletePitch} autoFocus>
-                        Agree
+                        Đồng ý
                     </Button>}
 
                 {tab === 2 || tab == 3 &&
                     <Button onClick={handleDeleteProduct} autoFocus>
-                        Agree
+                        Đồng ý
                     </Button>}
 
             </DialogActions>

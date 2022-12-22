@@ -7,7 +7,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import { NextPage } from 'next';
 import { GeoPoint } from 'firebase/firestore';
-import { ImageList, ImageListItem, LinearProgress } from '@mui/material';
+import { FormControl, FormHelperText, ImageList, ImageListItem, LinearProgress } from '@mui/material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { User } from '../../Models';
@@ -36,6 +36,7 @@ interface State {
     price: number | string
     size: string[]
     pictures: any[]
+    amount: string
     backSidePicture: any
     fontPicture: any
     discount: number | string
@@ -57,6 +58,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
         name: "",
         description: "",
         price: "",
+        amount: "",
         size: [],
         pictures: [],
         fontPicture: {},
@@ -70,7 +72,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
         isUpdatedFontPicture: false,
         isUploadedBackPicture: false
     })
-    const { name, price, discount, size, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading } = state
+    const { name, price, discount, size, amount, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading } = state
     const [urls, setUrls] = useState<string[]>([])
     const [fontUrl, setFontUrl] = useState<string>("")
     const [backSideUrl, setBackSideUrl] = useState<string>("")
@@ -85,6 +87,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
                 description: res.data.description,
                 price: res.data.price,
                 size: [],
+                amount: res.data.amount,
                 blobPicture: res.data?.pictures,
                 blobFont: res.data?.mainPictures?.[0],
                 blobBackSide: res.data?.mainPictures?.[1],
@@ -132,8 +135,8 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
 
 
     const handleSubmit = () => {
-        if (!name || !price || !size.length || !discount) {
-            toast.info("Please complete all information", {
+        if (!name || !price || !size.length || !discount || !amount) {
+            toast.info("Vui lòng điền đầy đủ thông tin", {
                 autoClose: 3000,
                 theme: "colored",
             });
@@ -143,6 +146,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
                 description,
                 price,
                 size,
+                amount,
                 discount,
                 type: tab === 2 ? "clothes" : "sneakers",
                 owner: user.id,
@@ -158,6 +162,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
                     price,
                     size,
                     discount,
+                    amount,
                     mainPictures: [fontUrl ? fontUrl : blobFont, backSideUrl ? backSideUrl : blobBackSide],
                     pictures: urls,
                     type: tab === 2 ? "clothes" : "sneakers",
@@ -210,51 +215,103 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
 
     return (
         <Dialog open={open} onClose={() => setOpen(false)} fullWidth={true}>
-            <DialogTitle>{"Form edit Product"}</DialogTitle>
+            <DialogTitle>{"Sửa sản phẩm"}</DialogTitle>
             <DialogContent>
-                <TextField
-                    value={name}
-                    onChange={(e) => setState({ ...state, name: e.target.value })}
-                    focused={name ? true : false}
-                    margin="dense"
-                    label="Name"
+                <FormControl
                     fullWidth
-                    variant="standard"
-                />
+                    error variant="standard">
+                    <TextField
+                        value={name}
+                        onChange={(e) => setState({ ...state, name: e.target.value })}
+                        focused={name ? true : false}
+                        margin="dense"
+                        label="Name"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!name &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập tên sản phẩm</FormHelperText>
+                    }
+                </FormControl>
 
-                <TextField
-                    value={description}
-                    onChange={(e) => setState({ ...state, description: e.target.value })}
-                    focused={description ? true : false}
-                    autoFocus
-                    margin="dense"
-                    label="Description"
+                <FormControl
                     fullWidth
-                    variant="standard"
-                />
-                <TextField
-                    value={price}
-                    onChange={(e) => setState({ ...state, price: e.target.value })}
-                    focused={price ? true : false}
-                    autoFocus
-                    margin="dense"
-                    type="number"
-                    label="Price"
-                    fullWidth
-                    variant="standard"
-                />
+                    error variant="standard">
+                    <TextField
+                        value={description}
+                        onChange={(e) => setState({ ...state, description: e.target.value })}
+                        focused={description ? true : false}
+                        autoFocus
+                        margin="dense"
+                        label="Description"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!description &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập mô tả</FormHelperText>
+                    }
+                </FormControl>
 
-                <TextField
-                    value={discount}
-                    onChange={(e) => setState({ ...state, discount: e.target.value })}
-                    focused={discount ? true : false}
-                    autoFocus
-                    margin="dense"
-                    type="number"
-                    label="Discount/%"
+                <FormControl
                     fullWidth
-                    variant="standard"
-                />
+                    error variant="standard">
+                    <TextField
+                        value={price}
+                        onChange={(e) => setState({ ...state, price: e.target.value })}
+                        focused={price ? true : false}
+                        autoFocus
+                        margin="dense"
+                        type="number"
+                        label="Price"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!price &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập giá sản phẩm</FormHelperText>
+                    }
+                </FormControl>
+
+
+                <FormControl
+                    fullWidth
+                    error variant="standard">
+                    <TextField
+                        value={amount}
+                        onChange={(e) => setState({ ...state, amount: e.target.value })}
+                        focused={price ? true : false}
+                        autoFocus
+                        margin="dense"
+                        type="number"
+                        label="Số lượng tồn kho"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!amount &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập số lượng tồn kho</FormHelperText>
+                    }
+                </FormControl>
+
+
+                <FormControl
+                    fullWidth
+                    error variant="standard">
+                    <TextField
+                        value={discount}
+                        onChange={(e) => setState({ ...state, discount: e.target.value })}
+                        focused={discount ? true : false}
+                        autoFocus
+                        margin="dense"
+                        type="number"
+                        label="Discount/%"
+                        fullWidth
+                        variant="standard"
+                    />
+                    {!discount &&
+                        <FormHelperText id="component-error-text">Vui lòng nhập khuyến mãi</FormHelperText>
+                    }
+                </FormControl>
+
+
                 <FormLabel className="mt-4" component="legend">Size</FormLabel>
                 <FormGroup defaultValue={size} onChange={handleSelect} className="!flex-row">
 
@@ -283,7 +340,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
 
                 </FormGroup>
 
-                <FormLabel className="my-3" component="legend">Main Picture</FormLabel>
+                <FormLabel className="my-3" component="legend">Hình ảnh chính</FormLabel>
                 <div className="flex items-center">
                     <div className="flex-1" title="Main picture">
                         <Tooltip title="Add Font Picture">
