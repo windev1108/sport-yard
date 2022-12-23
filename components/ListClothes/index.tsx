@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import Clothes from "./Clothes";
-import { Box, Button, Card, CardMedia, Container, FormControl, Grid, InputBase, InputLabel, MenuItem, NativeSelect, Select, Skeleton, TextField, Typography } from "@mui/material";
+import { Container, FormControl, Grid, InputBase, InputLabel, MenuItem, Select, Skeleton, TextField, Typography } from "@mui/material";
 import { NextPage } from "next";
-import { GoSearch } from "react-icons/go";
-import axios from "axios";
 import { Product, Product as ProductModel } from "../../Models";
 import { styled } from '@mui/material/styles';
 import { useDispatch, useSelector } from "react-redux";
 import { setIsLoading } from "../../redux/features/isSlice";
 import { RootState } from "../../redux/store";
+import instance from "../../server/db/instance";
 
 interface State {
     limit: number;
@@ -42,7 +41,7 @@ const ListClothes: NextPage = () => {
     }, [])
 
     useEffect(() => {
-        axios.get("/api/products")
+        instance.get("/products")
             .then(res => res.data.products.filter((p: Product) => p.type === "clothes"))
             .then(data => {
                 limitPitch.current = data.length
@@ -52,13 +51,13 @@ const ListClothes: NextPage = () => {
             })
     }, [limit]);
 
-    const handleLimit = () => {
-        if (limitPitch?.current && limit < limitPitch?.current) {
-            setState({ ...state, limit: limit + 3 });
-        } else {
-            setState({ ...state, limit: 3 });
-        }
-    };
+    // const handleLimit = () => {
+    //     if (limitPitch?.current && limit < limitPitch?.current) {
+    //         setState({ ...state, limit: limit + 3 });
+    //     } else {
+    //         setState({ ...state, limit: 3 });
+    //     }
+    // };
     return (
         <Container maxWidth={"xl"} className="!px-20 relative w-full py-20 mb-20">
             {isLoading ?

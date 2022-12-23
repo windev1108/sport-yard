@@ -1,15 +1,13 @@
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { Navigation, Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Product } from "../../Models";
 import { AiFillStar } from "react-icons/ai";
-import axios from "axios";
 import { Container, Grid, Skeleton, Typography } from '@mui/material';
-import { useDispatch, useSelector } from "react-redux";
 import ProductComponent from "../Product";
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import instance from "../../server/db/instance";
 
 
 interface State {
@@ -18,7 +16,6 @@ interface State {
 }
 
 const ClothesRow = () => {
-    const dispatch = useDispatch()
     const [state, setState] = useState<State>({
         products: [],
         isLoading: true
@@ -29,8 +26,8 @@ const ClothesRow = () => {
 
 
     useEffect(() => {
-        axios
-            .get("/api/products")
+        instance
+            .get("/products")
             .then((res) => {
                 setState({ ...state, products: res.data.products.filter((product: Product) => product.type === "clothes"), isLoading: false })
             });

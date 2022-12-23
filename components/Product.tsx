@@ -13,7 +13,6 @@ import LinesEllipsis from "react-lines-ellipsis";
 import Currency from 'react-currency-formatter';
 import Link from "next/link";
 import { formatReviews } from "../utils/helper";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setIsLoading, setOpenSnackBar } from "../redux/features/isSlice";
 import { Rating, IconButton } from '@mui/material';
@@ -21,6 +20,7 @@ import { RootState } from "../redux/store";
 import { toast } from "react-toastify";
 import { setContentSnackBar } from "../redux/features/userSlice";
 import { getCookie } from "cookies-next";
+import instance from "../server/db/instance";
 
 export interface Props {
     id: string;
@@ -59,7 +59,7 @@ const Product: NextPage<Props> = ({
     const { reviews } = state;
 
     useEffect(() => {
-        axios.get(`/api/products/${id}/reviews`)
+        instance.get(`/products/${id}/reviews`)
             .then(res => setState({ ...state, reviews: res.data.reviews }))
             .then(() => dispatch(setIsLoading(false)))
     }, [])
@@ -72,11 +72,11 @@ const Product: NextPage<Props> = ({
             toast.info("Vui lòng đăng nhập", { autoClose: 3000, theme: "colored" })
         } else if (productExists?.id) {
             const newProduct = user.cart?.filter((cart: Product) => cart.id !== productExists.id)
-            axios.put(`/api/users/${user.id}`, { cart: user.cart?.length ? [...newProduct, { id, size: null, amount: productExists.amount + 1 }] : [{ id, amount: 1 }] })
+            instance.put(`/users/${user.id}`, { cart: user.cart?.length ? [...newProduct, { id, size: null, amount: productExists.amount + 1 }] : [{ id, amount: 1 }] })
             dispatch(setOpenSnackBar(true))
             dispatch(setContentSnackBar("+1 item"))
         } else {
-            axios.put(`/api/users/${user.id}`, { cart: [...user?.cart, { id, size: null, amount: 1 }] })
+            instance.put(`/users/${user.id}`, { cart: [...user?.cart, { id, size: null, amount: 1 }] })
             dispatch(setOpenSnackBar(true))
             dispatch(setContentSnackBar("+1 item"))
         }

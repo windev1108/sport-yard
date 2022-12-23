@@ -2,13 +2,13 @@ import { Box, Button, Container, Grid, Typography, TextField } from "@mui/materi
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import axios from "axios";
+import Select from '@mui/material/Select';
 import React, { useState, useLayoutEffect } from "react";
 import Layout from "../../components/Layout";
 import ListPitch from "../../components/ListPitch";
 import { Pitch } from "../../Models";
 import { convertLowerCase } from "../../utils/helper";
+import instance from "../../server/db/instance";
 
 const Yards = () => {
   const [state, setState] = useState({
@@ -21,7 +21,7 @@ const Yards = () => {
   const { pitch, keywords, random, district, isLoading } = state
 
   useLayoutEffect(() => {
-    axios.get("/api/pitch")
+    instance.get("/pitch")
       .then(res => {
         if (district) {
           setState({ ...state, pitch: res.data.pitch.filter((p: Pitch) => convertLowerCase(p.location).match(convertLowerCase(district))), isLoading: false })

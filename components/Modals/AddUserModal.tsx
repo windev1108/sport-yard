@@ -17,6 +17,7 @@ import { Avatar, FormLabel, LinearProgress, Tooltip } from '@mui/material';
 import { BiImageAdd } from 'react-icons/bi';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import instance from '../../server/db/instance';
 
 
 export interface PropsModal {
@@ -33,8 +34,8 @@ interface State {
     blobAvatar: string
     avatar: any
     avatarUrl: string
-    isUploaded : boolean
-    isLoading : boolean
+    isUploaded: boolean
+    isLoading: boolean
 }
 
 
@@ -51,12 +52,12 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
         isUploaded: false,
         isLoading: false
     })
-    const { email, firstName, lastName, password, role, blobAvatar, avatar , avatarUrl , isUploaded , isLoading } = state
+    const { email, firstName, lastName, password, role, blobAvatar, avatar, avatarUrl, isUploaded, isLoading } = state
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
     const handleAddUser = async () => {
-        const { data }: any = await axios.get("/api/users")
+        const { data }: any = await instance.get("/users")
         const { users }: any = data
         const checkEmail = users.some((user: User) => user.email === email)
 
@@ -71,25 +72,25 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
                 theme: "colored",
             });
         } else {
-           if(isUploaded){
-            axios.post("/api/users", { email, password, firstName, avatar: avatarUrl, lastName, role })
-            toast.success("Thêm mới user thành công", {
-                autoClose: 3000,
-                theme: "colored",
-            });
-            setOpen(false)
-            setState({ ...state, firstName: "", lastName: "", password: "", email: "", role: "" })
-           }
+            if (isUploaded) {
+                instance.post("/users", { email, password, firstName, avatar: avatarUrl, lastName, role })
+                toast.success("Thêm mới user thành công", {
+                    autoClose: 3000,
+                    theme: "colored",
+                });
+                setOpen(false)
+                setState({ ...state, firstName: "", lastName: "", password: "", email: "", role: "" })
+            }
         }
     }
 
     const handleUploadFiles = async () => {
-        setState({...state, isLoading : true})
+        setState({ ...state, isLoading: true })
         const formData = new FormData()
         formData.append("file", avatar)
         formData.append('upload_preset', 'my-uploads');
         const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-        setState({...state , avatarUrl : data.url , isUploaded : true , isLoading : false})
+        setState({ ...state, avatarUrl: data.url, isUploaded: true, isLoading: false })
     }
 
     const onFileChange = (e: any) => {
@@ -185,7 +186,7 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
             <DialogActions className="bg-gray-100">
                 <div className="">
                     <Button onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button onClick={isUploaded  ? handleAddUser : handleUploadFiles}>{isUploaded ? "Submit" : "Upload"}</Button>
+                    <Button onClick={isUploaded ? handleAddUser : handleUploadFiles}>{isUploaded ? "Submit" : "Upload"}</Button>
                 </div>
             </DialogActions>
             {isLoading &&

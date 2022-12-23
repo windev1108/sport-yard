@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
+import React, { useState, useLayoutEffect, useCallback, useRef } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import axios from 'axios';
 import Layout from '../../components/Layout';
 import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic'
@@ -17,6 +16,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { setIsLoading } from '../../redux/features/isSlice';
 import Router from 'next/router';
 import { getCookie } from 'cookies-next';
+import instance from '../../server/db/instance';
 const ConfirmModal = dynamic(() => import("../../components/Modals/ConfirmModal"), { ssr: false })
 const AddPitchModal = dynamic(() => import("../../components/Modals/AddPitchModal"), { ssr: false })
 const AddProductModal = dynamic(() => import("../../components/Modals/AddProductModal"), { ssr: false })
@@ -64,10 +64,10 @@ const OwnerManager = () => {
 
     useLayoutEffect(() => {
         if (user.role === "owner") {
-            axios.get(`/api/${tab == 1 ? "pitch" : "products"}`)
+            instance.get(`/${tab == 1 ? "pitch" : "products"}`)
                 .then(res => res.data
                 ).then((data) => {
-                    axios.get("/api/users")
+                    instance.get("/users")
                         .then(resUsers => {
                             switch (tab) {
                                 case 1: setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id) })

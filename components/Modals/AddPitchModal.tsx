@@ -21,6 +21,7 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import LinearProgress from '@mui/material/LinearProgress';
 import { setIsUpdate } from '../../redux/features/isSlice';
+import instance from '../../server/db/instance';
 
 
 export interface PropsModal {
@@ -147,7 +148,7 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
             toast.info("Vui lòng nhập đầy đủ thông tin slots", { autoClose: 3000, theme: "colored" })
         } else {
             if (isUploaded && urls.length === pictures.length) {
-                axios.post("/api/pitch", {
+                instance.post("/pitch", {
                     name,
                     location,
                     size,

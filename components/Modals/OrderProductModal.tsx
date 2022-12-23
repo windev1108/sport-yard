@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -10,7 +10,6 @@ import { deepOrange } from '@mui/material/colors';
 import Currency from 'react-currency-formatter';
 import { setOpenBackdropModal, setOpenFormEditUser, setOpenOrderProduct, setOpenProfileModal, setOpenSnackBar } from '../../redux/features/isSlice'
 import { Cart, Product, User } from '../../Models';
-import axios from 'axios';
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import { MdPayment, MdPayments } from 'react-icons/md';
@@ -25,6 +24,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import emailjs from '@emailjs/browser';
 import { ImLocation } from 'react-icons/im';
 import io from 'socket.io-client';
+import instance from '../../server/db/instance';
 
 
 interface State {
@@ -65,7 +65,7 @@ const OrderProductModal = () => {
 
 
     useEffect(() => {
-        axios.get("/api/users")
+        instance.get("/users")
             .then(res => setState({ ...state, users: res.data.users, isLoading: false }))
 
         socketInitializer()
@@ -156,7 +156,7 @@ const OrderProductModal = () => {
                     trace_code: traceCode,
                     order_date: dayjs(order.date).format("dddd DD-MM-YYYY")
                 }
-                const { data }: { data: { id: string } } = await axios.post('/api/orders', formData)
+                const { data }: { data: { id: string } } = await instance.post('/orders', formData)
                 sum && emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
                 socket.emit("send_order", {
                     orderId: data.id,

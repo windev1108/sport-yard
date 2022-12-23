@@ -4,7 +4,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
-import { NextPage } from 'next';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { Divider, IconButton, Stack, Step, StepIconProps, StepLabel, Stepper, Skeleton, Snackbar, Typography, Tooltip } from '@mui/material';
@@ -14,7 +13,6 @@ import { SiBitcoincash } from 'react-icons/si';
 import { TbBrandBooking, TbSoccerField } from 'react-icons/tb'
 import { setOpenBackdropModal, setOpenNotificationDetail, setOpenPaymentModal } from '../../redux/features/isSlice'
 import { Bank, Order, Pitch } from '../../Models';
-import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import StepConnector, { stepConnectorClasses } from '@mui/material/StepConnector';
 import dynamic from 'next/dynamic';
@@ -27,6 +25,7 @@ import emailjs from '@emailjs/browser';
 import { toast } from 'react-toastify';
 import { MdOutlineDoneOutline, MdPayments } from 'react-icons/md';
 import io from 'socket.io-client'
+import instance from '../../server/db/instance';
 const Map = dynamic(() => import("../Map"), { ssr: false })
 
 
@@ -74,11 +73,11 @@ const PaymentModal = () => {
     }
 
     useEffect(() => {
-        axios.get(`/api/orders/${idOrder}`)
+        instance.get(`/orders/${idOrder}`)
             .then(resOrder => {
-                axios.get(`/api/users/${resOrder.data.ownerId}`)
+                instance.get(`/users/${resOrder.data.ownerId}`)
                     .then(resUsers => {
-                        axios.get(`/api/pitch/${resOrder.data?.productId}`)
+                        instance.get(`/pitch/${resOrder.data?.productId}`)
                             .then(resPitch => {
                                 setState({ ...state, pitch: resPitch.data, owner: resUsers.data, order: resOrder.data, isLoading: false })
                             })
@@ -144,7 +143,7 @@ const PaymentModal = () => {
             dispatch(setOpenBackdropModal(true))
             setTimeout(() => {
                 const traceCode = Math.floor(Math.random() * 900000 + 10000)
-                axios.put(`/api/orders/${idOrder}`, {
+                instance.put(`/orders/${idOrder}`, {
                     methodPay,
                     receiverId: owner.id,
                     ownerId: owner.id,

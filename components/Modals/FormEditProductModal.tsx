@@ -6,20 +6,16 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import { NextPage } from 'next';
-import { GeoPoint } from 'firebase/firestore';
 import { FormControl, FormHelperText, ImageList, ImageListItem, LinearProgress } from '@mui/material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { User } from '../../Models';
 import { useDispatch, useSelector } from 'react-redux';
 import { setIsUpdate } from '../../redux/features/isSlice';
 import { RootState } from '../../redux/store';
 import { Checkbox, FormControlLabel, FormGroup, FormLabel, Tooltip } from '@mui/material';
-import CircularProgressWithLabel from '../ProgessCirle';
 import { BiImageAdd } from 'react-icons/bi';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from '../../firebase/config';
 import { clothesSize, sneakersSize } from '../../utils/helper';
+import instance from '../../server/db/instance';
 
 
 
@@ -80,7 +76,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
 
 
     useEffect(() => {
-        axios.get(`/api/products/${id}`)
+        instance.get(`/products/${id}`)
             .then(res => setState({
                 ...state,
                 name: res.data.name,
@@ -141,7 +137,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
                 theme: "colored",
             });
         } else if (!pictures.length || !fontPicture.name || !backSidePicture.name) {
-            axios.put(`/api/products/${id}`, {
+            instance.put(`/products/${id}`, {
                 name,
                 description,
                 price,
@@ -156,7 +152,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
             toast.success("Cập nhật thành công", { autoClose: 3000, theme: "colored" })
         } else {
             if (pictures.length === urls.length || fontUrl || backSideUrl) {
-                axios.put(`/api/products/${id}`, {
+                instance.put(`/products/${id}`, {
                     name,
                     description,
                     price,

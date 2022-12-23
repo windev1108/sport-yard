@@ -1,5 +1,4 @@
-import { Avatar, Grid, ListItemAvatar, ListItemText, Typography, Rating, IconButton } from '@mui/material'
-import axios from 'axios'
+import { Avatar, Grid, ListItemAvatar, Typography, Rating, IconButton } from '@mui/material'
 import moment from 'moment'
 import { NextPage } from 'next'
 import React, { useEffect, useState } from 'react'
@@ -8,8 +7,8 @@ import { useDispatch } from 'react-redux'
 import { Reviews, User } from '../../Models'
 import { setOpenProfileModal } from '../../redux/features/isSlice'
 import { setIdProfile } from '../../redux/features/userSlice'
-import { TimeAgo } from '../../utils/helper'
 import { deepOrange } from '@mui/material/colors';
+import instance from '../../server/db/instance'
 
 
 interface Props {
@@ -25,15 +24,15 @@ const Review: NextPage<Props> = ({ review }) => {
     const { users } = state
 
     useEffect(() => {
-        axios.get(`/api/users`)
+        instance.get(`/users`)
             .then(res => setState({ ...state, users: res.data.users }))
             .catch(err => console.error(err))
     }, [])
-    
+
 
 
     const getUser = (id: string) => {
-        const user: any  = users.find((u: User) => u.id === id)
+        const user: any = users.find((u: User) => u.id === id)
         return user
     }
     const handleShowProfile = (id: string) => {
@@ -47,7 +46,7 @@ const Review: NextPage<Props> = ({ review }) => {
                     className="cursor-pointer"
                     onClick={() => handleShowProfile(review.userId)}
                 >
-                    <Avatar src={getUser(review.userId)?.avatar} sx={{ bgcolor: deepOrange[500] }}>{getUser(review.userId)?.firstName.substring(0,1).toUpperCase()}</Avatar>
+                    <Avatar src={getUser(review.userId)?.avatar} sx={{ bgcolor: deepOrange[500] }}>{getUser(review.userId)?.firstName.substring(0, 1).toUpperCase()}</Avatar>
 
                 </ListItemAvatar>
             </Grid>

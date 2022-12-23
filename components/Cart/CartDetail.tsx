@@ -8,7 +8,6 @@ import { NextPage } from 'next';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { Divider, Skeleton, Typography } from '@mui/material';
-import axios from 'axios';
 import { Cart } from '../../Models';
 import Currency from 'react-currency-formatter';
 import { setOpenCartDetail, setOpenOrderProduct } from '../../redux/features/isSlice';
@@ -20,6 +19,7 @@ import Image from 'next/image';
 import { BsCart4 } from 'react-icons/bs';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import instance from '../../server/db/instance';
 
 
 
@@ -107,7 +107,7 @@ const CartDetail: NextPage<Props> = ({ cart }) => {
                 size: c.size!
             })
         })
-        axios.put(`/api/users/${user.id}`, {
+        instance.put(`/users/${user.id}`, {
             cart: newArr
         })
     }
@@ -115,7 +115,7 @@ const CartDetail: NextPage<Props> = ({ cart }) => {
     const handlePlusProduct = (index: number) => {
         let newArr: { amount: number, id: string, size: number | string }[] = []
         if (initCart[index].amount >= 100) {
-            toast.info("Can't order more than 100 product", { autoClose: 3000, theme: "colored" })
+            toast.info("Không thể đặt hàng hơn 100 sản phẩm", { autoClose: 3000, theme: "colored" })
         } else {
             initCart[index].amount = initCart[index].amount + 1
         }
@@ -126,7 +126,7 @@ const CartDetail: NextPage<Props> = ({ cart }) => {
                 size: c?.size!
             })
         })
-        axios.put(`/api/users/${user.id}`, {
+        instance.put(`/users/${user.id}`, {
             cart: newArr
         })
     }

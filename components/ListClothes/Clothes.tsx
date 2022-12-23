@@ -8,16 +8,14 @@ import {
     Typography,
 } from "@mui/material";
 import { NextPage } from "next";
-import { GiPriceTag } from "react-icons/gi";
-import { ImLocation } from "react-icons/im";
 import Currency from "react-currency-formatter";
 import Link from "next/link";
 import LinesEllipsis from "react-lines-ellipsis";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { formatReviews } from "../../utils/helper";
 import { Product, Reviews } from "../../Models";
-import axios from "axios";
 import Rating from "@mui/material/Rating/Rating";
+import instance from "../../server/db/instance";
 
 interface State {
     reviews: Reviews[];
@@ -26,14 +24,10 @@ interface State {
 const Clothes: NextPage<Product> = ({
     id,
     name,
-    pictures,
     amount,
     mainPictures,
     price,
     discount,
-    description,
-    size,
-    type,
 }) => {
     const [state, setState] = useState<State>({
         reviews: [],
@@ -42,7 +36,7 @@ const Clothes: NextPage<Product> = ({
 
 
     useEffect(() => {
-        axios.get(`/api/pitch/${id}/reviews`)
+        instance.get(`/pitch/${id}/reviews`)
             .then(res => setState({ ...state, reviews: res.data.reviews }))
     }, [])
 

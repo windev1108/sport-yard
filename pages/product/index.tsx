@@ -1,5 +1,4 @@
 import { Box, Container, Divider, Grid, Tab, Tabs, Button, TextField } from "@mui/material";
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
 import ListProducts from "../../components/ListProducts";
@@ -7,6 +6,7 @@ import { Product } from "../../Models";
 import { convertLowerCase } from "../../utils/helper";
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import instance from "../../server/db/instance";
 
 interface State {
     products: Product[]
@@ -34,7 +34,7 @@ const Products = () => {
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
     useEffect(() => {
-        axios.get("/api/products")
+        instance.get("/products")
             .then(res => {
                 return random ? res.data.products.filter((product: Product) => product.type === tab && convertLowerCase(product.name).match(convertLowerCase(keywords))) : res.data.products.filter((product: Product) => product.type === tab)
             })

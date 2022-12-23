@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import Image from 'next/image';
 import { Cart, Product } from '../../Models';
-import axios from 'axios';
 import { AiFillMinusCircle, AiFillPlusCircle, AiOutlineClear, AiOutlineClose } from 'react-icons/ai';
 import { TiShoppingCart } from 'react-icons/ti'
 import Divider from '@mui/material/Divider';
@@ -17,6 +16,7 @@ import { setOpenCartDetail, setOpenSnackBar } from '../../redux/features/isSlice
 import { setContentSnackBar } from '../../redux/features/userSlice';
 import CartDetail from './CartDetail'
 import { MdClose } from 'react-icons/md';
+import instance from '../../server/db/instance';
 
 
 
@@ -44,7 +44,7 @@ const CartComponent = () => {
 
 
     useEffect(() => {
-        axios.get(`/api/products`)
+        instance.get(`/products`)
             .then(res => {
                 let results: Cart[] = []
                 user?.cart?.forEach((c: CartInUser) => {
@@ -65,7 +65,7 @@ const CartComponent = () => {
     }
 
     const handleClearCart = () => {
-        axios.put(`/api/users/${user.id}`, {
+        instance.put(`/users/${user.id}`, {
             cart: []
         })
         dispatch(setOpenSnackBar(true))
@@ -94,7 +94,7 @@ const CartComponent = () => {
                 id: c.product.id
             })
         })
-        axios.put(`/api/users/${user.id}`, {
+        instance.put(`/users/${user.id}`, {
             cart: newArr
         })
     }
@@ -112,7 +112,7 @@ const CartComponent = () => {
                 id: c.product.id
             })
         })
-        axios.put(`/api/users/${user.id}`, {
+        instance.put(`/users/${user.id}`, {
             cart: newArr
         })
     }

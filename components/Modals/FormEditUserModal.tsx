@@ -3,27 +3,24 @@ import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import { NextPage } from 'next';
-import { Avatar, FormControl, Grid, IconButton, ImageList, ImageListItem, InputLabel, MenuItem, Select } from '@mui/material';
-import { RiImageAddFill } from 'react-icons/ri'
+import { Avatar, FormControl, Grid, IconButton, InputLabel, MenuItem, Select } from '@mui/material';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { User } from '../../Models';
 import { useDispatch, useSelector } from 'react-redux';
-import { setIsUpdate, setOpenFormEditUser } from '../../redux/features/isSlice';
+import { setOpenFormEditUser } from '../../redux/features/isSlice';
 import { RootState } from '../../redux/store';
 import { FormLabel, Tooltip } from '@mui/material';
-import { storage } from '../../firebase/config';
 import { deepOrange } from '@mui/material/colors';
-import { banking, containsNumbers, hasEmpySpace } from '../../utils/helper';
+import { banking } from '../../utils/helper';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa'
-import { AiOutlineMinusCircle, AiOutlinePlus, AiOutlinePlusCircle } from 'react-icons/ai';
+import { AiOutlineMinusCircle, AiOutlinePlusCircle } from 'react-icons/ai';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import LinearProgress from '@mui/material/LinearProgress';
+import instance from '../../server/db/instance';
 
 
 
@@ -73,7 +70,7 @@ const FormEditUserModal: NextPage = () => {
     const { email, firstName, lastName, password, role, blobAvatar, avatar, avatarUrl, bankSlot, banks, phone, address, isLoading, isUploaded, isShowPassword } = state
 
     useEffect(() => {
-        axios.get(`/api/users/${idEditing}`)
+        instance.get(`/users/${idEditing}`)
             .then(res => setState({
                 ...state,
                 firstName: res.data.firstName,
@@ -131,7 +128,7 @@ const FormEditUserModal: NextPage = () => {
         } else if (phone && phone.length > 12 || phone.length < 9) {
             toast.info("Phone number invalid", { autoClose: 3000, theme: "colored" })
         } else if (!blobAvatar) {
-            axios.put(`/api/users/${idEditing}`, {
+            instance.put(`/users/${idEditing}`, {
                 email, password, firstName, banks, lastName, role, phone: +phone, address
             })
             toast.success("Cập nhật thông tin thành công", {
@@ -143,7 +140,7 @@ const FormEditUserModal: NextPage = () => {
         }
         else {
             if (isUploaded) {
-                axios.put(`/api/users/${idEditing}`, { email, password, firstName, banks, phone: +phone, avatar: avatarUrl, lastName, role, address })
+                instance.put(`/users/${idEditing}`, { email, password, firstName, banks, phone: +phone, avatar: avatarUrl, lastName, role, address })
                 toast.success("Cập nhật thông tin thành công", {
                     autoClose: 3000,
                     theme: "colored",

@@ -16,9 +16,9 @@ import LinesEllipsis from "react-lines-ellipsis";
 import Currency from 'react-currency-formatter';
 import Link from "next/link";
 import { formatReviews } from "../utils/helper";
-import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setIsLoading } from "../redux/features/isSlice";
+import instance from "../server/db/instance";
 
 export interface PitchProps {
   id: string;
@@ -39,7 +39,6 @@ const Pitch: NextPage<PitchProps> = ({
   id,
   name,
   location,
-  pictures,
   slots,
   mainPicture
 }) => {
@@ -54,7 +53,7 @@ const Pitch: NextPage<PitchProps> = ({
   useEffect(() => {
     const results: Slot | undefined = slots?.find(slot => new Date().getHours() > +slot.start.substring(0, 2) && new Date().getHours() < +slot.end.substring(0, 2))  // Get slot now time
     const resultsDefault: Slot | undefined = slots?.find(slot => new Date().getHours() < +slot.start.substring(0, 2) || new Date().getHours() > +slot.start.substring(0, 2))  //Get slot after now Time
-    axios.get(`/api/pitch/${id}/reviews`)
+    instance.get(`/pitch/${id}/reviews`)
       .then(res => setState({ ...state, reviews: res.data.reviews, price: +results?.price!, defaultPrice: +resultsDefault?.price! }))
       .then(() => dispatch(setIsLoading(false)))
   }, [])

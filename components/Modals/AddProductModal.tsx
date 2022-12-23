@@ -21,6 +21,7 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { RiImageAddFill } from 'react-icons/ri';
 import LinearProgress from '@mui/material/LinearProgress';
+import instance from '../../server/db/instance';
 
 
 export interface PropsModal {
@@ -128,7 +129,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
             });
         } else {
             if (isUploaded) {
-                axios.post("/api/products", {
+                instance.post("/products", {
                     name,
                     description,
                     discount,

@@ -1,22 +1,20 @@
-import { Avatar, Box, Button, Container, CssBaseline, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, Container, CssBaseline, Grid, IconButton, TextField, Typography } from "@mui/material";
 import Head from "next/head";
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from "next/image";
 import Link from "next/link";
-import { GiSoccerBall } from "react-icons/gi";
 import Banner from "../assets/images/Banner.png";
 import { AiFillLock, AiOutlineLoading3Quarters } from "react-icons/ai";
-import axios from "axios";
 import { User } from "../Models";
 import { toast } from "react-toastify";
-import Router, { useRouter } from "next/router";
-import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { NextPage } from "next";
 import OtpInputInput from 'react-otp-input';
 import { BsDashLg } from "react-icons/bs";
 import Countdown from "../components/Countdown";
 import emailjs from '@emailjs/browser';
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import instance from "../server/db/instance";
 
 
 interface State {
@@ -69,7 +67,7 @@ const Signin: NextPage = (): JSX.Element => {
 
 
     useEffect(() => {
-        axios.get("/api/users")
+        instance.get("/users")
             .then(res => res.data)
             .then((data) => {
                 setState({ ...state, users: data.users })
@@ -123,7 +121,7 @@ const Signin: NextPage = (): JSX.Element => {
             const user: User | undefined = users.find((u: User) => u.email === email)
             setState({ ...state, isLoading: true })
             setTimeout(() => {
-                user?.id && axios.put(`/api/users/${user?.id}`, {
+                user?.id && instance.put(`/users/${user?.id}`, {
                     password
                 })
                 setState({ ...state, isLoading: false })

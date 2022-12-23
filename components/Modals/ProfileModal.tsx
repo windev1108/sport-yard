@@ -14,7 +14,6 @@ import { BsFillTelephoneFill } from 'react-icons/bs';
 import { SiBitcoincash } from 'react-icons/si';
 import { setOpenChatBox, setOpenFormEditUser, setOpenFormTransaction, setOpenProfileModal } from '../../redux/features/isSlice'
 import { setIdEditing, setIdProfile } from '../../redux/features/userSlice';
-import axios from 'axios';
 import { setAction } from '../../redux/features/transactionSlice';
 import dynamic from 'next/dynamic';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -22,6 +21,7 @@ import { useTheme } from '@mui/material/styles';
 import { GrClose, GrUserExpert, GrUserAdmin, GrUser } from 'react-icons/gr';
 import { removeCookies, getCookie } from 'cookies-next';
 import { RiUserFollowLine, RiUserLine, RiUserSettingsLine } from 'react-icons/ri';
+import instance from '../../server/db/instance';
 const Balance = dynamic(() => import("../Balance"), { ssr: false })
 
 
@@ -48,7 +48,7 @@ const ProfileModal: NextPage = () => {
 
 
     useEffect(() => {
-        axios.get(`/api/users/${idProfile}`)
+        instance.get(`/users/${idProfile}`)
             .then(res => {
                 setTimeout(() => setState({ ...state, userProfile: res.data, isLoading: false }), 500)
             })
@@ -87,7 +87,7 @@ const ProfileModal: NextPage = () => {
 
     const handleSendMessage = async () => {
         const isExistConversation = user.conversations.some((c: string) => c === idProfile)
-        !isExistConversation && axios.put(`/api/users/${user.id}`, {
+        !isExistConversation && instance.put(`/users/${user.id}`, {
             conversations: [...user.conversations, idProfile]
         })
         dispatch(setOpenProfileModal(false))

@@ -7,7 +7,6 @@ import Button from '@mui/material/Button';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { Divider, Skeleton, Stack, Step, StepIconProps, StepLabel, Stepper, Typography, Tooltip, TextField } from '@mui/material';
-import axios from 'axios';
 import { Cart, Order, Pitch, Product, User } from '../../Models';
 import Currency from 'react-currency-formatter';
 import TimelapseIcon from '@mui/icons-material/Timelapse';
@@ -36,6 +35,7 @@ import 'moment/locale/vi';
 import io from 'socket.io-client';
 import { NextPage } from 'next';
 import moment from 'moment';
+import instance from '../../server/db/instance';
 
 
 interface State {
@@ -71,13 +71,13 @@ const OrderDetail: NextPage<Props> = ({ notifications }) => {
 
     useEffect(() => {
         if (order.type === "booking") {
-            axios.get(`/api/orders/${idOrder}`)
+            instance.get(`/orders/${idOrder}`)
                 .then(res => {
-                    axios.get(`/api/pitch/${res.data.productId}`)
+                    instance.get(`/pitch/${res.data.productId}`)
                         .then(resPitch => setState({ ...state, pitch: resPitch.data, order: res.data, isLoading: false }))
                 })
         } else {
-            axios.get(`/api/orders/${idOrder}`)
+            instance.get(`/orders/${idOrder}`)
                 .then(res => {
                     setState({ ...state, order: res.data, isLoading: false })
                 })
@@ -107,7 +107,7 @@ const OrderDetail: NextPage<Props> = ({ notifications }) => {
 
 
     const handleAcceptRequest = async () => {
-        const { data } = await axios.get(`/api/users/${order.ordererId}`)
+        const { data } = await instance.get(`/users/${order.ordererId}`)
         if (order.methodPay === 3 && user?.balance < (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)) {
             toast.info(`Số dư của bạn không đủ ${currencyFormatter.format(order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!, { code: 'VND' })} phí dịch vụ , vui lòng nạp thêm `, { autoClose: 3000, theme: "colored" })
         } else if (order.methodPay === 2 && data?.balance < order.total) {
@@ -117,27 +117,27 @@ const OrderDetail: NextPage<Props> = ({ notifications }) => {
             setTimeout(async () => {
                 // if order === booking thi tru tien va + phi van chuyen
                 if (order.type === "order") {
-                    const { data } = await axios.get(`/api/users/${order?.ordererId}`)
-                    order.methodPay === 2 && axios.put(`/api/users/${order.ordererId}`, {
+                    const { data } = await instance.get(`/users/${order?.ordererId}`)
+                    order.methodPay === 2 && instance.put(`/users/${order.ordererId}`, {
                         balance: data.balance - (order.total + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!)
                     })
-                    order.methodPay === 2 && axios.put(`/api/users/${user?.id}`, {
+                    order.methodPay === 2 && instance.put(`/users/${user?.id}`, {
                         balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!) + +process.env.NEXT_PUBLIC_TRANSPORT_FEE!
                     })
-                    order.methodPay === 3 && axios.put(`/api/users/${user.id}`, {
+                    order.methodPay === 3 && instance.put(`/users/${user.id}`, {
                         balance: user.balance - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
                     })
                 } else {
-                    const { data } = await axios.get(`/api/users/${order.ordererId}`)
-                    order.methodPay === 2 && axios.put(`/api/users/${order.ordererId}`, {
+                    const { data } = await instance.get(`/users/${order.ordererId}`)
+                    order.methodPay === 2 && instance.put(`/users/${order.ordererId}`, {
                         balance: data.balance - (order.total)
                     })
-                    order.methodPay === 2 && axios.put(`/api/users/${user?.id}`, {
+                    order.methodPay === 2 && instance.put(`/users/${user?.id}`, {
                         balance: user.balance + order.total - (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
                     })
                 }
 
-                order.methodPay === 2 && axios.put(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
+                order.methodPay === 2 && instance.put(`/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`, {
                     balance: data.balance + (order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!)
                 })
 
@@ -147,7 +147,7 @@ const OrderDetail: NextPage<Props> = ({ notifications }) => {
                 })
 
                 // Change status order to accept
-                axios.put(`/api/orders/${idOrder}`, {
+                instance.put(`/orders/${idOrder}`, {
                     status: 3,
                     senderId: order.receiverId,
                     receiverId: order.senderId,
@@ -160,7 +160,7 @@ const OrderDetail: NextPage<Props> = ({ notifications }) => {
 
 
     const handleRejectRequest = async () => {
-        axios.put(`/api/orders/${idOrder}`, {
+        instance.put(`/orders/${idOrder}`, {
             status: 4,
             senderId: order.receiverId,
             receiverId: order.senderId,
@@ -296,11 +296,11 @@ const OrderDetail: NextPage<Props> = ({ notifications }) => {
         if (order.status >= 6) {
             toast.info("Max step", { autoClose: 3000, theme: "colored" })
         } else if (order.status === 3) {
-            axios.put(`/api/orders/${idOrder}`, {
+            instance.put(`/orders/${idOrder}`, {
                 status: order.status + 2
             })
         } else {
-            axios.put(`/api/orders/${idOrder}`, {
+            instance.put(`/orders/${idOrder}`, {
                 status: order.status + 1
             })
         }
@@ -311,19 +311,19 @@ const OrderDetail: NextPage<Props> = ({ notifications }) => {
         if (order.status <= 5) {
             toast.info("Không thể quay lại step trước đó", { autoClose: 3000, theme: "colored" })
         } else {
-            axios.put(`/api/orders/${idOrder}`, {
+            instance.put(`/orders/${idOrder}`, {
                 status: order.status - 1
             })
         }
     }
 
     const handleConfirmTakeGoodSuccess = async () => {
-        axios.put(`/api/orders/${idOrder}`, {
+        instance.put(`/orders/${idOrder}`, {
             status: 7
         })
         order.products?.forEach(async (o: any) => {
-            const res: { data: Product } = await axios.get(`/api/products/${o.product.id}`)
-            axios.put(`/api/products/${o.product.id}`, {
+            const res: { data: Product } = await instance.get(`/products/${o.product.id}`)
+            instance.put(`/products/${o.product.id}`, {
                 amount: res.data?.amount! - o.amount,
             })
         })
@@ -334,13 +334,13 @@ const OrderDetail: NextPage<Props> = ({ notifications }) => {
         if (!reasonReject) {
             toast.info("Vui lòng nhập lý do từ nhận hàng", { autoClose: 3000, theme: "colored" })
         } else {
-            axios.put(`/api/orders/${idOrder}`, {
+            instance.put(`/orders/${idOrder}`, {
                 status: 8,
                 message: reasonReject
             })
             if (order?.methodPay === 3) {
-                const { data }: any = axios.get(`/api/users/${order.ownerId}`)
-                axios.put(`/api/orders/${order?.ownerId}`, {
+                const { data }: any = instance.get(`/users/${order.ownerId}`)
+                instance.put(`/orders/${order?.ownerId}`, {
                     balance: data.balance + +order.total / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!
                 })
             }
@@ -349,17 +349,17 @@ const OrderDetail: NextPage<Props> = ({ notifications }) => {
     }
 
     const handleRefundOrder = async () => {
-        const { data } = await axios.get(`/api/users/${order.ordererId}`)
+        const { data } = await instance.get(`/users/${order.ordererId}`)
 
         dispatch(setOpenBackdropModal(true))
         setTimeout(() => {
-            axios.put(`/api/users/${order.ordererId}`, {
+            instance.put(`/users/${order.ordererId}`, {
                 balance: data.balance + order.total
             })
-            axios.put(`/api/users/${user?.id}`, {
+            instance.put(`/users/${user?.id}`, {
                 balance: user.balance - order.total
             })
-            axios.put(`/api/orders/${idOrder}`, {
+            instance.put(`/orders/${idOrder}`, {
                 status: 9
             })
             dispatch(setOpenBackdropModal(false))

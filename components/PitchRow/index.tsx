@@ -4,7 +4,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import Pitch from "../Pitch";
 import { Pitch as PitchModel } from "../../Models";
 import { AiFillStar } from "react-icons/ai";
-import axios from "axios";
 import { Card, CardContent, CardMedia, Container, Grid, Skeleton, Typography } from '@mui/material';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -12,6 +11,7 @@ import { setIsLoading } from "../../redux/features/isSlice";
 import CardActions from "@mui/material/CardActions/CardActions";
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import instance from "../../server/db/instance";
 
 
 interface State {
@@ -31,8 +31,8 @@ const PitchRow = () => {
 
 
   useEffect(() => {
-    axios
-      .get("/api/pitch")
+    instance
+      .get("/pitch")
       .then((res) => {
         setState({ ...state, pitch: res.data.pitch, isLoading: false })
       });

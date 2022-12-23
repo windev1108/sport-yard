@@ -24,6 +24,7 @@ import { getCookie } from 'cookies-next';
 import jwt from "jsonwebtoken"
 import io from 'socket.io-client'
 import { toast } from 'react-toastify'
+import instance from '../../server/db/instance';
 
 
 
@@ -96,16 +97,17 @@ const ChatBox = () => {
 
 
     const fetcher = async (url: string) => {
-        const res = await axios.get(url)
+        const res = await instance.get(url)
         messageEndRef.current && scrollToBottom()
         return res.data.messages?.filter((m: Message) => m.senderId === user?.id && m.receiverId === userSelected?.id || m.receiverId === user?.id && m.senderId === userSelected?.id)
     }
 
 
 
-    const { data, mutate } = useSWR(userSelected?.id ? "/api/messages" : null, fetcher)
+    const { data, mutate } = useSWR(userSelected?.id ? "/messages" : null, fetcher)
 
     useEffect(() => {
+
         socketInitializer()
     }, [])
 
@@ -149,8 +151,8 @@ const ChatBox = () => {
     const getConversations = useCallback(async () => {
         const token: any = getCookie("token")
         const { id } = jwt.decode(token) as { [key: string]: string }
-        const resUsers = await axios.get('/api/users')
-        const { data }: { data: User } = await axios.get(`/api/users/${id}`)
+        const resUsers = await instance.get('/users')
+        const { data }: { data: User } = await instance.get(`/users/${id}`)
         usersRef.current = resUsers.data.users,
             conversationsRef.current = data?.role === "admin" ? resUsers.data.users.filter((u: User) => u?.id !== data.id) : data?.conversations?.map((c: string) => {
                 return resUsers.data.users.find((u: User) => u.id === c)
@@ -175,7 +177,7 @@ const ChatBox = () => {
         } else if (message) {
             setState({ ...state, message: "" })
             setShowEmojis(false)
-            await axios.post("/api/messages", {
+            await instance.post("/messages", {
                 senderId: user?.id,
                 receiverId: userSelected?.id,
                 message,
@@ -187,7 +189,7 @@ const ChatBox = () => {
             })
             if (user?.role !== "admin") {
                 const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
-                !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
+                !checkIsExistConversations && instance.put(`/users/${userSelected?.id}`, {
                     conversations: [...userSelected?.conversations, user?.id]
                 })
             }
@@ -196,19 +198,19 @@ const ChatBox = () => {
         } else {
             if (urls.length === previewBlobs.length && isUploaded) {
                 setState({ ...state, pictures: [], previewBlobs: [] })
-                await axios.post("/api/messages", {
+                await instance.post("/messages", {
                     senderId: user?.id,
                     receiverId: userSelected?.id,
                     pictures: urls,
                     type: "images"
                 })
                 if (user?.role !== "admin") {
-                    const { data } = userSelected?.id && await axios.get(`/api/users/${userSelected?.id}`)
+                    const { data } = userSelected?.id && await instance.get(`/users/${userSelected?.id}`)
                     const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
-                    !checkIsExistConversations && axios.put(`/api/users/${userSelected?.id}`, {
+                    !checkIsExistConversations && instance.put(`/users/${userSelected?.id}`, {
                         conversations: [...data?.conversations, user?.id]
                     })
-                    !checkIsExistConversations && axios.put(`/api/users/${user?.id}`, {
+                    !checkIsExistConversations && instance.put(`/users/${user?.id}`, {
                         conversations: [...user?.conversations, userSelected?.id]
                     })
                 }
@@ -231,7 +233,7 @@ const ChatBox = () => {
 
     const handleDeleteConversation = (id: string) => {
         setState({ ...state, userSelected: {}, isOpenChatMessage: false })
-        axios.put(`/api/users/${user.id}`, {
+        instance.put(`/users/${user.id}`, {
             conversations: user?.conversations.filter((c: string) => c !== id)
         })
     }

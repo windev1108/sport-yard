@@ -1,18 +1,17 @@
-import { Avatar, Box, Button, Container, CssBaseline, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, Container, CssBaseline, Grid, TextField, Typography } from "@mui/material";
 import Head from "next/head";
 import { useEffect, useState } from 'react'
 import Image from "next/image";
 import Link from "next/link";
-import { GiSoccerBall } from "react-icons/gi";
 import Banner from "../assets/images/Banner.png";
 import { AiFillLock } from "react-icons/ai";
-import axios from "axios";
 import { User } from "../Models";
 import { toast } from "react-toastify";
-import Router, { useRouter } from "next/router";
-import { signIn, useSession } from "next-auth/react";
+import Router from "next/router";
 import { NextPage } from "next";
 import { setCookies } from 'cookies-next';
+import instance from "../server/db/instance";
+import axios from "axios";
 
 
 interface State {
@@ -38,7 +37,7 @@ const Signin: NextPage = (): JSX.Element => {
 
   useEffect(() => {
     const rememberData: any = localStorage.getItem('remember')
-    axios.get("/api/users")
+    instance.get("/users")
       .then(res => res.data)
       .then((data) => {
         setState({ ...state, users: data.users, isHasRemember: Boolean(JSON.parse(rememberData)?.email), email: JSON.parse(rememberData)?.email, password: JSON.parse(rememberData)?.password! })
@@ -66,7 +65,7 @@ const Signin: NextPage = (): JSX.Element => {
         email,
         password
       }))
-      const { data } = await axios.post('/api/login', { id: user.id, role : user.role })
+      const { data } = await instance.post('/login', { id: user.id, role: user.role })
       setCookies('token', data.token, { maxAge: 60 * 6 * 24 });
       Router.push("/")
     }
@@ -114,7 +113,7 @@ const Signin: NextPage = (): JSX.Element => {
                 </Avatar>
                 <Typography
                   component="h1" variant="h5">
-                  Sign in
+                  Đăng nhập
                 </Typography>
                 <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
                   <Grid container spacing={2}>
@@ -152,11 +151,11 @@ const Signin: NextPage = (): JSX.Element => {
                           checked={isRemember}
                           onChange={() => setState({ ...state, isRemember: !isRemember })}
                           className="cursor-pointer" id="forgot" type="checkbox" />
-                        <label className="cursor-pointer" htmlFor='forgot'>Remember me?</label>
+                        <label className="cursor-pointer" htmlFor='forgot'>Ghi nhớ tôi?</label>
                       </div>
                       <Link href="forgot" >
                         <span className="cursor-pointer hover:underline text-[#1976dE]">
-                          Forgot password?
+                          Quên mật khẩu?
                         </span>
                       </Link>
                     </div>
@@ -168,20 +167,20 @@ const Signin: NextPage = (): JSX.Element => {
                     variant="contained"
                     sx={{ mt: 3, mb: 2 }}
                   >
-                    Sign in
+                    Đăng nhập
                   </Button>
                   <Grid container justifyContent="flex-end">
                     <Grid item>
                       <Grid container columnGap={1} alignItems={"center"}>
                         <Grid item>
                           <Typography variant="body1" component="h6">
-                            Don`t have an account
+                            Bạn chưa có tài khoản ?
                           </Typography>
                         </Grid>
                         <Grid item>
                           <Link href="/signup">
                             <a className="text-[#1976dE] font-semibold">
-                              ? Signup
+                              Đăng ký
                             </a>
                           </Link>
                         </Grid>

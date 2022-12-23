@@ -8,7 +8,6 @@ import NotificationImg from '../../assets/images/notification.png'
 import Image from 'next/image';
 import { db } from '../../firebase/config';
 import { RootState } from '../../redux/store';
-import axios from 'axios';
 import { AiFillDashboard, AiOutlineClear } from 'react-icons/ai';
 import { query, collection, onSnapshot, orderBy } from 'firebase/firestore'
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -23,6 +22,7 @@ import OrderProductModal from '../Modals/OrderProductModal';
 import jwt from 'jsonwebtoken'
 import Dashboard from '../Dashboard'
 import PaymentModal from '../Modals/PaymentModal';
+import instance from '../../server/db/instance';
 
 
 
@@ -68,9 +68,9 @@ const Notifications = () => {
     const handleClearNotification = () => {
         notifications.forEach((order: Order) => {
             if (order.senderId === "" || order.receiverId === "") {
-                axios.delete(`/api/orders/${order.id}`)
+                instance.delete(`/orders/${order.id}`)
             } else {
-                axios.put(`/api/orders/${order.id}`, {
+                instance.put(`/orders/${order.id}`, {
                     receiverId: order.receiverId === user?.id ? "" : order.receiverId,
                     senderId: order.senderId === user?.id ? "" : order.senderId
                 })

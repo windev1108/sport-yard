@@ -17,6 +17,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import IconButton from '@mui/material/IconButton'
 import { AiOutlineClose } from 'react-icons/ai'
 import { getCookie } from 'cookies-next'
+import instance from '../../server/db/instance'
 
 
 interface Props {
@@ -72,9 +73,9 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
 
 
     useEffect(() => {
-        axios.get("/api/orders")
+        instance.get("/orders")
             .then(resOrder => {
-                axios.get(`/api/users/${pitch.owner}`)
+                instance.get(`/users/${pitch.owner}`)
                     .then(resUser => {
                         axios.get(`http://api.openweathermap.org/data/2.5/weather?lat=${pitch.coordinates.latitude}&lon=${pitch.coordinates.longitude}&cnt=${date.getDate()}&units=metric&lang=vi&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_APIKEY}`)
                             .then(resWeather => {
@@ -155,7 +156,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
                 }
                 dispatch(setOpenBackdropModal(true))
                 setTimeout(async () => {
-                    const { data }: { data: { id: string } } = await axios.post("/api/orders", formData)
+                    const { data }: { data: { id: string } } = await instance.post("/orders", formData)
                     dispatch(setIdOrder(data.id))
                     dispatch(setOpenBackdropModal(false))
                     dispatch(setOpenNotificationDetail(true))
@@ -196,7 +197,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
 
 
     const handleLockSlot = (slot: number) => {
-        axios.put(`/api/pitch/${pitch.id}`, {
+        instance.put(`/pitch/${pitch.id}`, {
             booked: pitch?.booked ? [...pitch?.booked, {
                 slot,
                 date
@@ -211,7 +212,7 @@ const BookingPitchModal: NextPage<Props> = ({ date, pitch, open, changeDate, set
     const handleDeleteSlot = (slot: number) => {
         const newSlots = pitch.slots?.filter(s => s.id !== slot)
 
-        axios.put(`/api/pitch/${pitch.id}`, {
+        instance.put(`/pitch/${pitch.id}`, {
             slots: newSlots.map((s, index: number) => {
                 return {
                     ...s,

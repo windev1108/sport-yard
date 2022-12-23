@@ -6,7 +6,7 @@ import "leaflet-defaulticon-compatibility";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Pitch } from '../Models';
-import axios from 'axios';
+import instance from '../server/db/instance';
 
 
 const icon = L.icon({
@@ -26,7 +26,7 @@ const Map: NextPage<MapProps> = ({ pitchId }) => {
     const position: L.LatLngExpression | undefined = [coordinates?.latitude, coordinates?.longitude]
 
     useEffect(() => {
-        pitchId && axios.get(`/api/pitch/${pitchId}`)
+        pitchId && instance.get(`/pitch/${pitchId}`)
             .then(res => setPitch(res.data))
     }, [pitchId])
 

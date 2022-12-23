@@ -1,5 +1,4 @@
-import { Avatar, Button, Container, FormControl, Grid, IconButton, ImageList, ImageListItem, InputLabel, ListItemAvatar, ListItemText, MenuItem, OutlinedInput, Select, Skeleton, TextField, Tooltip, Typography } from "@mui/material";
-import axios from "axios";
+import { Avatar, Button, Container, FormControl, Grid, IconButton, ImageList, ImageListItem, InputLabel, ListItemAvatar, ListItemText, MenuItem, OutlinedInput, Select, Skeleton, Tooltip, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { AiFillStar, AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,7 +11,6 @@ import { Navigation, Thumbs, FreeMode } from "swiper";
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import { useSession } from "next-auth/react";
 import { RootState } from "../../redux/store";
 import { toast } from "react-toastify";
 import moment from "moment";
@@ -26,6 +24,7 @@ import { getCookie } from "cookies-next";
 import { FaUserTie } from "react-icons/fa";
 import Link from "next/link";
 import { BsFillTelephoneFill } from "react-icons/bs";
+import instance from "../../server/db/instance";
 
 
 
@@ -83,10 +82,10 @@ const ProductDetail = ({ productId }: any) => {
 
 
     useEffect(() => {
-        axios
-            .get(`/api/products/${productId}`)
+        instance
+            .get(`/products/${productId}`)
             .then(res => {
-                axios.get('/api/users')
+                instance.get('/users')
                     .then(resUsers => {
                         const sliders = [...res.data.mainPictures, ...res.data.pictures].map((item, index) => {
                             return {
@@ -115,9 +114,9 @@ const ProductDetail = ({ productId }: any) => {
         } else {
             if (productExists?.id) {
                 const newProduct = user.cart?.filter((cart: Product) => cart.id !== productExists.id)
-                axios.put(`/api/users/${user.id}`, { cart: user.cart?.length ? [...newProduct, { id: productId, size: null, amount: productExists.amount + amount }] : [{ id: productId, amount }] })
+                instance.put(`/users/${user.id}`, { cart: user.cart?.length ? [...newProduct, { id: productId, size: null, amount: productExists.amount + amount }] : [{ id: productId, amount }] })
             } else {
-                axios.put(`/api/users/${user.id}`, { cart: [...user?.cart, { id: productId, size: null, amount }] })
+                instance.put(`/users/${user.id}`, { cart: [...user?.cart, { id: productId, size: null, amount }] })
             }
         }
         dispatch(setOpenSnackBar(true))

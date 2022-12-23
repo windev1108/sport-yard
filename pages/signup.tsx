@@ -4,10 +4,13 @@ import React, { useEffect, useState } from "react";
 import Banner from "../assets/images/Banner.png";
 import { toast } from "react-toastify";
 import Head from "next/head";
-import axios from "axios";
 import { User } from "../Models";
-import { Avatar, Box, Button, Checkbox, Container, CssBaseline, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Avatar, Box, Button, Container, CssBaseline, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { AiFillLock } from "react-icons/ai";
+import instance from "../server/db/instance";
+import axios from "axios";
+import Router from "next/router";
+import { setCookies } from "cookies-next";
 
 interface State {
   email: string
@@ -31,11 +34,11 @@ const Signup = () => {
   const { email, firstName, lastName, password, role, users } = state;
 
   useEffect(() => {
-    axios.get("/api/users")
+    instance.get("/users")
       .then(res => setState({ ...state, users: res.data.users }))
   }, [])
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     const checkEmail = users.some(user => user.email === email)
     if (checkEmail) {
@@ -51,11 +54,14 @@ const Signup = () => {
     } else if (password.length < 6) {
       toast.info("Mật khẩu phải ít nhất 6 kí tự ", { autoClose: 3000, theme: "colored" })
     } else {
-      axios.post("api/users", { email, password, firstName, lastName, role, balance: 0, banks: [], cart: [] })
+      const res: any = await instance.post("/users", { email, password, firstName, lastName, role, balance: 0, banks: [], cart: [], conversations: [process.env.NEXT_PUBLIC_ADMIN_ID] })
+      const { data } = await instance.post('/login', { id: res.data.id, role })
       toast.success("Đăng ký thành công", {
         autoClose: 3000,
         theme: "colored",
       });
+      setCookies('token', data.token, { maxAge: 60 * 6 * 24 });
+      Router.push("/")
       setState({ ...state, firstName: "", lastName: "", password: "", email: "", role: "" })
     };
   }
@@ -99,7 +105,7 @@ const Signup = () => {
                   <AiFillLock />
                 </Avatar>
                 <Typography component="h1" variant="h5">
-                  Sign up
+                  Đăng ký tài khoản
                 </Typography>
                 <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
                   <Grid container spacing={2}>
@@ -112,7 +118,7 @@ const Signup = () => {
                         required
                         fullWidth
                         id="firstName"
-                        label="First Name"
+                        label="Tên"
                         autoFocus
                       />
                     </Grid>
@@ -123,7 +129,7 @@ const Signup = () => {
                         required
                         fullWidth
                         id="lastName"
-                        label="Last Name"
+                        label="Họ"
                         name="lastName"
                         autoComplete="family-name"
                       />
@@ -148,7 +154,7 @@ const Signup = () => {
                         required
                         fullWidth
                         name="password"
-                        label="Password"
+                        label="Mật khẩu"
                         type="password"
                         id="password"
                         autoComplete="new-password"
@@ -156,15 +162,15 @@ const Signup = () => {
                     </Grid>
                     <Grid item xs={12}>
                       <FormControl fullWidth>
-                        <InputLabel id="demo-simple-select-label">Role</InputLabel>
+                        <InputLabel id="demo-simple-select-label">Vai trò</InputLabel>
                         <Select
                           labelId="demo-simple-select-label"
                           label="Role"
                           onChange={e => setState({ ...state, role: e.target.value })}
                           role={role}
                         >
-                          <MenuItem value={"customer"}>Customer</MenuItem>
-                          <MenuItem value={"owner"}>Owner</MenuItem>
+                          <MenuItem value={"customer"}>Khách hàng</MenuItem>
+                          <MenuItem value={"owner"}>Chủ sở hữu</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
@@ -176,20 +182,20 @@ const Signup = () => {
                     variant="contained"
                     sx={{ mt: 3, mb: 2 }}
                   >
-                    Sign Up
+                    Đăng ký
                   </Button>
                   <Grid container justifyContent="flex-end">
                     <Grid item>
                       <Grid container columnGap={1} alignItems={"center"}>
                         <Grid item>
                           <Typography variant="body1" component="h6">
-                            Already have an account
+                            Bạn đã có tài khoản ?
                           </Typography>
                         </Grid>
                         <Grid item>
                           <Link href="/signin">
                             <a className="text-[#1976dE] font-semibold">
-                              ? Signin
+                              Đăng nhập
                             </a>
                           </Link>
                         </Grid>

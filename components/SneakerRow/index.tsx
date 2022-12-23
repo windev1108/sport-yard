@@ -3,14 +3,12 @@ import { Navigation, Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Product } from "../../Models";
 import { AiFillStar } from "react-icons/ai";
-import axios from "axios";
 import { Container, Grid, Skeleton, Typography } from '@mui/material';
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
-import { setIsLoading } from "../../redux/features/isSlice";
 import ProductComponent from "../Product";
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import instance from "../../server/db/instance";
 
 
 
@@ -32,8 +30,8 @@ const SneakersRow = () => {
 
 
     useEffect(() => {
-        axios
-            .get("/api/products")
+        instance
+            .get("/products")
             .then((res) => {
                 setState({ ...state, products: res.data.products.filter((product: Product) => product.type === "sneakers"), isLoading: false })
             });

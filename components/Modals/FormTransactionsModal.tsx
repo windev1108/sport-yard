@@ -12,7 +12,6 @@ import { RootState } from '../../redux/store';
 import { FormControl, InputLabel, Select, MenuItem, Grid, Typography, Snackbar, IconButton } from '@mui/material';
 import { toast } from 'react-toastify';
 import FormHelperText from '@mui/material/FormHelperText';
-import axios from 'axios';
 import { setAction } from '../../redux/features/transactionSlice';
 import { AiFillCopy, AiOutlineClose } from 'react-icons/ai';
 import { Bank, User } from '../../Models';
@@ -20,6 +19,7 @@ import Currency from 'react-currency-formatter';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { RiErrorWarningLine } from 'react-icons/ri';
+import instance from '../../server/db/instance';
 
 
 
@@ -59,17 +59,17 @@ const FormTransactionsModal: NextPage = () => {
 
 
     useEffect(() => {
-        axios.get(`/api/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`)
+        instance.get(`/users/${process.env.NEXT_PUBLIC_ADMIN_ID}`)
             .then(res => setState({ ...state, banks: res.data.banks }))
     }, [])
 
     const handleSubmit = async () => {
         if (!amount) {
-            toast.info("Please enter your amount", { autoClose: 3000, theme: "colored" })
+            toast.info("Vui lòng nhập số lượng", { autoClose: 3000, theme: "colored" })
         } else if (action === "deposit" && +amount > 10000000) {
-            toast.info("The maximum amount is 10,000,000 ₫", { autoClose: 3000, theme: "colored" })
+            toast.info("Nạp tối đa 10,000,000 ₫", { autoClose: 3000, theme: "colored" })
         } else if (action === "withdraw" && +amount > user.balance) {
-            toast.info("The amount has exceeded your balance", { autoClose: 3000, theme: "colored" })
+            toast.info("Bạn đã vượt số dư hiện tại", { autoClose: 3000, theme: "colored" })
         } else {
             const formData = {
                 transactionId,
@@ -89,7 +89,7 @@ const FormTransactionsModal: NextPage = () => {
             setTimeout(() => {
                 dispatch(setOpenBackdropModal(false))
                 dispatch(setOpenFormTransaction(false))
-                axios.post('/api/transactions', formData)
+                instance.post('/transactions', formData)
                 toast.success(action === "deposit" ? "Deposit request sent successfully" : "Withdraw request sent successfully", { autoClose: 3000, theme: "colored" })
             }, 3000)
         }
@@ -232,9 +232,9 @@ const FormTransactionsModal: NextPage = () => {
                                     className="cursor-pointer text-yellow-400" size={18} />
                             </div>
                             <div className="flex space-x-2 items-center">
-                                <RiErrorWarningLine 
-                                size={20}
-                                className="text-yellow-600" />
+                                <RiErrorWarningLine
+                                    size={20}
+                                    className="text-yellow-600" />
                                 <Typography variant="subtitle2" component="h1">
                                     {`Sai nội dung chuyển khoản trừ 10% số lượng giao dịch`}
                                 </Typography>

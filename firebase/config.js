@@ -5,25 +5,21 @@ import "firebase/compat/storage";
 import firebase from 'firebase/compat/app';
 
 const firebaseConfig  = {
-  apiKey: "AIzaSyB88Ar8NKRHmcMDJejIfF-uV7exwi_7eLI",
-  authDomain: "sport-yard-40ac7.firebaseapp.com",
-  projectId: "sport-yard-40ac7",
-  storageBucket: "sport-yard-40ac7.appspot.com",
-  messagingSenderId: "291278538548",
-  appId: "1:291278538548:web:0be226549493cd0bba4761",
-  measurementId: "G-RKH8CZ5M5P"
+  apiKey : "AIzaSyB63wvNk_yaZZjSJ9L0RrHFyATtfSAOCpA" , 
+  authDomain : "sport-yard-858ca.firebaseapp.com" , 
+  projectId : "sport-yard-858ca" , 
+  storageBucket : "sport-yard-858ca.appspot.com" , 
+  messagingSenderId : "780042672485" , 
+  appId : "1:780042672485:web:e394a6fe86c9bbf97e698c" , 
+  đoId : "G-7FWNWZLHWC" 
 };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-firebase.analytics();
 
 // init services
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Firebase storage reference
-const storage = firebase.storage();
-
-export { db, auth, storage };
+export { db, auth };
 export default firebase;

@@ -8,9 +8,7 @@ import { setOpenTransactionDetail } from '../../redux/features/isSlice';
 import TransactionImg from '../../assets/images/transaction.png'
 import Image from 'next/image';
 import { db } from '../../firebase/config';
-import { RootState } from '../../redux/store';
 import { query, collection, onSnapshot, orderBy } from 'firebase/firestore'
-import axios from 'axios';
 import { AiOutlineClear } from 'react-icons/ai';
 import { toast } from 'react-toastify';
 import { setIdTransaction } from '../../redux/features/transactionSlice';
@@ -18,6 +16,7 @@ import moment from 'moment';
 import { getCookie } from 'cookies-next';
 import jwt from 'jsonwebtoken'
 import { MdClose } from 'react-icons/md';
+import instance from '../../server/db/instance';
 
 interface State {
     transactions: any[]
@@ -26,7 +25,6 @@ const Transactions = () => {
     const token: any = getCookie("token")
     const data = jwt.decode(token) as { [key: string]: string }
     const dispatch = useDispatch()
-    const { user }: any = useSelector<RootState>(state => state.user)
     const [transactionsEl, setTransactionsEl] = React.useState<null | HTMLElement>(null);
     const [state, setState] = React.useState<State>({
         transactions: []
@@ -61,9 +59,9 @@ const Transactions = () => {
 
     const handleClearTransactionHistory = () => {
         transactions.forEach(transaction => {
-            axios.delete(`/api/transactions/${transaction.id}`)
+            instance.delete(`/transactions/${transaction.id}`)
         })
-        toast.success("Clear Transaction history success", { autoClose: 3000, theme: "colored" })
+        toast.success("Xóa lịch sử giao dịch thành công", { autoClose: 3000, theme: "colored" })
     }
 
 
@@ -98,25 +96,25 @@ const Transactions = () => {
                 >
                     <div className="lg:relative fixed top-0 left-0 right-0 bottom-0 bg-white">
                         <div className="flex justify-between">
-                        <div className="flex items-center justify-start px-4">
-                            <Typography fontWeight={700} variant="body1" component="h1">
-                                Clear
-                            </Typography>
+                            <div className="flex items-center justify-start px-4">
+                                <Typography fontWeight={700} variant="body1" component="h1">
+                                    Clear
+                                </Typography>
+                                <IconButton
+                                    onClick={handleClearTransactionHistory}
+                                >
+                                    <AiOutlineClear className="text-primary" />
+                                </IconButton>
+                            </div>
                             <IconButton
-                                onClick={handleClearTransactionHistory}
+                                className="lg:!hidden block"
+                                onClick={handleCloseTransactions}
                             >
-                                <AiOutlineClear className="text-primary" />
+                                <MdClose />
                             </IconButton>
                         </div>
-                        <IconButton
-                            className="lg:!hidden block"
-                            onClick={handleCloseTransactions}
-                        >
-                            <MdClose />
-                        </IconButton>
-                        </div>
                         <Divider />
-                        <div className="relative lg:w-[25rem] w-full lg:max-h-[20rem] overflow-x-hidden !overflow-y-scroll">
+                        <div className="relative lg:w-[25rem] w-full lg:max-h-[20rem] overflow-x-hidden !overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                             {transactions.map(((item: Transaction, index: number) => (
                                 <div
                                     onClick={() => handleTransactionDetail(item.id)}

@@ -8,11 +8,11 @@ import { RootState } from '../../redux/store';
 import Link from 'next/link';
 import { FaTelegramPlane } from 'react-icons/fa';
 import { deepOrange } from '@mui/material/colors';
-import axios from 'axios';
 import Review from './Review';
 import { getCookie } from 'cookies-next';
 import Router from 'next/router';
 import { setIsUpdate } from '../../redux/features/isSlice';
+import instance from '../../server/db/instance';
 
 
 interface State {
@@ -59,7 +59,7 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
             toast.success("Thêm đánh giá thành công", { autoClose: 3000, theme: "colored" })
             dispatch(setIsUpdate(!isUpdated))
             setState({ ...state, review: "", rating: 0 })
-            type === "product" ? axios.post(`/api/products/${productId}/reviews`, formData) : axios.post(`/api/pitch/${pitchId}/reviews`, formData)
+            type === "product" ? instance.post(`/products/${productId}/reviews`, formData) : instance.post(`/pitch/${pitchId}/reviews`, formData)
         }
     }
 
@@ -74,9 +74,9 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
 
 
     useEffect(() => {
-        axios.get(`/api/${type === "product" ? "products" : "pitch"}/${type === "product" ? productId : pitchId}/reviews`)
+        instance.get(`/${type === "product" ? "products" : "pitch"}/${type === "product" ? productId : pitchId}/reviews`)
             .then(resReviews => {
-                axios.get('/api/orders')
+                instance.get('/orders')
                     .then(resOrders => setState({ ...state, reviews: resReviews.data.reviews, myOrders: resOrders.data.orders.filter((order: Order) => order.ordererId === user.id && order.productId === pitchId).length, isLoading: false }))
             })
         // .then(data => {

@@ -40,7 +40,7 @@ const Layout: NextPage<LayoutProps> = ({ children }) => {
 
 
       {/* before */}
-      {token && !isLoading && router.asPath !== "/owner/manager" && router.asPath !== "/admin/manager" && <ChatBox />}
+      {token && router.asPath !== "/owner/manager" && router.asPath !== "/admin/manager" && <ChatBox />}
 
       {/* {token && router.asPath !== "/owner/manager" && router.asPath !== "/admin/manager" && <ChatBox />} */}
       <Snackbar open={isOpenSnackbar} autoHideDuration={500} onClose={() => dispatch(setOpenSnackBar(false))}>

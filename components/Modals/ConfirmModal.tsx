@@ -1,11 +1,11 @@
 import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material'
 import { NextPage } from 'next'
 import React from 'react'
-import axios from 'axios'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { setIsUpdate } from '../../redux/features/isSlice'
 import { RootState } from '../../redux/store'
+import instance from '../../server/db/instance'
 
 
 interface Props {
@@ -20,21 +20,21 @@ const ConfirmModal: NextPage<Props> = ({ tab, id, open, setOpen }) => {
     const dispatch = useDispatch()
 
     const handleDeleteUser = () => {
-        axios.delete(`/api/users/${id}`)
+        instance.delete(`/users/${id}`)
         toast.success("Xóa người dùng thành công", { autoClose: 3000, theme: "colored" })
         setOpen(false)
         dispatch(setIsUpdate(!isUpdated))
     }
 
     const handleDeletePitch = () => {
-        axios.delete(`/api/pitch/${id}`)
+        instance.delete(`/pitch/${id}`)
         toast.success("Xóa sân bóng thành công", { autoClose: 3000, theme: "colored" })
         setOpen(false)
         dispatch(setIsUpdate(!isUpdated))
     }
 
     const handleDeleteProduct = () => {
-        axios.delete(`/api/products/${id}`)
+        instance.delete(`/products/${id}`)
         toast.success("Xóa sản phẩm thành công", { autoClose: 3000, theme: "colored" })
         setOpen(false)
         dispatch(setIsUpdate(!isUpdated))

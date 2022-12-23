@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useLayoutEffect, memo, useCallback, useRef } from 'react';
+import React, { useState, useLayoutEffect, memo, useCallback, useRef } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import axios from 'axios';
 import Layout from '../../components/Layout';
 import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic'
 import { Pitch, Product, User } from '../../Models';
 import { GiClothes, GiSoccerField, GiSonicShoes } from 'react-icons/gi';
 import { HiUser } from 'react-icons/hi'
-import { useSession } from 'next-auth/react';
 import Router from 'next/router';
 import { RootState } from '../../redux/store';
-import { Avatar, Button, IconButton, ImageList, ImageListItem, Tooltip, Typography } from '@mui/material';
+import { Avatar, IconButton, ImageList, ImageListItem, Tooltip, Typography } from '@mui/material';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { FiEdit } from 'react-icons/fi';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -20,11 +18,12 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { deepOrange } from '@mui/material/colors';
 import { FaUsers } from 'react-icons/fa';
 import ConfirmModal from "../../components/Modals/ConfirmModal"
-import { setIsLoading, setOpenFormEditUser } from '../../redux/features/isSlice';
+import { setOpenFormEditUser } from '../../redux/features/isSlice';
 import { setIdEditing } from '../../redux/features/userSlice';
 import { getCookie } from 'cookies-next';
 import jwt from "jsonwebtoken"
 import Skeleton from '@mui/material/Skeleton';
+import instance from '../../server/db/instance';
 const AddUserModal = dynamic(() => import("../../components/Modals/AddUserModal"), { ssr: false })
 const AddPitchModal = dynamic(() => import("../../components/Modals/AddPitchModal"), { ssr: false })
 const AddProductModal = dynamic(() => import("../../components/Modals/AddProductModal"), { ssr: false })
@@ -81,7 +80,7 @@ const OwnerManager = () => {
         if (user.role === "admin") {
             switch (tab) {
                 case 0: {
-                    axios.get("/api/users")
+                    instance.get("/users")
                         .then(res => {
                             setState({ ...state, tabData: res.data.users, isLoading: false })
                             usersRef.current = res.data.users
@@ -89,21 +88,21 @@ const OwnerManager = () => {
                 }
                     break
                 case 1: {
-                    axios.get("/api/pitch")
+                    instance.get("/pitch")
                         .then(res => {
                             setState({ ...state, tabData: res.data.pitch, isLoading: false })
                         })
                 }
                     break
                 case 2: {
-                    axios.get("/api/products")
+                    instance.get("/products")
                         .then(res => {
                             setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "clothes"), isLoading: false })
                         })
                 }
                     break
                 case 3: {
-                    axios.get("/api/products")
+                    instance.get("/products")
                         .then(res => {
                             setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "sneakers"), isLoading: false })
                         })

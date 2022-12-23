@@ -9,13 +9,13 @@ import { NextPage } from 'next';
 import { useDispatch, useSelector } from 'react-redux';
 import { setOpenTransactionDetail } from '../../redux/features/isSlice';
 import { RootState } from '../../redux/store';
-import { Divider, Skeleton, Typography, IconButton, Tooltip } from '@mui/material';
-import axios from 'axios';
+import { Divider, Skeleton, Typography, IconButton } from '@mui/material';
 import { Transaction, User } from '../../Models';
 import Currency from 'react-currency-formatter';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { AiOutlineClose } from 'react-icons/ai';
+import instance from '../../server/db/instance';
 
 interface State {
     transaction: Transaction | any
@@ -38,27 +38,27 @@ const TransactionDetail: NextPage = () => {
 
 
     useEffect(() => {
-        axios.get(`/api/transactions/${idTransaction}`)
+        instance.get(`/transactions/${idTransaction}`)
             .then(res => setState({ ...state, transaction: res.data, isLoading: false }))
 
     }, [user])
 
 
     const handleAcceptRequest = async () => {
-        const { data }: { data: User } = await axios.get(`/api/users/${transaction.senderId}`)
+        const { data }: { data: User } = await instance.get(`/users/${transaction.senderId}`)
 
         if (data?.role === "owner" && !data.isOwner && transaction.amount >= 500000 && transaction.action === "deposit") {
-            axios.put(`/api/users/${transaction.senderId}`, {
+            instance.put(`/users/${transaction.senderId}`, {
                 balance: data.balance + transaction.amount,
                 isOwner: true
             })
         } else {
-            axios.put(`/api/users/${transaction.senderId}`, {
+            instance.put(`/users/${transaction.senderId}`, {
                 balance: transaction.action === "deposit" ? data.balance + transaction.amount : data.balance - transaction.amount,
             })
         }
 
-        axios.put(`/api/transactions/${idTransaction}`, {
+        instance.put(`/transactions/${idTransaction}`, {
             receiverId: transaction.senderId,
             senderId: transaction.receiverId,
             status: "fulfilled",
@@ -72,7 +72,7 @@ const TransactionDetail: NextPage = () => {
     }
 
     const handleRejectRequest = () => {
-        axios.put(`/api/transactions/${idTransaction}`, {
+        instance.put(`/transactions/${idTransaction}`, {
             receiverId: transaction.senderId,
             senderId: transaction.receiverId,
             status: "rejected",
@@ -96,7 +96,7 @@ const TransactionDetail: NextPage = () => {
                     <Skeleton variant="text" className="py-[32px] mx-[24px]" width={180} height={50} />
                     :
                     <DialogTitle>
-                        <Typography fontWeight={700} variant="body1" component="h1">Transaction detail</Typography>
+                        <Typography fontWeight={700} textAlign="center" variant="body1" component="h1">Chi tiết giao dịch</Typography>
                         <IconButton
                             className="absolute top-1 right-0"
                             onClick={handleClose}

@@ -17,6 +17,7 @@ import { RootState } from '../../redux/store';
 import { Checkbox, FormControlLabel, FormGroup, FormLabel, Tooltip } from '@mui/material';
 import { pitchSize } from '../../utils/helper';
 import { Slot } from '../../Models'
+import instance from '../../server/db/instance';
 
 export interface PropsModal {
     setOpen: any
@@ -69,7 +70,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
 
 
     useEffect(() => {
-        axios.get(`/api/pitch/${id}`)
+        instance.get(`/pitch/${id}`)
             .then(res => {
                 setState({
                     ...state,
@@ -140,7 +141,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
         } else if (!isValidStartTime && !isValidEndTime && !isValidPrice) {
             toast.info("Please fill out the information for the slot table", { autoClose: 3000, theme: "colored" })
         } else if (!isUploadedPictures || !isUploadedMainPicture) {
-            axios.put(`/api/pitch/${id}`, {
+            instance.put(`/pitch/${id}`, {
                 name,
                 location,
                 size,
@@ -153,7 +154,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
             toast.success("Cập nhật sân bóng thành công", { autoClose: 3000, theme: "colored" })
         } else {
             if (isUploadedPictures || isUploadedMainPicture) {
-                axios.put(`/api/pitch/${id}`, {
+                instance.put(`/pitch/${id}`, {
                     name,
                     location,
                     size,

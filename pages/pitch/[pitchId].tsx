@@ -6,10 +6,9 @@ import { Pitch, Reviews, User } from "../../Models";
 import { RootState } from "../../redux/store";
 import { ImLocation } from "react-icons/im";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Avatar, Button, Grid, Tooltip, Skeleton, Typography, IconButton } from '@mui/material';
+import { Button, Grid, Tooltip, Skeleton, Typography, IconButton } from '@mui/material';
 import { Navigation } from "swiper";
 import { Calendar } from "react-calendar";
-import axios from "axios";
 import { formatReviews } from "../../utils/helper";
 import DividerImg from '../../assets/images/divider.png'
 import PitchImg from '../../assets/images/pitch.png'
@@ -21,13 +20,13 @@ import Water from '../../assets/images/water.png'
 import { setIsLoading, setOpenProfileModal } from "../../redux/features/isSlice";
 import dynamic from 'next/dynamic'
 import Image from "next/image";
-import { useSession } from "next-auth/react";
 import BookingPitchModal from "../../components/Modals/BookingPitchModal";
 import ListReviews from "../../components/ListReviews";
 import { FaUserTie } from "react-icons/fa";
 import { BsFillTelephoneFill } from "react-icons/bs";
 import { setIdProfile } from "../../redux/features/userSlice";
 import Link from "next/link";
+import instance from "../../server/db/instance";
 const Map = dynamic(() => import("../../components/Map"), { ssr: false })
 
 interface State {
@@ -60,12 +59,12 @@ const PitchDetail = ({ pitchId }: any) => {
 
   useEffect(() => {
     dispatch(setIsLoading(true))
-    axios
-      .get(`/api/pitch/${pitchId}`)
+    instance
+      .get(`/pitch/${pitchId}`)
       .then(resPitch => {
-        axios.get(`/api/pitch/${pitchId}/reviews`)
+        instance.get(`/pitch/${pitchId}/reviews`)
           .then(resReviews => {
-            axios.get('/api/users')
+            instance.get('/users')
               .then(resUsers => {
                 setState({ ...state, users: resUsers.data.users, pitch: resPitch.data, pictures: [resPitch.data.mainPicture, ...resPitch.data.pictures], reviews: resReviews.data.reviews, isLoading: false })
                 dispatch(setIsLoading(false))
