@@ -4,7 +4,7 @@ import { Reviews } from "../Models";
 
 
 export const formatReviews = (reviews: Reviews[]) => {
-  const results = reviews.reduce(
+  const results = reviews?.reduce(
     (accumulator, currentValue) =>
       accumulator + currentValue.star / reviews.length,
     0
