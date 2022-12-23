@@ -111,9 +111,9 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
                                 :
                                 <Typography className="!font-semibold" variant="body1" component="h1">
                                     {type === "product" ?
-                                        reviews.length ? `${reviews.length} người dùng đã đánh giá sảm phẩm này` : "Sản phẩm này chưa có đánh giá"
+                                        reviews?.length ? `${reviews.length} người dùng đã đánh giá sảm phẩm này` : "Sản phẩm này chưa có đánh giá"
                                         :
-                                        reviews.length ? `${reviews.length} người chơi đã đánh giá sân bóng này` : "Sân bóng này chưa có đánh giá"
+                                        reviews?.length ? `${reviews.length} người chơi đã đánh giá sân bóng này` : "Sân bóng này chưa có đánh giá"
                                     }
 
                                 </Typography>

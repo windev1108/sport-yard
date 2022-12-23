@@ -66,7 +66,7 @@ const PitchDetail = ({ pitchId }: any) => {
           .then(resReviews => {
             instance.get('/users')
               .then(resUsers => {
-                setState({ ...state, users: resUsers.data.users, pitch: resPitch.data, pictures: [resPitch.data.mainPicture, ...resPitch.data.pictures], reviews: resReviews.data.reviews, isLoading: false })
+                setState({ ...state, users: resUsers.data.users, pitch: resPitch.data, pictures: [resPitch.data.mainPicture, ...resPitch.data.pictures], reviews: resReviews.data?.reviews, isLoading: false })
                 dispatch(setIsLoading(false))
               })
           })
@@ -141,10 +141,10 @@ const PitchDetail = ({ pitchId }: any) => {
                   <div className="flex gap-1 items-center">
                     <AiFillStar className="text-xl text-[#f0803c]" />
                     <span className="font-semibold text-[#f0803c]">
-                      {reviews.length ? `${formatReviews(reviews)}/5` : "0/5"}
+                      {reviews?.length ? `${formatReviews(reviews)}/5` : "0/5"}
                     </span>
                     <span className="text-xs font-semibold text-black"></span>
-                    {`(${reviews.length} Reviews)`}
+                    {`(${reviews?.length} Reviews)`}
                   </div>
                 </div>
                 <div className="flex gap-1 items-center">

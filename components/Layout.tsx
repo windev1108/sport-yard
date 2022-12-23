@@ -16,8 +16,8 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { setOpenSnackBar } from "../redux/features/isSlice";
 import { getCookie } from "cookies-next";
-import ChatBox from "./ChatBox"
 const Header = dynamic(() => import('./Header'), { ssr: false })
+const ChatBox = dynamic(() => import('./ChatBox'), { ssr: false })
 
 interface LayoutProps {
   children: ReactNode;
