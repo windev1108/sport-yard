@@ -171,11 +171,11 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
         const formData1 = new FormData()
         formData1.append("file", backSidePicture)
         formData1.append('upload_preset', 'my-uploads');
-        const resFont = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData1)
+        const resBackSide = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData1)
         const formData2 = new FormData()
         formData2.append("file", fontPicture)
         formData2.append('upload_preset', 'my-uploads');
-        const resBackSide = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData2)
+        const resFont = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData2)
 
         cloudinaryUrls.fontUrl = resFont.data.url
         cloudinaryUrls.backSideUrl = resBackSide.data.url
