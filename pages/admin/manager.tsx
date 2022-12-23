@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, memo, useCallback, useRef } from 'react';
+import React, { useState, useLayoutEffect, memo, useCallback, useRef, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic'
@@ -21,11 +21,13 @@ import { setIdEditing } from '../../redux/features/userSlice';
 import { getCookie } from 'cookies-next';
 import Skeleton from '@mui/material/Skeleton';
 import instance from '../../server/db/instance';
+import useSWR from 'swr';
 const AddUserModal = dynamic(() => import("../../components/Modals/AddUserModal"), { ssr: false })
 const AddPitchModal = dynamic(() => import("../../components/Modals/AddPitchModal"), { ssr: false })
 const AddProductModal = dynamic(() => import("../../components/Modals/AddProductModal"), { ssr: false })
 const FormEditProductModal = dynamic(() => import("../../components/Modals/FormEditProductModal"), { ssr: false })
 const FormEditPitchModal = dynamic(() => import("../../components/Modals/FormEditPitchModal"), { ssr: false })
+import FormEditUserModal from '../../components/Modals/FormEditUserModal';
 
 
 interface State {
@@ -42,7 +44,7 @@ const OwnerManager = () => {
     const token: any = getCookie("token")
     const dispatch = useDispatch()
     const { user }: User | any = useSelector<RootState>(state => state?.user)
-    const { isUpdated }: boolean | any = useSelector<RootState>(state => state.is)
+    const { isOpenFormEditUser, isUpdated }: boolean | any = useSelector<RootState>(state => state.is)
     const [state, setState] = useState<State>({
         tabData: [],
         tab: 0,
@@ -73,44 +75,50 @@ const OwnerManager = () => {
         return usersRef.current?.find((u: User) => u.id === id)
     }
 
-    useLayoutEffect(() => {
-        if (user.role === "admin") {
-            switch (tab) {
-                case 0: {
-                    instance.get("/users")
-                        .then(res => {
-                            setState({ ...state, tabData: res.data.users, isLoading: false })
-                            usersRef.current = res.data.users
-                        })
-                }
-                    break
-                case 1: {
-                    instance.get("/pitch")
-                        .then(res => {
-                            setState({ ...state, tabData: res.data.pitch, isLoading: false })
-                        })
-                }
-                    break
-                case 2: {
-                    instance.get("/products")
-                        .then(res => {
-                            setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "clothes"), isLoading: false })
-                        })
-                }
-                    break
-                case 3: {
-                    instance.get("/products")
-                        .then(res => {
-                            setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "sneakers"), isLoading: false })
-                        })
-                }
-                    break
-                default: return
+
+
+    const fetchData = async (url: string) => {
+        switch (tab) {
+            case 0: {
+                instance.get(url)
+                    .then(res => {
+                        setState({ ...state, tabData: res.data.users, isLoading: false })
+                        usersRef.current = res.data.users
+                    })
             }
+                break
+            case 1: {
+                instance.get("/pitch")
+                    .then(res => {
+                        setState({ ...state, tabData: res.data.pitch, isLoading: false })
+                    })
+            }
+                break
+            case 2: {
+                instance.get("/products")
+                    .then(res => {
+                        setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "clothes"), isLoading: false })
+                    })
+            }
+                break
+            case 3: {
+                instance.get("/products")
+                    .then(res => {
+                        setState({ ...state, tabData: res.data.products?.filter((p: Product) => p.type === "sneakers"), isLoading: false })
+                    })
+            }
+                break
+            default: return
         }
+    }
+
+
+    const { mutate } = useSWR("/users", fetchData)
+
+
+    useEffect(() => {
+        mutate()
     }, [tab, isUpdated])
-
-
 
 
     const handleDelete = (id: any) => {
@@ -131,6 +139,7 @@ const OwnerManager = () => {
         setState({ ...state, idEditing: id })
         switch (tab) {
             case 0: {
+
                 dispatch(setIdEditing(id))
                 dispatch(setOpenFormEditUser(true))
             }
@@ -142,8 +151,7 @@ const OwnerManager = () => {
     }
 
     const handleChangeTab = (tab: number) => {
-        setState({ ...state, isLoading: true })
-        setState({ ...state, tab })
+        setState({ ...state, isLoading: true, tab })
     }
 
     return (
@@ -180,6 +188,7 @@ const OwnerManager = () => {
             {openModalAddUser && <AddUserModal open={openModalAddUser} setOpen={setModalAddUser} />}
             {openModalAddPitch && <AddPitchModal open={openModalAddPitch} setOpen={setModalAddPitch} />}
             {openModalAddProduct && <AddProductModal type={typeProduct} open={openModalAddProduct} setOpen={setModalAddProduct} />}
+            {isOpenFormEditUser && <FormEditUserModal />}
 
 
             {openFormEditProductModal && <FormEditProductModal tab={tab} id={idEditing} open={openFormEditProductModal} setOpen={setFormEditProductModal} />}

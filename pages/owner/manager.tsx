@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { useSelector } from 'react-redux';
 import dynamic from 'next/dynamic'
@@ -14,6 +14,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import Router from 'next/router';
 import { getCookie } from 'cookies-next';
 import instance from '../../server/db/instance';
+import useSWR from 'swr';
 const ConfirmModal = dynamic(() => import("../../components/Modals/ConfirmModal"), { ssr: false })
 const AddPitchModal = dynamic(() => import("../../components/Modals/AddPitchModal"), { ssr: false })
 const AddProductModal = dynamic(() => import("../../components/Modals/AddProductModal"), { ssr: false })
@@ -53,34 +54,39 @@ const OwnerManager = () => {
     const { tabData, tab, idDeleting, idEditing, typeProduct } = state
 
 
+    const fetchData = async (url: string) => {
+        instance.get(url)
+            .then(res => res.data
+            ).then((data) => {
+                instance.get("/users")
+                    .then(resUsers => {
+                        switch (tab) {
+                            case 1: setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id), isLoading: false })
+                                usersRef.current = resUsers.data.users
+                                break
+                            case 2: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes"), isLoading: false })
+                                break
+                            case 3: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers"), isLoading: false })
+                                break
+                            default: return
+                        }
+                    })
+            })
+    }
+
+
+    const { mutate } = useSWR(tab === 1 ? "/pitch" : "/products", fetchData)
+
+
+    useEffect(() => {
+        mutate()
+    }, [tab, isUpdated])
+
     useLayoutEffect(() => {
         if (!token || user.role !== "owner") {
             Router.push("/")
         }
     }, [token])
-
-
-    useLayoutEffect(() => {
-        if (user.role === "owner") {
-            instance.get(`/${tab == 1 ? "pitch" : "products"}`)
-                .then(res => res.data
-                ).then((data) => {
-                    instance.get("/users")
-                        .then(resUsers => {
-                            switch (tab) {
-                                case 1: setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id), isLoading: false })
-                                    usersRef.current = resUsers.data.users
-                                    break
-                                case 2: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes"), isLoading: false })
-                                    break
-                                case 3: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers"), isLoading: false })
-                                    break
-                                default: return
-                            }
-                        })
-                })
-        }
-    }, [tab, isUpdated])
 
 
     const getUser = (id: string) => {
@@ -117,6 +123,7 @@ const OwnerManager = () => {
 
     return (
         <Layout>
+
             <SpeedDial
                 className="group after:absolute after:bottom-0 after:left-0 after:right-0 after:bg-white after:h-14 after:rounded-full"
                 ariaLabel="SpeedDial basic example"

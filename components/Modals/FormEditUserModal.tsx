@@ -10,7 +10,7 @@ import { Avatar, FormControl, Grid, IconButton, InputLabel, MenuItem, Select } f
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
-import { setOpenFormEditUser } from '../../redux/features/isSlice';
+import { setIsUpdate, setOpenFormEditUser } from '../../redux/features/isSlice';
 import { RootState } from '../../redux/store';
 import { FormLabel, Tooltip } from '@mui/material';
 import { deepOrange } from '@mui/material/colors';
@@ -22,6 +22,9 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import LinearProgress from '@mui/material/LinearProgress';
 import instance from '../../server/db/instance';
 
+interface Props {
+    mutate?: () => void
+}
 
 
 interface State {
@@ -43,11 +46,12 @@ interface State {
 }
 
 
-const FormEditUserModal: NextPage = () => {
+
+const FormEditUserModal: NextPage<Props> = () => {
     const dispatch = useDispatch()
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-    const { isOpenFormEditUser }: any = useSelector<RootState>(state => state.is)
+    const { isOpenFormEditUser, isUpdated }: any = useSelector<RootState>(state => state.is)
     const { user, idEditing }: any = useSelector<RootState>(state => state.user)
     const formSlotRef = useRef<any>(null)
     const [state, setState] = useState<State>({
@@ -94,7 +98,7 @@ const FormEditUserModal: NextPage = () => {
             setState({ ...state, bankSlot: bankSlot + 1 })
         } else {
             setState({ ...state, bankSlot: 6 })
-            toast.info("Can't add more than 6 banks", { autoClose: 3000, theme: "colored" })
+            toast.info("Không thểm thêm nhiều hơn 6 ngân ahfng", { autoClose: 3000, theme: "colored" })
         }
 
     }
@@ -135,6 +139,7 @@ const FormEditUserModal: NextPage = () => {
                 autoClose: 3000,
                 theme: "colored",
             });
+            dispatch(setIsUpdate(!isUpdated))
             dispatch(setOpenFormEditUser(false))
             setState({ ...state, firstName: "", lastName: "", blobAvatar: "", avatar: "", password: "", email: "", role: "", phone: "", address: "" })
         }
@@ -147,7 +152,7 @@ const FormEditUserModal: NextPage = () => {
                         autoClose: 3000,
                         theme: "colored",
                     });
-                    dispatch(setOpenFormEditUser(false))
+                    dispatch(setIsUpdate(!isUpdated))
                     setState({ ...state, firstName: "", lastName: "", blobAvatar: "", avatar: {}, phone: "", password: "", email: "", role: "", address: "", isLoading: false })
                 })
         }

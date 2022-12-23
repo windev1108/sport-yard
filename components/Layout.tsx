@@ -33,7 +33,7 @@ const Layout: NextPage<LayoutProps> = ({ children }) => {
   return (
     <div className="w-full !h-screen">
       {isOpenProfileModal && <ProfileModal />}
-      {isOpenFormEditUser && <FormEditUserModal />}
+      {isOpenFormEditUser && router.asPath !== "/admin/manager" && <FormEditUserModal />}
       {isOpenFormTransaction && <FormTransactionsModal />}
       {isOpenTransactionDetail && <TransactionDetail />}
       {isOpenBackdropModal && <BackdropModal />}

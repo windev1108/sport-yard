@@ -10,13 +10,13 @@ import { FormControl, FormHelperText, ImageList, ImageListItem, LinearProgress }
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
-import { setIsUpdate } from '../../redux/features/isSlice';
 import { RootState } from '../../redux/store';
 import { Checkbox, FormControlLabel, FormGroup, FormLabel, Tooltip } from '@mui/material';
 import { BiImageAdd } from 'react-icons/bi';
 import { clothesSize, sneakersSize } from '../../utils/helper';
 import instance from '../../server/db/instance';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { setIsUpdate } from '../../redux/features/isSlice';
 
 
 
@@ -145,7 +145,6 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
                 amount,
                 discount,
                 type: tab === 2 ? "clothes" : "sneakers",
-                owner: user.id,
             })
             setOpen(false)
             dispatch(setIsUpdate(!isUpdated))

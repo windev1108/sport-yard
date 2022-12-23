@@ -18,6 +18,9 @@ import { BiImageAdd } from 'react-icons/bi';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import instance from '../../server/db/instance';
+import { setIsUpdate } from '../../redux/features/isSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../redux/store';
 
 
 export interface PropsModal {
@@ -40,6 +43,8 @@ interface State {
 
 
 const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
+    const dispatch = useDispatch()
+    const { isUpdated }: any = useSelector<RootState>(state => state.is)
     const [state, setState] = useState<State>({
         email: "",
         firstName: "",
@@ -72,25 +77,34 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
                 theme: "colored",
             });
         } else {
-            if (isUploaded) {
-                instance.post("/users", { email, password, firstName, avatar: avatarUrl, lastName, role })
-                toast.success("Thêm mới user thành công", {
-                    autoClose: 3000,
-                    theme: "colored",
-                });
-                setOpen(false)
-                setState({ ...state, firstName: "", lastName: "", password: "", email: "", role: "" })
-            }
+            setState({ ...state, isLoading: true })
+            handleUploadFiles()
+                .then((res) => {
+                    instance.post("/users", { email, password, firstName, avatar: avatarUrl, lastName, role })
+                    toast.success("Thêm mới user thành công", {
+                        autoClose: 3000,
+                        theme: "colored",
+                    });
+                    setOpen(false)
+                    dispatch(setIsUpdate(!isUpdated))
+                    setState({ ...state, firstName: "", lastName: "", password: "", email: "", role: "" })
+                })
         }
     }
 
     const handleUploadFiles = async () => {
-        setState({ ...state, isLoading: true })
+        const cloudinaryUrls: any = {
+            avatarUrl: [],
+        }
         const formData = new FormData()
         formData.append("file", avatar)
         formData.append('upload_preset', 'my-uploads');
         const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-        setState({ ...state, avatarUrl: data.url, isUploaded: true, isLoading: false })
+        cloudinaryUrls.avatarUrl = data.url
+
+        return new Promise<void>((resolve, reject) => {
+            resolve(cloudinaryUrls)
+        })
     }
 
     const onFileChange = (e: any) => {

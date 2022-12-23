@@ -70,8 +70,6 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
     })
     const formSlotRef = useRef<any>(null)
     const { name, size, slot, slots, pictures, mainPicture, blobPicture, blobMainPicture, location, longitude, latitude, isUploadedPictures, isUploadedMainPicture, isLoading } = state
-    const [urls, setUrls] = useState<string[]>([])
-    const [url, setUrl] = useState<string>("")
 
 
     useEffect(() => {
@@ -139,19 +137,18 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
         const isValidEndTime = slots.every(s => s.end !== "")
         const isValidPrice = slots.every(s => s.price !== "")
         if (!name || !size.length || !location || !longitude || !latitude) {
-            toast.info("Please complete all information", {
+            toast.info("Vui lòng điền đầy đủ thông tin", {
                 autoClose: 3000,
                 theme: "colored",
             });
         } else if (!isValidStartTime && !isValidEndTime && !isValidPrice) {
-            toast.info("Please fill out the information for the slot table", { autoClose: 3000, theme: "colored" })
+            toast.info("Vui lòng điền đầy đủ thông tin các slot", { autoClose: 3000, theme: "colored" })
         } else if (!isUploadedPictures && !isUploadedMainPicture) {
             instance.put(`/pitch/${id}`, {
                 name,
                 location,
                 size,
                 slots,
-                owner: user.id,
                 coordinates: new GeoPoint(+latitude, +longitude),
             },)
             dispatch(setIsUpdate(!isUpdated))
@@ -170,8 +167,8 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
                         mainPicture: res.mainPicture ? res.mainPicture : blobMainPicture,
                         coordinates: new GeoPoint(+latitude, +longitude),
                     },)
-                    dispatch(setIsUpdate(!isUpdated))
                     setOpen(false)
+                    dispatch(setIsUpdate(!isUpdated))
                     toast.success("Cập nhật sân bóng thành công", { autoClose: 3000, theme: "colored" })
                 })
         }
@@ -179,7 +176,6 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
 
 
     const handleUploadFiles = async () => {
-
         const cloudinaryUrls: CloudinaryUrls = {
             mainPicture: "",
             subPictures: [],
@@ -189,7 +185,6 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
             formData.append("file", mainPicture)
             formData.append('upload_preset', 'my-uploads');
             const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-            setUrl(data.url)
             cloudinaryUrls.mainPicture = data.url
         }
         if (pictures.length) {
@@ -211,14 +206,14 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
 
     return (
         <Dialog open={open} onClose={() => setOpen(false)} maxWidth={"md"} fullWidth={true}>
-            <DialogTitle>{"Form edit pitch"}</DialogTitle>
+            <DialogTitle>{"Chỉnh sửa sân"}</DialogTitle>
             <DialogContent className="flex-col space-y-3">
                 <TextField
                     value={name}
                     onChange={(e) => setState({ ...state, name: e.target.value })}
                     focused={name ? true : false}
                     margin="dense"
-                    label="Name"
+                    label="Tên sân bóng"
                     fullWidth
                     variant="standard"
                 />
@@ -228,7 +223,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
                     focused={location ? true : false}
                     autoFocus
                     margin="dense"
-                    label="Location"
+                    label="Địa điểm"
                     fullWidth
                     variant="standard"
                 />
@@ -240,7 +235,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
                     autoFocus
                     margin="dense"
                     type="number"
-                    label="Longitude"
+                    label="Kinh độ"
                     fullWidth
                     variant="standard"
                 />
@@ -251,7 +246,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
                     autoFocus
                     margin="dense"
                     type="number"
-                    label="Latitude"
+                    label="Vĩ độ"
                     fullWidth
                     variant="standard"
                 />
@@ -331,7 +326,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
                     </form>
                 }
 
-                <FormLabel className="my-3" component="legend">Main Picture</FormLabel>
+                <FormLabel className="my-3" component="legend">Hình ảnh chính</FormLabel>
                 <div className="flex !w-full !h-96" title="Main picture">
 
                     <Tooltip title="Add Main Picture">
@@ -360,7 +355,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
                 </div>
 
                 <div className="flex justify-between">
-                    <FormLabel className="mt-4" component="legend">Sub Pictures</FormLabel>
+                    <FormLabel className="mt-4" component="legend">Hình ảnh phụ</FormLabel>
 
                     <Tooltip title="Add Pictures">
                         <label
@@ -406,8 +401,8 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
             </DialogContent>
             <DialogActions className="flex  items-center  bg-gray-100 w-full">
 
-                <div className="">
-                    <Button className="!text-primary" onClick={() => setOpen(false)}>Cancel</Button>
+                <div className="flex space-x-2">
+                    <Button variant="outlined" className="!text-primary !border-primary" onClick={() => setOpen(false)}>Hủy</Button>
                     <Button disabled={isLoading} className="!bg-primary flex justify-center items-center space-x-2" variant="contained" onClick={handleSubmit}>
                         {isLoading &&
                             <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear" />
