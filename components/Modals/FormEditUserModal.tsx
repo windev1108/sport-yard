@@ -16,7 +16,7 @@ import { FormLabel, Tooltip } from '@mui/material';
 import { deepOrange } from '@mui/material/colors';
 import { banking } from '../../utils/helper';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa'
-import { AiOutlineMinusCircle, AiOutlinePlusCircle } from 'react-icons/ai';
+import { AiOutlineLoading3Quarters, AiOutlineMinusCircle, AiOutlinePlusCircle } from 'react-icons/ai';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -139,31 +139,35 @@ const FormEditUserModal: NextPage = () => {
             setState({ ...state, firstName: "", lastName: "", blobAvatar: "", avatar: "", password: "", email: "", role: "", phone: "", address: "" })
         }
         else {
-            if (isUploaded) {
-                instance.put(`/users/${idEditing}`, { email, password, firstName, banks, phone: +phone, avatar: avatarUrl, lastName, role, address })
-                toast.success("Cập nhật thông tin thành công", {
-                    autoClose: 3000,
-                    theme: "colored",
-                });
-                dispatch(setOpenFormEditUser(false))
-                setState({ ...state, firstName: "", lastName: "", blobAvatar: "", avatar: {}, phone: "", password: "", email: "", role: "", address: "" })
-            } else {
-                toast.info("Vui lòng thử lại sau", {
-                    autoClose: 3000,
-                    theme: "colored",
-                });
-            }
+            setState({ ...state, isLoading: true })
+            handleUploadFiles()
+                .then((res: any) => {
+                    instance.put(`/users/${idEditing}`, { email, password, firstName, banks, phone: +phone, avatar: avatarUrl, lastName, role, address })
+                    toast.success("Cập nhật thông tin thành công", {
+                        autoClose: 3000,
+                        theme: "colored",
+                    });
+                    dispatch(setOpenFormEditUser(false))
+                    setState({ ...state, firstName: "", lastName: "", blobAvatar: "", avatar: {}, phone: "", password: "", email: "", role: "", address: "", isLoading: false })
+                })
         }
     }
 
 
     const handleUploadFiles = async () => {
+        const cloudinaryUrls: any = {
+            avatarUrl: ""
+        }
         setState({ ...state, isLoading: true })
         const formData = new FormData()
         formData.append("file", avatar)
         formData.append('upload_preset', 'my-uploads');
         const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-        setState({ ...state, avatarUrl: data.url, isUploaded: true, isLoading: false })
+        cloudinaryUrls.avatarUrl = data.url
+
+        return new Promise<void>((resolve, reject) => {
+            resolve(cloudinaryUrls)
+        })
     }
 
     const onFileChange = (e: any) => {
@@ -247,7 +251,7 @@ const FormEditUserModal: NextPage = () => {
 
                 {user.role === 'admin' &&
                     <FormControl fullWidth className="!mt-6">
-                        <InputLabel id="demo-simple-select-label">Role</InputLabel>
+                        <InputLabel id="demo-simple-select-label">Vai trò</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
@@ -255,14 +259,14 @@ const FormEditUserModal: NextPage = () => {
                             label="Age"
                             onChange={(e: any) => setState({ ...state, role: e.target.value })}
                         >
-                            <MenuItem value={"customer"}>Customer</MenuItem>
-                            <MenuItem value={"owner"}>Owner</MenuItem>
-                            <MenuItem value={"admin"}>Admin</MenuItem>
+                            <MenuItem value={"customer"}>Khách hàng</MenuItem>
+                            <MenuItem value={"owner"}>Chủ sở hữu</MenuItem>
+                            <MenuItem value={"admin"}>Quản trị viên</MenuItem>
                         </Select>
                     </FormControl>
                 }
                 <div className="flex justify-between items-center pt-3">
-                    <FormLabel className="" component="legend">Method Payment</FormLabel>
+                    <FormLabel className="" component="legend">Phương thức thanh toán</FormLabel>
                     <div className="flex">
                         <IconButton
                             onClick={handleReduceBankSlot}
@@ -285,7 +289,7 @@ const FormEditUserModal: NextPage = () => {
                                     <Grid key={index} item xs={6} md={4} lg={6} >
                                         <Grid container>
                                             <FormControl fullWidth className="h-12">
-                                                <InputLabel className="">Choose a bank</InputLabel>
+                                                <InputLabel className="">Chọn ngân hàng</InputLabel>
                                                 <Select
                                                     name={`bank-code-${index + 1}`}
                                                     defaultValue={item.bankCode}
@@ -312,7 +316,7 @@ const FormEditUserModal: NextPage = () => {
                                     <Grid key={index} item xs={6} md={4} lg={6} >
                                         <Grid container>
                                             <FormControl fullWidth className="h-12">
-                                                <InputLabel className="">Choose a bank</InputLabel>
+                                                <InputLabel className="">Chọn ngân hàng</InputLabel>
                                                 <Select
                                                     name={`bank-code-${index + 1}`}
                                                     defaultValue={item.bankCode}
@@ -327,9 +331,9 @@ const FormEditUserModal: NextPage = () => {
                                             </FormControl>
                                             <Grid lg={12}>
                                                 <input defaultValue={item.name} name={`name-account-${index + 1}`} className="border-[1px] placeholder:text-secondary border-gray-300 outline-none  text-center !text-sm h-10 w-full cursor-pointer"  // the change is here
-                                                    required placeholder="Name account" />
+                                                    required placeholder="Tên tài khoản" />
                                                 <input defaultValue={item.accountNumber} name={`account-number-${index + 1}`} className="border-[1px] placeholder:text-secondary border-gray-300 outline-none  text-center !text-sm h-10 w-full cursor-pointer" type="number" // the change is here
-                                                    required placeholder="Account number" />
+                                                    required placeholder="Số tài khoản" />
                                             </Grid>
                                         </Grid>
                                     </Grid>
@@ -342,7 +346,7 @@ const FormEditUserModal: NextPage = () => {
 
 
 
-                <FormLabel className="translate-y-4" component="legend">Avatar</FormLabel>
+                <FormLabel className="translate-y-4" component="legend">Ảnh đại diện</FormLabel>
                 <div className="flex justify-center items-center">
                     <Tooltip title="Add Avatar">
                         <label
@@ -368,8 +372,13 @@ const FormEditUserModal: NextPage = () => {
                 </div>
             </DialogContent>
             <DialogActions className="flex  items-center  bg-gray-100 w-full">
-                <Button variant="outlined" className="hover:border-primary border-primary text-primary" onClick={() => dispatch(setOpenFormEditUser(false))}>Cancel</Button>
-                <Button className="!bg-primary !text-white" variant="contained" onClick={isUploaded || !blobAvatar ? handleSubmit : handleUploadFiles}>{isUploaded || !blobAvatar ? "Submit" : "Upload"}</Button>
+                <Button variant="outlined" className="hover:border-primary border-primary text-primary" onClick={() => dispatch(setOpenFormEditUser(false))}>Hủy</Button>
+                <Button disabled={isLoading} className="!bg-primary flex justify-center items-center space-x-2" variant="contained" onClick={handleSubmit}>
+                    {isLoading &&
+                        <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear" />
+                    }
+                    <span> Hoàn tất</span>
+                </Button>
             </DialogActions>
             {isLoading &&
                 <div className="absolute top-0 left-0 right-0 ">
