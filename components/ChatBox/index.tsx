@@ -10,7 +10,6 @@ import { IoMdCall, IoMdClose, IoMdRemoveCircleOutline, IoMdSend } from 'react-ic
 import { FiChevronDown } from 'react-icons/fi';
 import { BsChevronCompactUp, BsDash, BsPlus, BsEmojiSmile } from 'react-icons/bs';
 import { RiVideoLine } from 'react-icons/ri';
-import dayjs from 'dayjs';
 import moment from 'moment';
 import { CgProfile } from 'react-icons/cg'
 import { GrUserAdmin } from 'react-icons/gr';
@@ -25,12 +24,14 @@ import jwt from "jsonwebtoken"
 import io from 'socket.io-client'
 import { toast } from 'react-toastify'
 import instance from '../../server/db/instance';
+import { orderBy, onSnapshot, query, collection } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 
 
 
 
 interface State {
-    messages: Message[]
+    messagesSelected: Message[]
     userSelected: any
     message: string
     previewBlobs: {
@@ -60,10 +61,10 @@ let socket: any
 const ChatBox = () => {
     const dispatch = useDispatch()
     const [state, setState] = useState<State>({
-        messages: [],
         userSelected: {},
         pictures: [],
         message: "",
+        messagesSelected: [],
         previewBlobs: [],
         isChange: false,
         isOpenChatMessage: false,
@@ -74,7 +75,8 @@ const ChatBox = () => {
     })
     const { isOpenChatBox }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { message, previewBlobs, pictures, userSelected, isUploaded, isChange, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
+    const { messagesSelected, message, previewBlobs, pictures, userSelected, isUploaded, isChange, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
+    const [messages, setMessages] = useState<Message[]>([])
     const [showEmojis, setShowEmojis] = useState(false)
     const [usersOnline, setUsersOnline] = useState<SocketUser[]>([])
     const [urls, setUrls] = useState<string[]>([])
@@ -96,20 +98,37 @@ const ChatBox = () => {
     }
 
 
-    const fetcher = async (url: string) => {
-        const res = await instance.get(url)
-        messageEndRef.current && scrollToBottom()
-        return res.data.messages?.filter((m: Message) => m.senderId === user?.id && m.receiverId === userSelected?.id || m.receiverId === user?.id && m.senderId === userSelected?.id)
-    }
+    // const fetcher = async (url: string) => {
+    //     const res = await instance.get(url)
+    //     messageEndRef.current && scrollToBottom()
+    //     return res.data.messages?.filter((m: Message) => m.senderId === user?.id && m.receiverId === userSelected?.id || m.receiverId === user?.id && m.senderId === userSelected?.id)
+    // }
 
 
 
-    const { data, mutate } = useSWR(userSelected?.id ? "/messages" : null, fetcher)
+    // const { data, mutate } = useSWR(userSelected?.id ? "/messages" : null, fetcher)
 
     useEffect(() => {
-
         socketInitializer()
+        moment().locale('vi')
+        const q = query(collection(db, "messages"), orderBy("timestamp", "asc"))
+        const unsub = onSnapshot(q, (snapshot: any) => {
+            const results = snapshot.docs.map((doc: any) => ({ ...doc.data(), id: doc.id }))
+            setMessages(results)
+        })
+        return unsub
     }, [])
+
+
+    console.log("messages", messages);
+    console.log("messagesSelected", messagesSelected);
+
+
+    useEffect(() => {
+        setState({ ...state, messagesSelected: messages?.filter((m: Message) => m.senderId === user?.id && m.receiverId === userSelected?.id || m.receiverId === user?.id && m.senderId === userSelected?.id), isOpenOptionInfo: false })
+        scrollToBottom()
+    }, [messages, userSelected.id])
+
 
     const getUser = (id: string) => {
         const user: User | any = usersRef?.current.find((u: User) => u.id === id)
@@ -135,14 +154,6 @@ const ChatBox = () => {
 
     }
 
-
-    useEffect(() => {
-        mutate()
-        setTimeout(() => {
-            scrollToBottom()
-        }, 300)
-        setState({ ...state, isOpenOptionInfo: false })
-    }, [userSelected?.id])
 
     useEffect(() => {
         getConversations()
@@ -189,11 +200,10 @@ const ChatBox = () => {
             })
             if (user?.role !== "admin") {
                 const checkIsExistConversations = userSelected?.conversations?.some((conversation: string) => conversation === user?.id)
-                !checkIsExistConversations && instance.put(`/users/${userSelected?.id}`, {
+                !checkIsExistConversations && userSelected.role !== "admin" && instance.put(`/users/${userSelected?.id}`, {
                     conversations: [...userSelected?.conversations, user?.id]
                 })
             }
-            await mutate()
             scrollToBottom()
         } else {
             if (urls.length === previewBlobs.length && isUploaded) {
@@ -217,7 +227,6 @@ const ChatBox = () => {
             } else {
                 toast.info("Vui thử lại sau ", { autoClose: 3000, theme: "colored" })
             }
-            await mutate()
             scrollToBottom()
         }
     }, [message])
@@ -251,7 +260,7 @@ const ChatBox = () => {
 
     useEffect(() => {
         scrollToBottom()
-    }, [data])
+    }, [messages])
 
     const scrollToBottom = () => {
         messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -413,45 +422,51 @@ const ChatBox = () => {
                                 </IconButton>
                             </div>
                         </div>
-                        <div className="relative h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300  scrollbar-track-gray-100 ">
-                            {data && typeof data !== "string" && data?.map((item: Message, index: number) => (
-                                <div key={item.id} className="flex flex-col w-full p-2">
-                                    <span className="text-center text-xs pb-3">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : dayjs(item.timestamp).locale("vi-VN").format("dddd DD-MM-YYYY")}</span>
-                                    <div className={`${item.senderId === user?.id ? "justify-end" : "justify-start"} flex w-full`}>
-                                        {item.type === "text" &&
-                                            <div className={`flex max-w-[50%] space-x-2`}>
-                                                {item.senderId !== user?.id
-                                                    &&
-                                                    <Avatar src={userSelected?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{userSelected?.firstName?.substring(0, 1)}
-                                                    </Avatar>
-                                                }
-                                                <span className={`${item.senderId === user?.id ? "bg-[#d7e4ff]" : "bg-gray-100"} px-3 text-black py-2 text-sm rounded-md max-w-[100%]`}>{item.message}</span>
-                                            </div>
-                                        }
-                                        {item.type === "images" &&
-                                            <div className={`${item.pictures.length >= 3 ? "grid-cols-3" : `grid-cols-${item.pictures.length}`} max-w-[50%] gap-1 grid h-auto`}>
-                                                {item.pictures?.map((item) => (
-                                                    <img className="transition-all duration-700 ease-in-out object-cover h-full" key={item} src={item} alt="" />
-                                                ))}
-                                            </div>
-                                        }
-                                    </div>
-                                    {index === data?.length - 1 && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.receiverId === user?.id && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.typing &&
-                                        <div className="relative flex items-center py-2 space-x-12">
-                                            <Avatar src={getUser(userSelected?.id)?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{getUser(userSelected?.id)?.firstName?.substring(0, 1)}
-                                            </Avatar>
-                                            <div className="!ml-2 px-4 rounded-lg bg-gray-100" data-title="dot-typing">
-                                                <div className="flex items-center justify-center px-3 py-3 stage">
-                                                    <div className="dot-typing"></div>
+                        {messagesSelected.length === 0 ?
+                            <div className="flex justify-center items-center h-[70%] w-full bg-white">
+                                <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear text-primary text-4xl" />
+                            </div>
+                            :
+                            <div className="relative h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300  scrollbar-track-gray-100 ">
+                                {messagesSelected?.map((item: Message, index: number) => (
+                                    <div key={item.id} className="flex flex-col w-full p-2">
+                                        <span className="text-center text-xs pb-3">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : moment(item.timestamp).format("dddd DD-MM-YYYY")}</span>
+                                        <div className={`${item.senderId === user?.id ? "justify-end" : "justify-start"} flex w-full`}>
+                                            {item.type === "text" &&
+                                                <div className={`flex max-w-[50%] space-x-2`}>
+                                                    {item.senderId !== user?.id
+                                                        &&
+                                                        <Avatar src={userSelected?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{userSelected?.firstName?.substring(0, 1)}
+                                                        </Avatar>
+                                                    }
+                                                    <span className={`${item.senderId === user?.id ? "bg-[#d7e4ff]" : "bg-gray-100"} px-3 text-black py-2 text-sm rounded-md max-w-[100%]`}>{item.message}</span>
+                                                </div>
+                                            }
+                                            {item.type === "images" &&
+                                                <div className={`${item.pictures.length >= 3 ? "grid-cols-3" : `grid-cols-${item.pictures.length}`} max-w-[50%] gap-1 grid h-auto`}>
+                                                    {item.pictures?.map((item) => (
+                                                        <img className="transition-all duration-700 ease-in-out object-cover h-full" key={item} src={item} alt="" />
+                                                    ))}
+                                                </div>
+                                            }
+                                        </div>
+                                        {index === messagesSelected?.length - 1 && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.receiverId === user?.id && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.typing &&
+                                            <div className="relative flex items-center py-2 space-x-12">
+                                                <Avatar src={getUser(userSelected?.id)?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{getUser(userSelected?.id)?.firstName?.substring(0, 1)}
+                                                </Avatar>
+                                                <div className="!ml-2 px-4 rounded-lg bg-gray-100" data-title="dot-typing">
+                                                    <div className="flex items-center justify-center px-3 py-3 stage">
+                                                        <div className="dot-typing"></div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    }
-                                    {index === data?.length - 1 && <div ref={messageEndRef} className="w-full"></div>}
-                                </div>
-                            ))}
+                                        }
+                                        {index === messagesSelected?.length - 1 && <div ref={messageEndRef} className="w-full"></div>}
+                                    </div>
+                                ))}
 
-                        </div>
+                            </div>
+                        }
                         <div className="h-[20%] relative items-center w-full border-t-[1px] border-gray-300">
                             {isLoading &&
                                 <div className="absolute -top-1 left-0 right-0">
