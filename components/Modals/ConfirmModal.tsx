@@ -49,7 +49,8 @@ const ConfirmModal: NextPage<Props> = ({ tab, id, open, setOpen }) => {
             <DialogTitle id="alert-dialog-title">
                 {tab === 0 && "Bạn thực sự muốn xóa người dùng này?"}
                 {tab === 1 && "Bạn thực sự muốn xóa sân bóng này?"}
-                {tab === 2 || tab == 3 && "Bạn thực sự muốn xóa sản phẩm này?"}
+                {tab === 2 && "Bạn thực sự muốn xóa sản phẩm này?"}
+                {tab === 3 && "Bạn thực sự muốn xóa sản phẩm này?"}
             </DialogTitle>
             <DialogActions>
                 <Button onClick={() => setOpen(false)}>Hủy</Button>
@@ -63,10 +64,17 @@ const ConfirmModal: NextPage<Props> = ({ tab, id, open, setOpen }) => {
                         Đồng ý
                     </Button>}
 
-                {tab === 2 || tab == 3 &&
+                {tab == 2 &&
                     <Button onClick={handleDeleteProduct} autoFocus>
                         Đồng ý
                     </Button>}
+
+
+                {tab === 3 &&
+                    <Button onClick={handleDeleteProduct} autoFocus>
+                        Đồng ý
+                    </Button>}
+
 
             </DialogActions>
         </Dialog>

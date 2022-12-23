@@ -22,6 +22,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { RiImageAddFill } from 'react-icons/ri';
 import LinearProgress from '@mui/material/LinearProgress';
 import instance from '../../server/db/instance';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 
 export interface PropsModal {
@@ -47,6 +48,11 @@ interface State {
     isLoading: boolean
 }
 
+interface CloudinaryUrls {
+    fontUrl: string
+    backSideUrl: string
+    urls: string[]
+}
 
 const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
     const dispatch = useDispatch()
@@ -69,9 +75,6 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
         isLoading: false
     })
     const { name, price, discount, amount, size, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading, isUploaded } = state
-    const [urls, setUrls] = useState<string[]>([])
-    const [fontUrl, setFontUrl] = useState<string>("")
-    const [backSideUrl, setBackSideUrl] = useState<string>("")
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -128,58 +131,57 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                 theme: "colored",
             });
         } else {
-            if (isUploaded) {
-                instance.post("/products", {
-                    name,
-                    description,
-                    discount,
-                    price,
-                    size,
-                    amount,
-                    mainPictures: [fontUrl, backSideUrl],
-                    pictures: urls,
-                    type,
-                    owner: user.id,
+            setState({ ...state, isLoading: true })
+            handleUploadFiles()
+                .then((res: any) => {
+                    instance.post("/products", {
+                        name,
+                        description,
+                        discount,
+                        price,
+                        size,
+                        amount,
+                        mainPictures: [res.fontUrl, res.backSideUrl],
+                        pictures: res.urls,
+                        type,
+                        owner: user.id,
+                    })
+                    setOpen(false)
+                    setState({ ...state, isLoading: false })
+                    dispatch(setIsUpdate(!isUpdated))
+                    toast.success("Thêm sản phẩm thành công ", { autoClose: 3000, theme: "colored" })
                 })
-                setOpen(false)
-                dispatch(setIsUpdate(!isUpdated))
-                toast.success("Thêm sản phẩm thành công ", { autoClose: 3000, theme: "colored" })
-            } else {
-                toast.info("Vui lòng thử lại sau ", { autoClose: 3000, theme: "colored" })
-            }
         }
     }
 
 
     const handleUploadFiles = async () => {
-        if (!name || !price || !size.length || !discount || !amount) {
-            toast.info("Vui lòng điền đẩy đủ thông tin", {
-                autoClose: 3000,
-                theme: "colored",
-            });
-        } else if (!blobPicture || !blobFont || !blobBackSide) {
-            toast.info("Vui lòng chọn những bức ảnh", { autoClose: 3000, theme: "colored" })
-        } else {
-            setState({ ...state, isLoading: true })
-            Array.from(pictures).map(async (picture) => {
-                const formData = new FormData()
-                formData.append("file", picture)
-                formData.append('upload_preset', 'my-uploads');
-                const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-                setUrls((prev: string[]) => [...prev, data.url])
-            });
-            const formData1 = new FormData()
-            formData1.append("file", backSidePicture)
-            formData1.append('upload_preset', 'my-uploads');
-            const res1 = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData1)
-            const formData2 = new FormData()
-            formData2.append("file", fontPicture)
-            formData2.append('upload_preset', 'my-uploads');
-            const res2 = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData2)
-            setBackSideUrl(res1.data.url)
-            setFontUrl(res2.data.url)
-            setState({ ...state, isLoading: false, isUploaded: true })
+        const cloudinaryUrls: CloudinaryUrls | any = {
+            fontUrl: "",
+            backSideUrl: "",
+            urls: [],
         }
+        Array.from(pictures).map(async (picture) => {
+            const formData = new FormData()
+            formData.append("file", picture)
+            formData.append('upload_preset', 'my-uploads');
+            const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
+            cloudinaryUrls.urls = [...cloudinaryUrls.urls, data.url]
+        });
+        const formData1 = new FormData()
+        formData1.append("file", backSidePicture)
+        formData1.append('upload_preset', 'my-uploads');
+        const resFont = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData1)
+        const formData2 = new FormData()
+        formData2.append("file", fontPicture)
+        formData2.append('upload_preset', 'my-uploads');
+        const resBackSide = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData2)
+
+        cloudinaryUrls.fontUrl = resFont.data.url
+        cloudinaryUrls.backSideUrl = resBackSide.data.url
+        return new Promise<void>((resolve, reject) => {
+            resolve(cloudinaryUrls)
+        })
     }
 
     const handleSelect = (e: any) => {
@@ -277,7 +279,7 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
                         autoFocus
                         margin="dense"
                         type="number"
-                        label="Khuyến mãi /%"
+                        label="Giảm giá /%"
                         fullWidth
                         variant="standard"
                     />
@@ -450,7 +452,12 @@ const AddUserModal: NextPage<PropsModal> = ({ type, setOpen, open }) => {
             <DialogActions className="flex items-center  bg-gray-100 w-full">
                 <div className="flex items-center space-x-2">
                     <Button variant="outlined" className="border-[1px] border-primary text-primary" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button className="!bg-primary" variant="contained" onClick={isUploaded ? handleSubmit : handleUploadFiles}>{isUploaded ? "Submit" : "Upload"}</Button>
+                    <Button disabled={isLoading} className="!bg-primary flex justify-center items-center space-x-2" variant="contained" onClick={handleSubmit}>
+                        {isLoading &&
+                            <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear" />
+                        }
+                        <span> Hoàn tất</span>
+                    </Button>
                 </div>
             </DialogActions>
             {isLoading &&

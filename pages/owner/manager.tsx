@@ -227,7 +227,7 @@ const OwnerManager = () => {
                         </tr>
                     </thead>
 
-                    <tbody className="h-[10rem] overflow-y-scroll bg-white">
+                    <tbody className="h-[10rem] overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 bg-white">
                         {tabData?.map((data: any, index: number) => (
                             <tr
                                 key={data.id}
@@ -295,7 +295,7 @@ const OwnerManager = () => {
                                         <span
                                             className="inline-flex px-2 text-xs font-semibold leading-5 text-green-800 bg-green-100 rounded-full">{data.role?.charAt(0).toUpperCase() + data.role?.substring(1)}</span>
                                         :
-                                        <ImageList cols={data.pictures?.length >= 2 ? 2 : 1} className="!h-full">
+                                        <ImageList cols={data.pictures?.length >= 2 ? 2 : 1} className="!h-full !overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                                             {tab === 1 &&
                                                 [data?.mainPicture, ...data?.pictures]?.map((item: string) => (
                                                     <ImageListItem key={item}>

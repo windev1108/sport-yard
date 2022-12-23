@@ -18,6 +18,7 @@ import { Checkbox, FormControlLabel, FormGroup, FormLabel, Tooltip } from '@mui/
 import { pitchSize } from '../../utils/helper';
 import { Slot } from '../../Models'
 import instance from '../../server/db/instance';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 export interface PropsModal {
     setOpen: any
@@ -42,6 +43,10 @@ interface State {
     isUploadedMainPicture: boolean
 }
 
+interface CloudinaryUrls {
+    mainPicture: string
+    subPictures: string[]
+}
 
 const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
     const dispatch = useDispatch()
@@ -140,7 +145,7 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
             });
         } else if (!isValidStartTime && !isValidEndTime && !isValidPrice) {
             toast.info("Please fill out the information for the slot table", { autoClose: 3000, theme: "colored" })
-        } else if (!isUploadedPictures || !isUploadedMainPicture) {
+        } else if (!isUploadedPictures && !isUploadedMainPicture) {
             instance.put(`/pitch/${id}`, {
                 name,
                 location,
@@ -153,36 +158,39 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
             setOpen(false)
             toast.success("Cập nhật sân bóng thành công", { autoClose: 3000, theme: "colored" })
         } else {
-            if (isUploadedPictures || isUploadedMainPicture) {
-                instance.put(`/pitch/${id}`, {
-                    name,
-                    location,
-                    size,
-                    slots,
-                    pictures: urls,
-                    mainPicture: url,
-                    owner: user.id,
-                    coordinates: new GeoPoint(+latitude, +longitude),
-                },)
-                dispatch(setIsUpdate(!isUpdated))
-                setOpen(false)
-                toast.success("Cập nhật sân bóng thành công", { autoClose: 3000, theme: "colored" })
-            } else {
-                toast.info("Vui lòng thử lại sau", { autoClose: 3000, theme: "colored" })
-            }
+            setState({ ...state, isLoading: true })
+            handleUploadFiles()
+                .then((res: CloudinaryUrls) => {
+                    instance.put(`/pitch/${id}`, {
+                        name,
+                        location,
+                        size,
+                        slots,
+                        pictures: res.subPictures.length > 0 ? res.subPictures : blobPicture,
+                        mainPicture: res.mainPicture ? res.mainPicture : blobMainPicture,
+                        coordinates: new GeoPoint(+latitude, +longitude),
+                    },)
+                    dispatch(setIsUpdate(!isUpdated))
+                    setOpen(false)
+                    toast.success("Cập nhật sân bóng thành công", { autoClose: 3000, theme: "colored" })
+                })
         }
     }
 
 
     const handleUploadFiles = async () => {
-        setState({ ...state, isLoading: true })
+
+        const cloudinaryUrls: CloudinaryUrls = {
+            mainPicture: "",
+            subPictures: [],
+        }
         if (mainPicture.name) {
             const formData = new FormData()
             formData.append("file", mainPicture)
             formData.append('upload_preset', 'my-uploads');
             const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
             setUrl(data.url)
-            setState({ ...state, isLoading: false, isUploadedMainPicture: true })
+            cloudinaryUrls.mainPicture = data.url
         }
         if (pictures.length) {
             Array.from(pictures).map(async (picture) => {
@@ -191,10 +199,12 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
                 formData.append("file", picture)
                 formData.append('upload_preset', 'my-uploads');
                 const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-                setUrls((prev: string[]) => [...prev, data.url])
+                cloudinaryUrls.subPictures = [...cloudinaryUrls.subPictures, data.url]
             });
-            setState({ ...state, isLoading: false, isUploadedPictures: true })
         }
+        return new Promise<any>((resolve, reject) => {
+            resolve(cloudinaryUrls)
+        })
     }
 
 
@@ -398,13 +408,12 @@ const FormEditPitchModal: NextPage<PropsModal> = ({ id, setOpen, open }) => {
 
                 <div className="">
                     <Button className="!text-primary" onClick={() => setOpen(false)}>Cancel</Button>
-                    {!mainPicture?.name && pictures?.length === 0 ?
-                        <Button className="!bg-primary !text-white" variant="contained" onClick={handleSubmit}>{"Submit"}</Button>
-                        :
-                        <Button className="!bg-primary !text-white" variant="contained" onClick={isUploadedMainPicture || isUploadedPictures ? handleSubmit : handleUploadFiles}>{isUploadedMainPicture || isUploadedPictures ? "Submit 2" : "Upload"}</Button>
-                    }
-
-
+                    <Button disabled={isLoading} className="!bg-primary flex justify-center items-center space-x-2" variant="contained" onClick={handleSubmit}>
+                        {isLoading &&
+                            <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear" />
+                        }
+                        <span> Hoàn tất</span>
+                    </Button>
                 </div>
             </DialogActions>
             {isLoading &&

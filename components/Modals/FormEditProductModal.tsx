@@ -16,6 +16,7 @@ import { Checkbox, FormControlLabel, FormGroup, FormLabel, Tooltip } from '@mui/
 import { BiImageAdd } from 'react-icons/bi';
 import { clothesSize, sneakersSize } from '../../utils/helper';
 import instance from '../../server/db/instance';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 
 
@@ -40,9 +41,13 @@ interface State {
     blobFont: string
     blobBackSide: string
     isLoading: boolean
-    isUploadedPictures: boolean
-    isUpdatedFontPicture: boolean
-    isUploadedBackPicture: boolean
+    isUploaded: boolean
+}
+
+interface CloudinaryUrls {
+    fontUrl: string
+    backSideUrl: string
+    urls: string[]
 }
 
 
@@ -64,14 +69,9 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
         blobFont: "",
         blobBackSide: "",
         isLoading: false,
-        isUploadedPictures: false,
-        isUpdatedFontPicture: false,
-        isUploadedBackPicture: false
+        isUploaded: false,
     })
-    const { name, price, discount, size, amount, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading } = state
-    const [urls, setUrls] = useState<string[]>([])
-    const [fontUrl, setFontUrl] = useState<string>("")
-    const [backSideUrl, setBackSideUrl] = useState<string>("")
+    const { name, price, discount, size, amount, description, pictures, fontPicture, backSidePicture, blobPicture, blobFont, blobBackSide, isLoading, isUploaded } = state
 
 
 
@@ -130,13 +130,13 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
 
 
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!name || !price || !size.length || !discount || !amount) {
             toast.info("Vui lòng điền đầy đủ thông tin", {
                 autoClose: 3000,
                 theme: "colored",
             });
-        } else if (!pictures.length || !fontPicture.name || !backSidePicture.name) {
+        } else if (pictures.length === 0 && !fontPicture.name && !backSidePicture.name) {
             instance.put(`/products/${id}`, {
                 name,
                 description,
@@ -151,61 +151,63 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
             dispatch(setIsUpdate(!isUpdated))
             toast.success("Cập nhật thành công", { autoClose: 3000, theme: "colored" })
         } else {
-            if (pictures.length === urls.length || fontUrl || backSideUrl) {
-                instance.put(`/products/${id}`, {
-                    name,
-                    description,
-                    price,
-                    size,
-                    discount,
-                    amount,
-                    mainPictures: [fontUrl ? fontUrl : blobFont, backSideUrl ? backSideUrl : blobBackSide],
-                    pictures: urls,
-                    type: tab === 2 ? "clothes" : "sneakers",
-                    owner: user.id,
+            setState({ ...state, isLoading: true })
+            handleUploadFiles()
+                .then((res: any) => {
+                    console.log(res)
+                    instance.put(`/products/${id}`, {
+                        name,
+                        description,
+                        price,
+                        size,
+                        discount,
+                        amount,
+                        mainPictures: [res?.fontUrl ? res?.fontUrl : blobFont, res.backSideUrl ? res.backSideUrl : blobBackSide],
+                        pictures: res.urls.length > 0 ? res.urls : blobPicture,
+                        type: tab === 2 ? "clothes" : "sneakers",
+                    })
+                    setOpen(false)
+                    dispatch(setIsUpdate(!isUpdated))
+                    toast.success("Cập nhật thành công", { autoClose: 3000, theme: "colored" })
+                    setState({ ...state, isLoading: false })
                 })
-                setOpen(false)
-                dispatch(setIsUpdate(!isUpdated))
-                toast.success("Cập nhật thành công", { autoClose: 3000, theme: "colored" })
-            }
-            else {
-                toast.info("Vui lòng thử lại sau", { autoClose: 3000, theme: "colored" })
-            }
-
         }
     }
 
 
     const handleUploadFiles = async () => {
-        setState({ ...state, isLoading: true })
+        const cloudinaryUrls: CloudinaryUrls = {
+            fontUrl: "",
+            backSideUrl: '',
+            urls: [],
+        }
         if (fontPicture?.name) {
             const formData = new FormData()
             formData.append("file", fontPicture)
             formData.append('upload_preset', 'my-uploads');
             const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-            setFontUrl(data.url)
-            setState({ ...state, isUpdatedFontPicture: true })
+            cloudinaryUrls.fontUrl = data.url
         }
         if (backSidePicture?.name) {
             const formData = new FormData()
             formData.append("file", backSidePicture)
             formData.append('upload_preset', 'my-uploads');
             const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-            setBackSideUrl(data.url)
-            setState({ ...state, isUploadedBackPicture: true })
+            cloudinaryUrls.backSideUrl = data.url
         }
-        if (pictures.length) {
+        if (pictures.length > 0) {
             Array.from(pictures).map(async (picture) => {
                 setState({ ...state, isLoading: true })
                 const formData = new FormData()
                 formData.append("file", picture)
                 formData.append('upload_preset', 'my-uploads');
                 const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-                setUrls((prev: string[]) => [...prev, data.url])
+                cloudinaryUrls.urls = [...cloudinaryUrls.urls, data.url]
             });
-            setState({ ...state, isUploadedPictures: true })
         }
-        setState({ ...state, isLoading: false })
+        return new Promise((resolve, reject) => {
+            resolve(cloudinaryUrls)
+        })
     }
 
 
@@ -403,7 +405,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
 
 
                 <div className="flex justify-between">
-                    <FormLabel className="mt-4" component="legend">Sub Pictures</FormLabel>
+                    <FormLabel className="mt-4" component="legend">Hình ảnh phụ</FormLabel>
                     <Tooltip title="Add sub pictures">
                         <label
                             onChange={onFileChange}
@@ -448,11 +450,17 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
             <DialogActions className="flex items-center  bg-gray-100 w-full">
 
                 <div className="flex space-x-2">
-                    <Button className="!border-primary text-primary" variant="outlined" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button className="!bg-primary" variant="contained" onClick={pictures.length || fontPicture.name || backSidePicture.name ? handleUploadFiles : handleSubmit}>{pictures.length || fontPicture.name || backSidePicture.name ? "Upload" : "Submit"}</Button>
+                    <Button className="!border-primary text-primary" variant="outlined" onClick={() => setOpen(false)}>Hủy</Button>
+                    <Button disabled={isLoading} className="!bg-primary flex justify-center items-center space-x-2" variant="contained" onClick={handleSubmit}>
+                        {isLoading &&
+                            <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear" />
+                        }
+                        <span> Hoàn tất</span>
+                    </Button>
                 </div>
             </DialogActions>
-            {isLoading &&
+            {
+                isLoading &&
                 <div className="absolute top-0 left-0 right-0 ">
                     <LinearProgress />
                 </div>

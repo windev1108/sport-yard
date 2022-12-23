@@ -430,7 +430,7 @@ const OwnerManager = () => {
                                             <span
                                                 className={`${data.role === "admin" && "bg-blue-300"} ${data.role === "owner" && "bg-green-200"} ${data.role === "customer" && "bg-gray-200"} text-base  inline-flex px-3 py-1  font-semibold leading-5 text-green-800  rounded-full`}>{data.role?.charAt(0).toUpperCase() + data.role?.substring(1)}</span>
                                             :
-                                            <ImageList cols={data.pictures?.length >= 2 ? 2 : 1} className="!h-full">
+                                            <ImageList cols={data.pictures?.length >= 2 ? 2 : 1} className="!h-full !overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                                                 {tab === 1 && data.pictures &&
                                                     [data.mainPicture, ...data?.pictures]?.map((item: string, index: number) => (
                                                         <ImageListItem key={index}>
