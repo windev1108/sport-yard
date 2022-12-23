@@ -22,6 +22,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import LinearProgress from '@mui/material/LinearProgress';
 import { setIsUpdate } from '../../redux/features/isSlice';
 import instance from '../../server/db/instance';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 
 export interface PropsModal {
@@ -74,9 +75,7 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
         isLoading: false
     })
     const formSlotRef = useRef<any>(null)
-    const { name, location, longitude, latitude, size, slot, pictures, mainPicture, blobPicture, blobMainPicture, isLoading, isUploaded } = state
-    const [urls, setUrls] = useState<any>([])
-    const [url, setUrl] = useState<string>("")
+    const { name, location, longitude, latitude, size, slot, pictures, mainPicture, blobPicture, blobMainPicture, isLoading } = state
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -95,7 +94,6 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
             isLoading: false,
             isUploaded: false
         })
-        setUrls([])
     }, [])
 
     const onFileChange = (e: any) => {
@@ -134,6 +132,8 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
                 autoClose: 3000,
                 theme: "colored",
             });
+        } else if (!pictures.length || !mainPicture.name) {
+            toast.info("Vui lòng chọn những bức ảnh", { autoClose: 3000, theme: "colored" })
         } else if (Math.round(+latitude) > 90 || Math.round(+latitude) < -90) {
             toast.info(`Latitude phải là một số giữa -90 và 90, nhưng nhận được là : ${+latitude}`, {
                 autoClose: 3000,
@@ -147,24 +147,24 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
         } else if (!isValidStartTime || !isValidEndTime || !isValidPrice) {
             toast.info("Vui lòng nhập đầy đủ thông tin slots", { autoClose: 3000, theme: "colored" })
         } else {
-            if (isUploaded && urls.length === pictures.length) {
-                instance.post("/pitch", {
-                    name,
-                    location,
-                    size,
-                    slots,
-                    pictures: urls,
-                    mainPicture: url,
-                    owner: user.id,
-                    coordinates: new GeoPoint(+latitude, +longitude),
+            setState({ ...state, isLoading: true })
+            handleUploadFiles()
+                .then((res: any) => {
+                    instance.post("/pitch", {
+                        name,
+                        location,
+                        size,
+                        slots,
+                        pictures: res.urls,
+                        mainPicture: res.url,
+                        owner: user.id,
+                        coordinates: new GeoPoint(+latitude, +longitude),
+                    })
+                    setOpen(false)
+                    dispatch(setIsUpdate(!isUpdated))
+                    setState({ ...state, isLoading: false })
+                    toast.success("Thêm sân bóng thành công ", { autoClose: 3000, theme: "colored" })
                 })
-                setOpen(false)
-                dispatch(setIsUpdate(!isUpdated))
-                toast.success("Thêm sân thành công ", { autoClose: 3000, theme: "colored" })
-            } else {
-                toast.info("Vui lòng thử lại sau ", { autoClose: 3000, theme: "colored" })
-            }
-
         }
 
     }
@@ -172,24 +172,25 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
 
 
     const handleUploadFiles = async () => {
-        if (!pictures.length || !mainPicture.name) {
-            toast.info("Vui lòng chọn những bức ảnh", { autoClose: 3000, theme: "colored" })
-        } else {
-            setState({ ...state, isLoading: true })
-            Array.from(pictures).map(async (picture) => {
-                const formData = new FormData()
-                formData.append("file", picture)
-                formData.append('upload_preset', 'my-uploads');
-                const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-                setUrls((prev: string[]) => [...prev, data.url])
-            });
+        const cloudinaryUrls: any = {
+            url: "",
+            urls: []
+        }
+        Array.from(pictures).map(async (picture) => {
             const formData = new FormData()
-            formData.append("file", mainPicture)
+            formData.append("file", picture)
             formData.append('upload_preset', 'my-uploads');
             const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
-            setUrl(data.url)
-            setState({ ...state, isLoading: false, isUploaded: true })
-        }
+            cloudinaryUrls.urls = [...cloudinaryUrls.urls, data.url]
+        });
+        const formData = new FormData()
+        formData.append("file", mainPicture)
+        formData.append('upload_preset', 'my-uploads');
+        const { data } = await axios.post(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDNAME}/image/upload`, formData)
+        cloudinaryUrls.url = data.url
+        return new Promise<void>((resolve, reject) => {
+            resolve(cloudinaryUrls)
+        })
     }
 
 
@@ -379,8 +380,13 @@ const AddUserModal: NextPage<PropsModal> = ({ setOpen, open }) => {
             </DialogContent>
             <DialogActions className="flex items-center  bg-gray-100 w-full">
                 <div className="flex space-x-2">
-                    <Button className="!border-[1px] !border-primary text-primary" variant="outlined" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button className="!bg-primary !text-white" variant="contained" onClick={isUploaded ? handleSubmit : handleUploadFiles}>{isUploaded && blobMainPicture && blobPicture.length ? "Submit" : "Upload"}</Button>
+                    <Button className="!border-[1px] !border-primary text-primary" variant="outlined" onClick={() => setOpen(false)}>Hủy</Button>
+                    <Button disabled={isLoading} className="!bg-primary flex justify-center items-center space-x-2" variant="contained" onClick={handleSubmit}>
+                        {isLoading &&
+                            <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear" />
+                        }
+                        <span> Hoàn tất</span>
+                    </Button>
                 </div>
             </DialogActions>
             {isLoading &&
