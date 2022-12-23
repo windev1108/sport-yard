@@ -1,6 +1,4 @@
 import React, { useState, useLayoutEffect, memo, useCallback, useRef } from 'react';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Layout from '../../components/Layout';
 import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic'
@@ -9,7 +7,7 @@ import { GiClothes, GiSoccerField, GiSonicShoes } from 'react-icons/gi';
 import { HiUser } from 'react-icons/hi'
 import Router from 'next/router';
 import { RootState } from '../../redux/store';
-import { Avatar, IconButton, ImageList, ImageListItem, Tooltip, Typography } from '@mui/material';
+import { Avatar, Button, IconButton, ImageList, ImageListItem, Tooltip, Typography } from '@mui/material';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { FiEdit } from 'react-icons/fi';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -21,7 +19,6 @@ import ConfirmModal from "../../components/Modals/ConfirmModal"
 import { setOpenFormEditUser } from '../../redux/features/isSlice';
 import { setIdEditing } from '../../redux/features/userSlice';
 import { getCookie } from 'cookies-next';
-import jwt from "jsonwebtoken"
 import Skeleton from '@mui/material/Skeleton';
 import instance from '../../server/db/instance';
 const AddUserModal = dynamic(() => import("../../components/Modals/AddUserModal"), { ssr: false })
@@ -114,11 +111,7 @@ const OwnerManager = () => {
     }, [tab, isUpdated])
 
 
-    const handleChange = useCallback((e: React.SyntheticEvent, newValue: number) => {
-        setTimeout(() => {
-            setState({ ...state, tab: newValue, isLoading: true });
-        }, 500)
-    }, [])
+
 
     const handleDelete = (id: any) => {
         setState({ ...state, idDeleting: id })
@@ -148,6 +141,10 @@ const OwnerManager = () => {
         }
     }
 
+    const handleChangeTab = (tab: number) => {
+        setState({ ...state, isLoading: true })
+        setState({ ...state, tab })
+    }
 
     return (
         <Layout>
@@ -189,12 +186,29 @@ const OwnerManager = () => {
             {openFormEditPitchModal && <FormEditPitchModal id={idEditing} open={openFormEditPitchModal} setOpen={setFormEditPitchModal} />}
             {openConfirmModal && <ConfirmModal tab={tab} id={idDeleting} open={openConfirmModal} setOpen={setConfirmModal} />}
             <div className="pt-16  overflow-hidden">
-                <Tabs value={tab} onChange={handleChange} aria-label="icon label tabs example">
-                    <Tab value={0} icon={<FaUsers className="text-4xl" />} label="Người dùng" />
-                    <Tab value={1} icon={<GiSoccerField className="text-4xl" />} label="Sân bóng" />
-                    <Tab value={2} icon={<GiClothes className="text-4xl" />} label="Áo thể thao" />
-                    <Tab value={3} icon={<GiSonicShoes className="text-4xl" />} label="Giày thể thao" />
-                </Tabs>
+
+                <div className="flex">
+                    <Button variant='outlined' className={`${tab === 0 ? "!bg-[#1976d2] !text-white" : "!bg-white !text-[#1976d2]"} !w-[12rem] flex-col flex`} onClick={() => handleChangeTab(0)}  >
+                        <FaUsers className="text-4xl" />
+                        <span>Người dùng</span>
+                    </Button>
+
+                    <Button variant='outlined' className={`${tab === 1 ? "!bg-[#1976d2] !text-white" : "!bg-white !text-[#1976d2]"} !w-[12rem] flex-col flex`} onClick={() => handleChangeTab(1)}  >
+                        <GiSoccerField className="text-4xl" />
+                        <span>Sân bóng</span>
+                    </Button>
+                    <Button variant='outlined' className={`${tab === 2 ? "!bg-[#1976d2] !text-white" : "!bg-white !text-[#1976d2]"} !w-[12rem] flex-col flex`} onClick={() => handleChangeTab(2)}  >
+                        <GiClothes className="text-4xl" />
+                        <span>Quần áo thể thao</span>
+                    </Button>
+
+                    <Button variant='outlined' className={`${tab === 3 ? "!bg-[#1976d2] !text-white" : "!bg-white !text-[#1976d2]"} !w-[12rem] flex-col flex`} onClick={() => handleChangeTab(3)}  >
+                        <GiSonicShoes className="text-4xl" />
+                        <span>Giày thể thao</span>
+                    </Button>
+
+                </div>
+
                 {isLoading ?
                     <Skeleton variant="rectangular" width={2000} height={800} />
                     :

@@ -1,19 +1,16 @@
-import React, { useState, useLayoutEffect, useCallback, useRef } from 'react';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import Layout from '../../components/Layout';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import dynamic from 'next/dynamic'
 import { Pitch, Product, User } from '../../Models';
 import { GiClothes, GiSoccerField, GiSonicShoes } from 'react-icons/gi';
 import { RootState } from '../../redux/store';
-import { IconButton, ImageList, ImageListItem, Tooltip, Typography } from '@mui/material';
+import { Button, IconButton, ImageList, ImageListItem, Tooltip, Typography } from '@mui/material';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { FiEdit } from 'react-icons/fi';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
-import { setIsLoading } from '../../redux/features/isSlice';
 import Router from 'next/router';
 import { getCookie } from 'cookies-next';
 import instance from '../../server/db/instance';
@@ -30,12 +27,12 @@ interface State {
     idDeleting: string
     idEditing: string
     typeProduct: string
+    isLoading: boolean
     pictures: string[]
 }
 
 const OwnerManager = () => {
     const token: any = getCookie("token")
-    const dispatch = useDispatch()
     const { user }: User | any = useSelector<RootState>(state => state?.user)
     const { isUpdated }: boolean | any = useSelector<RootState>(state => state.is)
     const [state, setState] = useState<State>({
@@ -43,6 +40,7 @@ const OwnerManager = () => {
         tab: 1,
         idDeleting: "",
         idEditing: "",
+        isLoading: false,
         typeProduct: "",
         pictures: []
     })
@@ -70,15 +68,12 @@ const OwnerManager = () => {
                     instance.get("/users")
                         .then(resUsers => {
                             switch (tab) {
-                                case 1: setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id) })
-                                    dispatch(setIsLoading(false))
+                                case 1: setState({ ...state, tabData: data.pitch?.filter((p: Pitch) => p.owner === user.id), isLoading: false })
                                     usersRef.current = resUsers.data.users
                                     break
-                                case 2: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes") })
-                                    dispatch(setIsLoading(false))
+                                case 2: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "clothes"), isLoading: false })
                                     break
-                                case 3: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers") })
-                                    dispatch(setIsLoading(false))
+                                case 3: setState({ ...state, tabData: data.products?.filter((p: Product) => p.owner === user.id && p.type === "sneakers"), isLoading: false })
                                     break
                                 default: return
                             }
@@ -92,11 +87,9 @@ const OwnerManager = () => {
         return usersRef.current?.find((u: User) => u.id === id)
     }
 
-    const handleChange = useCallback((e: React.SyntheticEvent, newValue: number) => {
-        setTimeout(() => {
-            setState({ ...state, tab: newValue });
-        }, 500)
-    }, [])
+    const handleChangeTab = (tab: number) => {
+        setState({ ...state, isLoading: true, tab })
+    }
 
     const handleDelete = (id: any) => {
         setState({ ...state, idDeleting: id })
@@ -159,11 +152,22 @@ const OwnerManager = () => {
 
             {openConfirmModal && <ConfirmModal tab={tab} id={idDeleting} open={openConfirmModal} setOpen={setConfirmModal} />}
             <div className="pt-16  overflow-hidden">
-                <Tabs value={tab} onChange={handleChange} aria-label="icon label tabs example">
-                    <Tab value={1} icon={<GiSoccerField className="text-4xl" />} label="Sân bóng" />
-                    <Tab value={2} icon={<GiClothes className="text-4xl" />} label="Áo thể thao" />
-                    <Tab value={3} icon={<GiSonicShoes className="text-4xl" />} label="Giày thể thao" />
-                </Tabs>
+                <div className="flex">
+                    <Button variant='outlined' className={`${tab === 1 ? "!bg-[#1976d2] !text-white" : "!bg-white !text-[#1976d2]"} !w-[12rem] flex-col flex`} onClick={() => handleChangeTab(1)}  >
+                        <GiSoccerField className="text-4xl" />
+                        <span>Sân bóng</span>
+                    </Button>
+                    <Button variant='outlined' className={`${tab === 2 ? "!bg-[#1976d2] !text-white" : "!bg-white !text-[#1976d2]"} !w-[12rem] flex-col flex`} onClick={() => handleChangeTab(2)}  >
+                        <GiClothes className="text-4xl" />
+                        <span>Quần áo thể thao</span>
+                    </Button>
+
+                    <Button variant='outlined' className={`${tab === 3 ? "!bg-[#1976d2] !text-white" : "!bg-white !text-[#1976d2]"} !w-[12rem] flex-col flex`} onClick={() => handleChangeTab(3)}  >
+                        <GiSonicShoes className="text-4xl" />
+                        <span>Giày thể thao</span>
+                    </Button>
+
+                </div>
                 <table className="min-w-full overflow-hidden">
                     <thead>
                         <tr>
