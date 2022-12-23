@@ -31,7 +31,6 @@ import { db } from '../../firebase/config';
 
 
 interface State {
-    messagesSelected: Message[]
     userSelected: any
     message: string
     previewBlobs: {
@@ -64,7 +63,6 @@ const ChatBox = () => {
         userSelected: {},
         pictures: [],
         message: "",
-        messagesSelected: [],
         previewBlobs: [],
         isChange: false,
         isOpenChatMessage: false,
@@ -75,11 +73,12 @@ const ChatBox = () => {
     })
     const { isOpenChatBox }: any = useSelector<RootState>(state => state.is)
     const { user }: any = useSelector<RootState>(state => state.user)
-    const { messagesSelected, message, previewBlobs, pictures, userSelected, isUploaded, isChange, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
+    const { message, previewBlobs, pictures, userSelected, isUploaded, isChange, isLoading, isOpenChatMessage, isOpenOptionInfo, isFadeDownChatBox } = state
     const [messages, setMessages] = useState<Message[]>([])
     const [showEmojis, setShowEmojis] = useState(false)
     const [usersOnline, setUsersOnline] = useState<SocketUser[]>([])
     const [urls, setUrls] = useState<string[]>([])
+    const messagesRef = useRef<any[]>()
     const [emoji, setEmoji] = useState<{ native: string } | any>({})
     const messageEndRef = useRef<any>(null)
     const messageRef = useRef<any>()
@@ -120,12 +119,10 @@ const ChatBox = () => {
     }, [])
 
 
-    console.log("messages", messages);
-    console.log("messagesSelected", messagesSelected);
-
 
     useEffect(() => {
-        setState({ ...state, messagesSelected: messages?.filter((m: Message) => m.senderId === user?.id && m.receiverId === userSelected?.id || m.receiverId === user?.id && m.senderId === userSelected?.id), isOpenOptionInfo: false })
+        messagesRef.current = messages?.filter((m: Message) => m.senderId === user?.id && m.receiverId === userSelected?.id || m.receiverId === user?.id && m.senderId === userSelected?.id)
+        setState({ ...state, isOpenOptionInfo: false })
         scrollToBottom()
     }, [messages, userSelected.id])
 
@@ -170,15 +167,6 @@ const ChatBox = () => {
             })
         setState({ ...state, isChange: !isChange })
     }, [])
-
-
-    // useLayoutEffect(() => {
-    //     if (user?.role === "admin") {
-    //         const listUsersOnline: User[] | any = usersOnline.filter((u: SocketUser) => u.userId !== user?.id).map((u: SocketUser) => conversationsRef?.current?.find((c: User) => c?.id === u?.userId))
-    //         const listUsersOffline = usersRef?.current?.filter((c: User) => listUsersOnline?.some((u: User) => u?.id !== c?.id && c.id !== user?.id))
-    //         conversationsRef.current = [...listUsersOnline, ...listUsersOffline]
-    //     }
-    // }, [usersOnline.length])
 
 
     const handleSendMessage = useCallback(async (e: any) => {
@@ -422,13 +410,15 @@ const ChatBox = () => {
                                 </IconButton>
                             </div>
                         </div>
-                        {messagesSelected.length === 0 ?
+                        {messagesRef?.current?.length! === 0 ?
                             <div className="flex justify-center items-center h-[70%] w-full bg-white">
-                                <AiOutlineLoading3Quarters className="animate-spin duration-700 ease-linear text-primary text-4xl" />
+                                <div className="flex flex-col space-y-2">
+                                    <p className="font-semobold text-gray-400">Chưa có tin nhắn nào</p>
+                                </div>
                             </div>
                             :
                             <div className="relative h-[70%] w-full overflow-y-scroll overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300  scrollbar-track-gray-100 ">
-                                {messagesSelected?.map((item: Message, index: number) => (
+                                {messagesRef.current?.map((item: Message, index: number) => (
                                     <div key={item.id} className="flex flex-col w-full p-2">
                                         <span className="text-center text-xs pb-3">{new Date(item.timestamp).getDate() === new Date().getDate() ? moment(item.timestamp).fromNow() : moment(item.timestamp).format("dddd DD-MM-YYYY")}</span>
                                         <div className={`${item.senderId === user?.id ? "justify-end" : "justify-start"} flex w-full`}>
@@ -450,7 +440,7 @@ const ChatBox = () => {
                                                 </div>
                                             }
                                         </div>
-                                        {index === messagesSelected?.length - 1 && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.receiverId === user?.id && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.typing &&
+                                        {index === messagesRef.current?.length! - 1 && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.receiverId === user?.id && usersOnline.find((u: SocketUser) => u.userId === userSelected?.id)?.typing &&
                                             <div className="relative flex items-center py-2 space-x-12">
                                                 <Avatar src={getUser(userSelected?.id)?.avatar} sx={{ bgcolor: deepOrange[500] }} alt="" className="w-8 h-8" >{getUser(userSelected?.id)?.firstName?.substring(0, 1)}
                                                 </Avatar>
@@ -461,7 +451,7 @@ const ChatBox = () => {
                                                 </div>
                                             </div>
                                         }
-                                        {index === messagesSelected?.length - 1 && <div ref={messageEndRef} className="w-full"></div>}
+                                        {index === messagesRef.current?.length! - 1 && <div ref={messageEndRef} className="w-full"></div>}
                                     </div>
                                 ))}
 
