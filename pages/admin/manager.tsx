@@ -116,7 +116,7 @@ const OwnerManager = () => {
     const { mutate } = useSWR("/users", fetchData)
 
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         mutate()
     }, [tab, isUpdated])
 
