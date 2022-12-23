@@ -120,37 +120,21 @@ const Notifications = () => {
                 >
                     <div className="lg:relative fixed top-0 left-0 right-0 bottom-0 bg-white">
                         <div className="flex justify-between">
-                            {user.role === "admin" &&
-                                <div className="flex items-center px-4">
-                                    <Typography fontWeight={700} variant="body1" component="h1">
-                                        Thống kê
-                                    </Typography>
-                                    <IconButton
-                                        onClick={handleOpenDashboard}
-                                    >
-                                        <AiFillDashboard className="text-primary" />
-                                    </IconButton>
-                                    <div className="lg:hidden block">
-                                    </div>
-                                </div>
-                            }
-                            {user.role === "owner" &&
-                                <div className="flex items-center px-4">
-                                    <Typography fontWeight={700} variant="body1" component="h1">
-                                        Thống kê
-                                    </Typography>
-                                    <IconButton
-                                        onClick={handleOpenDashboard}
-                                    >
-                                        <AiFillDashboard className="text-primary" />
-                                    </IconButton>
-                                    <div className="lg:hidden block">
-                                    </div>
-                                </div>
-                            }
                             <div className="flex items-center px-4">
                                 <Typography fontWeight={700} variant="body1" component="h1">
-                                    Xóa tất cả
+                                    Thống kê
+                                </Typography>
+                                <IconButton
+                                    onClick={handleOpenDashboard}
+                                >
+                                    <AiFillDashboard className="text-primary" />
+                                </IconButton>
+                                <div className="lg:hidden block">
+                                </div>
+                            </div>
+                            {/* <div className="flex items-center px-4">
+                                <Typography fontWeight={700} variant="body1" component="h1">
+                                    Xóa thông báo
                                 </Typography>
                                 <IconButton
                                     onClick={handleClearNotification}
@@ -159,7 +143,7 @@ const Notifications = () => {
                                 </IconButton>
                                 <div className="lg:hidden block">
                                 </div>
-                            </div>
+                            </div> */}
                             <IconButton
                                 className="lg:!hidden block"
                                 onClick={handleCloseNotifications}

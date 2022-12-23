@@ -98,7 +98,7 @@ const Transactions = () => {
                         <div className="flex justify-between">
                             <div className="flex items-center justify-start px-4">
                                 <Typography fontWeight={700} variant="body1" component="h1">
-                                    Clear
+                                    Xóa lịch sử
                                 </Typography>
                                 <IconButton
                                     onClick={handleClearTransactionHistory}

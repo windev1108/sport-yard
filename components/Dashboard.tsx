@@ -300,7 +300,7 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
             open={isOpenDashboard}
             onClose={handleClose}
         >
-            <DialogTitle textAlign={"center"}>Thống kê doanh thu</DialogTitle>
+            <DialogTitle textAlign={"center"}>Thống kê</DialogTitle>
             <Divider />
             <DialogContent className="lg:w-[80vw] w-full h-full">
                 <Box sx={{ width: '100%' }}>
@@ -428,20 +428,47 @@ const Dashboard: NextPage<Props> = ({ isOpenDashboard, setOpen, orders }) => {
             <DialogActions>
                 <DialogContentText className="flex py-3 justify-end space-x-2 px-3">
                     <Typography variant="body1" component="span"  >
-                        {"Tổng doanh thu nhận được:"}
+                        {user.role === "customer" ?
+                            "Tổng số tiền đã mua hàng:"
+                            :
+                            "Tổng doanh thu nhận được:"
+                        }
                     </Typography>
                     <Typography variant="body1" component="span" fontWeight={700}>
-                        <Currency quantity={user.role === "owner" ? +orders.filter((order: Order) => order.status === 3 || order.status === 7).reduce(
-                            (previousValue, currentValue) => previousValue + currentValue.total,
-                            0
-                        ) - +orders.filter((order: Order) => order.status === 3 || order.status === 7).reduce(
-                            (previousValue, currentValue) => previousValue + currentValue.total,
-                            0
-                        ) / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!
-                            : +orders.filter((order: Order) => order.status === 3 || order.status === 7).reduce(
-                                (previousValue, currentValue) => previousValue + currentValue.total,
-                                0
-                            ) / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!} currency="VND" pattern="##,### !" />
+
+                        {user.role === "customer" &&
+                            <Currency quantity={
+                                +orders.filter((order: Order) => order.status === 3 || order.status === 7).reduce(
+                                    (previousValue, currentValue) => previousValue + currentValue.total,
+                                    0
+                                )} currency="VND" pattern="##,### !" />
+
+                        }
+
+                        {user.role === "owner" &&
+                            <Currency quantity={
+                                +orders.filter((order: Order) => order.status === 3 || order.status === 7).reduce(
+                                    (previousValue, currentValue) => previousValue + currentValue.total,
+                                    0
+                                ) - +orders.filter((order: Order) => order.status === 3 || order.status === 7).reduce(
+                                    (previousValue, currentValue) => previousValue + currentValue.total,
+                                    0
+                                ) / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!} currency="VND" pattern="##,### !" />
+
+                        }
+
+                        {user.role === "admin" &&
+                            <Currency quantity={
+                                +orders.filter((order: Order) => order.status === 3 || order.status === 7).reduce(
+                                    (previousValue, currentValue) => previousValue + currentValue.total,
+                                    0
+                                ) / 100 * +process.env.NEXT_PUBLIC_SERVICE_FEE!} currency="VND" pattern="##,### !" />
+
+                        }
+
+
+
+
                     </Typography>
                 </DialogContentText>
             </DialogActions>
