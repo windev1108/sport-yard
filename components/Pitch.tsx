@@ -128,7 +128,7 @@ const Pitch: NextPage<PitchProps> = ({
         <Link href={`/pitch/${id}`}>
           <a className="w-full">
             <Button className="w-full !bg-primary !text-white" size="small">
-              Book now
+              Xem chi tiết
             </Button>
           </a>
         </Link>

@@ -67,7 +67,7 @@ const FormEditUserModal: NextPage = () => {
         isLoading: false,
         isUploaded: false
     })
-    const { email, firstName, lastName, password, role, blobAvatar, avatar, avatarUrl, bankSlot, banks, phone, address, isLoading, isUploaded, isShowPassword } = state
+    const { email, firstName, lastName, password, role, blobAvatar, avatar, bankSlot, banks, phone, address, isLoading, isShowPassword } = state
 
     useEffect(() => {
         instance.get(`/users/${idEditing}`)
@@ -142,7 +142,7 @@ const FormEditUserModal: NextPage = () => {
             setState({ ...state, isLoading: true })
             handleUploadFiles()
                 .then((res: any) => {
-                    instance.put(`/users/${idEditing}`, { email, password, firstName, banks, phone: +phone, avatar: avatarUrl, lastName, role, address })
+                    instance.put(`/users/${idEditing}`, { email, password, firstName, banks, phone: +phone, avatar: res.avatarUrl ? res.avatarUrl : avatar, lastName, role, address })
                     toast.success("Cập nhật thông tin thành công", {
                         autoClose: 3000,
                         theme: "colored",

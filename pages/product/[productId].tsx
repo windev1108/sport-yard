@@ -326,7 +326,7 @@ const ProductDetail = ({ productId }: any) => {
                                     <Skeleton variant="text" height={40} width={100} />
                                     :
                                     <Typography fontSize={18} variant="body1" component="h1">
-                                        Amount
+                                        Số lượng
                                     </Typography>
                                 }
                             </Grid>

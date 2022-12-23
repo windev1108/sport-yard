@@ -48,7 +48,7 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer }) => {
   const handleRedirectToManager = () => {
     if (!user?.isOwner) {
       toast.info("Vui lòng nạp tối thiểu 500.000đ để kích hoạt tài khoản", { autoClose: 3000, theme: "colored" })
-    }else{
+    } else {
       Router.push("/owner/manager")
     }
   }
@@ -74,7 +74,7 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer }) => {
                 <ListItemIcon>
                   <AiFillHome className="text-2xl text-primary" />
                 </ListItemIcon>
-                <ListItemText primary={"Home"} />
+                <ListItemText primary={"Trang chủ"} />
               </ListItemButton>
             </a>
           </Link>
@@ -87,7 +87,7 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer }) => {
                 <ListItemIcon>
                   <Image className="group-hover:animate-pulse transition-transfom duration-700" src={require("../assets/images/pitch.png")} width={34} height={34} />
                 </ListItemIcon>
-                <ListItemText primary={"Pitch"} />
+                <ListItemText primary={"Sân bóng"} />
               </ListItemButton>
             </a>
           </Link>
@@ -100,29 +100,12 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer }) => {
                 <ListItemIcon>
                   <Image className="group-hover:rotate-[0deg] rotate-[30deg] transition-transfom duration-700" src={SneakerImg} width={30} height={30} />
                 </ListItemIcon>
-                <ListItemText primary={"Products"} />
+                <ListItemText primary={"Sản phẩm"} />
               </ListItemButton>
             </a>
           </Link>
         </ListItem>
 
-        <ListItem disablePadding>
-          <ListItemButton>
-            <ListItemIcon>
-              <FaInfoCircle className="text-2xl !text-primary" />
-            </ListItemIcon>
-            <ListItemText primary={"About us"} />
-          </ListItemButton>
-        </ListItem>
-
-        <ListItem disablePadding>
-          <ListItemButton>
-            <ListItemIcon>
-              <MdContactPhone className="text-2xl text-primary" />
-            </ListItemIcon>
-            <ListItemText primary={"Contact us"} />
-          </ListItemButton>
-        </ListItem>
       </List>
       <Divider />
       <List>
@@ -152,7 +135,7 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer }) => {
               <ListItemIcon>
                 <MdDashboardCustomize className="text-2xl text-primary" />
               </ListItemIcon>
-              <ListItemText primary={"Manager"} />
+              <ListItemText primary={"Quản lý"} />
             </ListItemButton>
           </ListItem>
         }
@@ -165,7 +148,7 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer }) => {
                   <ListItemIcon>
                     <MdDashboardCustomize className="text-2xl text-primary" />
                   </ListItemIcon>
-                  <ListItemText primary={"Manager"} />
+                  <ListItemText primary={"Quản lý"} />
                 </ListItemButton>
               </a>
             </Link>
@@ -182,7 +165,7 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer }) => {
               <ListItemIcon>
                 <BiLogOut className="text-2xl text-primary" />
               </ListItemIcon>
-              <ListItemText primary={"Sign out"} />
+              <ListItemText primary={"Đăng xuất"} />
             </ListItemButton>
           </ListItem>
           :
@@ -193,7 +176,7 @@ const DrawerComponent: NextPage<Props> = ({ anchor, toggleDrawer }) => {
                 <ListItemIcon>
                   <FiLogIn className="text-2xl text-primary" />
                 </ListItemIcon>
-                <ListItemText primary={"Sign in"} />
+                <ListItemText primary={"Đăng nhập"} />
               </ListItemButton>
             </Link>
           </ListItem>
