@@ -90,7 +90,7 @@ const FormEditProductModal: NextPage<PropsModal> = ({ id, tab, setOpen, open }) 
                 discount: res.data.discount,
             }))
 
-    }, [id])
+    }, [])
 
 
 

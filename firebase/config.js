@@ -2,13 +2,12 @@ import 'firebase/compat/firestore';
 import firebase from 'firebase/compat/app';
 
 const firebaseConfig  = {
-  apiKey: "AIzaSyCfJLM1OO9iMRqL72_uYaFzj0dRTppO1d4",
-  authDomain: "sport-yard-6b984.firebaseapp.com",
-  projectId: "sport-yard-6b984",
-  storageBucket: "sport-yard-6b984.appspot.com",
-  messagingSenderId: "549178058188",
-  appId: "1:549178058188:web:7c1a515d2b60b58c4f6969",
-  measurementId: "G-3DK14CFH3K"
+  apiKey: "AIzaSyD_JkSisqhjxFylEXXjns0W2Xjp365gWJk",
+  authDomain: "sport-yard-a5e03.firebaseapp.com",
+  projectId: "sport-yard-a5e03",
+  storageBucket: "sport-yard-a5e03.appspot.com",
+  messagingSenderId: "898374330184",
+  appId: "1:898374330184:web:a12c58861948b16786357d"
 };
 
 // Initialize Firebase

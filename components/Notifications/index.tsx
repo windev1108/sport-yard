@@ -8,7 +8,7 @@ import NotificationImg from '../../assets/images/notification.png'
 import Image from 'next/image';
 import { db } from '../../firebase/config';
 import { RootState } from '../../redux/store';
-import { AiFillDashboard, AiOutlineClear } from 'react-icons/ai';
+import { AiFillDashboard } from 'react-icons/ai';
 import { query, collection, onSnapshot, orderBy } from 'firebase/firestore'
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { setIdOrder } from '../../redux/features/ordersSlice';
@@ -62,6 +62,9 @@ const Notifications = () => {
         dispatch(setIdOrder(id))
         handleCloseNotifications()
     }
+
+
+
 
 
 
