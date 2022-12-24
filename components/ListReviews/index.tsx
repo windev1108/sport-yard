@@ -5,7 +5,6 @@ import { formatReviews } from '../../utils/helper';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
-import { query, collection, onSnapshot, orderBy } from 'firebase/firestore'
 import Link from 'next/link';
 import { FaTelegramPlane } from 'react-icons/fa';
 import { deepOrange } from '@mui/material/colors';
@@ -13,7 +12,6 @@ import Review from './Review';
 import { getCookie } from 'cookies-next';
 import { setIsUpdate } from '../../redux/features/isSlice';
 import instance from '../../server/db/instance';
-import { db } from '../../firebase/config';
 
 
 interface State {
@@ -22,6 +20,7 @@ interface State {
     reviews: Reviews[]
     limit: number
     isLoading: boolean
+    isUpdated: boolean
     myOrders: number
 }
 
@@ -29,7 +28,6 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
     const token = getCookie("token")
     const dispatch = useDispatch()
     const { user }: User | any = useSelector<RootState>(state => state.user)
-    const { isUpdated }: User | any = useSelector<RootState>(state => state.is)
     const limitPitch = useRef();
 
 
@@ -40,9 +38,10 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
         reviews: [],
         myOrders: 0,
         limit: 5,
-        isLoading: true
+        isLoading: true,
+        isUpdated: false
     })
-    const { reviews, review, rating, myOrders, isLoading } = state
+    const { reviews, review, rating, myOrders, isLoading, isUpdated } = state
 
 
     const handleAddReview = (e: any) => {
@@ -58,8 +57,7 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
                 comment: review,
             }
             toast.success("Thêm đánh giá thành công", { autoClose: 3000, theme: "colored" })
-            dispatch(setIsUpdate(!isUpdated))
-            setState({ ...state, review: "", rating: 0 })
+            setState({ ...state, review: "", rating: 0, isUpdated: !isUpdated })
             type === "product" ? instance.post(`/products/${productId}/reviews`, formData) : instance.post(`/pitch/${pitchId}/reviews`, formData)
         }
     }
@@ -73,26 +71,19 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
     //     }
     // };
 
-    useEffect(() => {
-        const q = query(collection(db, type === "product" ? "products" : "pitch"), orderBy("timestamp", "desc"))
-        const unsub = onSnapshot(q, (snapshot: any) => {
-            const results = snapshot.docs.map((doc: any) => ({ ...doc.data(), id: doc.id }))
-            setState({ ...state, reviews: results, myOrders: results.filter((order: Order) => order.ordererId === user.id && order.productId === pitchId).length, isLoading: false })
-        })
-        return unsub
-    }, [])
 
-    // useEffect(() => {
-    //     instance.get(`/${type === "product" ? "products" : "pitch"}/${type === "product" ? productId : pitchId}/reviews`)
-    //         .then(resReviews => {
-    //             instance.get('/orders')
-    //                 .then(resOrders => setState({ ...state, reviews: resReviews.data.reviews, myOrders: resOrders.data.orders.filter((order: Order) => order.ordererId === user.id && order.productId === pitchId).length, isLoading: false }))
-    //         })
-    //     // .then(data => {
-    //     //     // limitPitch.current = data.length
-    //     //     setState({ ...state, reviews: data })
-    //     // })
-    // }, [isUpdated])
+
+    useEffect(() => {
+        instance.get(`/${type === "product" ? "products" : "pitch"}/${type === "product" ? productId : pitchId}/reviews`)
+            .then(resReviews => {
+                instance.get('/orders')
+                    .then(resOrders => setState({ ...state, reviews: resReviews.data.reviews, myOrders: resOrders.data.orders.filter((order: Order) => order.ordererId === user.id && order.productId === pitchId).length, isLoading: false }))
+            })
+        // .then(data => {
+        //     // limitPitch.current = data.length
+        //     setState({ ...state, reviews: data })
+        // })
+    }, [isUpdated])
 
 
 
