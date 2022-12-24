@@ -5,14 +5,15 @@ import { formatReviews } from '../../utils/helper';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
+import { query, collection, onSnapshot, orderBy } from 'firebase/firestore'
 import Link from 'next/link';
 import { FaTelegramPlane } from 'react-icons/fa';
 import { deepOrange } from '@mui/material/colors';
 import Review from './Review';
 import { getCookie } from 'cookies-next';
-import Router from 'next/router';
 import { setIsUpdate } from '../../redux/features/isSlice';
 import instance from '../../server/db/instance';
+import { db } from '../../firebase/config';
 
 
 interface State {
@@ -72,18 +73,26 @@ const ListReviews = ({ pitchId, productId, type }: any) => {
     //     }
     // };
 
-
     useEffect(() => {
-        instance.get(`/${type === "product" ? "products" : "pitch"}/${type === "product" ? productId : pitchId}/reviews`)
-            .then(resReviews => {
-                instance.get('/orders')
-                    .then(resOrders => setState({ ...state, reviews: resReviews.data.reviews, myOrders: resOrders.data.orders.filter((order: Order) => order.ordererId === user.id && order.productId === pitchId).length, isLoading: false }))
-            })
-        // .then(data => {
-        //     // limitPitch.current = data.length
-        //     setState({ ...state, reviews: data })
-        // })
-    }, [isUpdated])
+        const q = query(collection(db, type === "product" ? "products" : "pitch"), orderBy("timestamp", "desc"))
+        const unsub = onSnapshot(q, (snapshot: any) => {
+            const results = snapshot.docs.map((doc: any) => ({ ...doc.data(), id: doc.id }))
+            setState({ ...state, reviews: results, myOrders: results.filter((order: Order) => order.ordererId === user.id && order.productId === pitchId).length, isLoading: false })
+        })
+        return unsub
+    }, [])
+
+    // useEffect(() => {
+    //     instance.get(`/${type === "product" ? "products" : "pitch"}/${type === "product" ? productId : pitchId}/reviews`)
+    //         .then(resReviews => {
+    //             instance.get('/orders')
+    //                 .then(resOrders => setState({ ...state, reviews: resReviews.data.reviews, myOrders: resOrders.data.orders.filter((order: Order) => order.ordererId === user.id && order.productId === pitchId).length, isLoading: false }))
+    //         })
+    //     // .then(data => {
+    //     //     // limitPitch.current = data.length
+    //     //     setState({ ...state, reviews: data })
+    //     // })
+    // }, [isUpdated])
 
 
 
